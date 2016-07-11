@@ -1359,14 +1359,20 @@ $(document).ready(function () {
 		// Clear the list of Fighters (just in case) and then get each fighters settings from the FighterN fieldsets. Any number of fighters could potentially be added, but currently the UI is only set up to allow two.
 		battlefield.clearFighters();
 		var fighterSettings = [ ];
-		
-		$( "fieldset[id^='Fighter']" ).each( function( index ) {
-			var settings = { };
-			$(this).find("input").each(function() {
-					settings[this.name] = $(this).val();
-			});
-			fighterSettings.push( settings )
-		});
+		var settings = { };
+		settings["Name"] = "Fighter1";
+		settings["Strength"] = 4;
+		settings["Dexterity"] = 4;
+		settings["Endurance"] = 4;
+		settings["Intellect"] = 4;
+		settings["Willpower"] = 4;
+		settings["HP"] = 100;
+		settings["Mana"] = 40;
+		settings["Stamina"] = 100;
+		settings["Cloth"] = 40;
+		fighterSettings.push( settings );
+		settings["Name"] = "Fighter2";
+		fighterSettings.push( settings );
 		
 		// Check and make sure there weren't any problems with the fighter settings that might have thrown an error.
 		var fightersAdded = 0;
