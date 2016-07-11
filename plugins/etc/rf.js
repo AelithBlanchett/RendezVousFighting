@@ -190,12 +190,17 @@ $(document).ready(function () {
 			if( this.messages.special.length ) lines.push( this._formatMessage.special( this.messages.special.join("\n") ));
 			if( this.messages.info.length ) lines.push( "\n" + this.messages.info.join("\n") );
 			
-			$( "#CombatResult" ).empty();
+			//$( "#CombatResult" ).empty();
 			//$( "#CombatResult" ).html( lines.join("\n") );			
-			$( "#CombatResult" ).val( lines.join("\n") );			
-			$( "#ParsedOutput" ).html( this._tagParser.parseContent( lines.join("\n").replace(/\n/g, '<br />') ));			
-			$( "#ErrorMessage" ).empty();
-			if( this.messages.error.length ) $( "#ErrorMessage" ).append( this.messages.error.join("<br />") );		
+			//$( "#CombatResult" ).val( lines.join("\n") );
+			//display message in chat instead
+			fChatLibInstance.sendMessage(lines.join("\n"), channel);
+			//$( "#ParsedOutput" ).html( this._tagParser.parseContent( lines.join("\n").replace(/\n/g, '<br />') ));
+			//$( "#ErrorMessage" ).empty();
+			if( this.messages.error.length ){
+				//$( "#ErrorMessage" ).append( this.messages.error.join("<br />") );
+				fChatLibInstance.sendMessage(this.messages.error.join("\n"), channel);
+			}
 
 			//clear messages from the queue once they have been displayed
 			this.messages = { action : [], hit : [], damage : 0, status : [], hint : [], special : [], info : [], error : [] };
@@ -1321,7 +1326,7 @@ $(document).ready(function () {
 	// One time events (Setting the default visibility of panels, for example)
 	// Objects and variables not tied to a particular event
 	//----------------------------------------------------------------------------------
-	windowController.switchToPanel("Setup"); //Currently we start out on the form used to setup a fight, need to add an instructions panel at some point before v1.0
+	//windowController.switchToPanel("Setup"); //Currently we start out on the form used to setup a fight, need to add an instructions panel at some point before v1.0
 	var battlefield = new arena(); //Create an arena named battlefield. It's important that this object is *outside* of the scope of any particular event function so that all event functions may access it.
 
 	//----------------------------------------------------------------------------------
@@ -1329,22 +1334,24 @@ $(document).ready(function () {
 	//----------------------------------------------------------------------------------
 	
 	// Catch any changes to Endurance or Intellect and alter the current/maximum HP or Mana to match.
-	$( "fieldset[id^=Fighter]" ).each( function() {
-		windowController.calcFormHP( $(this).find("input[name=Endurance]")[0] );		
-		$(this).find("input[name=Endurance]").change( function( event ) { windowController.calcFormHP( this ); });
-		
-		windowController.calcFormMana( $(this).find("input[name=Willpower]")[0] ); 
-		$(this).find("input[name=Willpower]").change( function( event ) { windowController.calcFormMana( this ); });
-	});
+
+	//TODO: Check if necessary or not
+	//$( "fieldset[id^=Fighter]" ).each( function() {
+	//	windowController.calcFormHP( $(this).find("input[name=Endurance]")[0] );
+	//	$(this).find("input[name=Endurance]").change( function( event ) { windowController.calcFormHP( this ); });
+    //
+	//	windowController.calcFormMana( $(this).find("input[name=Willpower]")[0] );
+	//	$(this).find("input[name=Willpower]").change( function( event ) { windowController.calcFormMana( this ); });
+	//});
 	
 	// Mouseover tooltip events
-	$( windowController.getRolloverKeys().join(", ") ).mouseenter(function() {
-		windowController.setToolTip( $(this).attr("name") );
-		// console.log( windowController.rollovers[$(this).attr("name")] );
-	});
+	//$( windowController.getRolloverKeys().join(", ") ).mouseenter(function() {
+	//	windowController.setToolTip( $(this).attr("name") );
+	//	// console.log( windowController.rollovers[$(this).attr("name")] );
+	//});
 	
 	// Take input from the setup form, add fighters to the arena, and then switch to the next panel.
-	function initialSetup(arenaType) {
+	function initialSetup(arenaSettings, firstFighterSettings, secondFighterSettings) {
 		//event.preventDefault();
 
 		// Get the global settings from the fieldset Arena
@@ -1378,12 +1385,12 @@ $(document).ready(function () {
 		var fightersAdded = 0;
 		for (var i = 0, len = fighterSettings.length; i < len; i++) {
 			fightersAdded += battlefield.addFighter(fighterSettings[i]);
-		};
-		
+		}
+
 		// And move on to the gameplay screen if there weren't errors.
 		if( fightersAdded == fighterSettings.length ) {
 			battlefield.pickInitialActor();
-			windowController.nextPanel();
+			//windowController.nextPanel();
 			windowController.addHit("Game started!");
 			windowController.addHit("FIGHTING STAGE: " + battlefield.stage + " - " + battlefield.getActor().name + " goes first!");
 			battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina/Cloth)
@@ -1394,12 +1401,12 @@ $(document).ready(function () {
 		
 		// Either way, update the output (which will display errors if there were any and post the battle start text to the gameplay screen).
 		windowController.updateOutput();
-	});
+	};
 
 	//Take input from the gameplay/combat form, provide the appropriate results, and run end of turn regen/cleanup.
-	function combatInput( event ) {
+	function combatInput(actionMade) {
 		//event.preventDefault();
-		var action = $( "input:radio[name=action]:checked" ).val();
+		var action = actionMade;
 		if(typeof action === 'undefined') return;
 		var actor = battlefield.getActor();
 		var roll = rollDice([20]);
