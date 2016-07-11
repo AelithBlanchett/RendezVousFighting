@@ -1708,12 +1708,12 @@ fighter.prototype = {
     },
 
     isGrappling: function (target) {
-        if (jQuery.inArray(this.name, target.isGrappledBy) != -1) return true;
+        if (target.isGrappledBy.indexOf(this.name) != -1) return true;
         return false;
     },
 
     removeGrappler: function (target) {
-        var grappleIndex = jQuery.inArray(target.name, this.isGrappledBy);
+        var grappleIndex = this.isGrappledBy.indexOf(target.name);
         this.isGrappledBy.splice(grappleIndex, 1);
     }
 };
