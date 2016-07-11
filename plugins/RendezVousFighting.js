@@ -283,7 +283,7 @@ BBParser = function () {
             return g
         },
         parseEmotes: function (g) {
-            $.each(["hex-smile", "heart", "hex-yell", "hex-sad", "hex-grin", "hex-red", "hex-razz", "hex-twist", "hex-roll", "hex-mad", "hex-confuse", "hex-eek", "hex-wink", "lif-angry", "lif-blush", "lif-cry", "lif-evil", "lif-gasp", "lif-happy", "lif-meh", "lif-neutral", "lif-ooh", "lif-purr", "lif-roll", "lif-sad", "lif-sick", "lif-smile", "lif-whee", "lif-wink", "lif-wtf", "lif-yawn", "cake"], function (k, l) {
+            ["hex-smile", "heart", "hex-yell", "hex-sad", "hex-grin", "hex-red", "hex-razz", "hex-twist", "hex-roll", "hex-mad", "hex-confuse", "hex-eek", "hex-wink", "lif-angry", "lif-blush", "lif-cry", "lif-evil", "lif-gasp", "lif-happy", "lif-meh", "lif-neutral", "lif-ooh", "lif-purr", "lif-roll", "lif-sad", "lif-sick", "lif-smile", "lif-whee", "lif-wink", "lif-wtf", "lif-yawn", "cake"].forEach(function (l) {
                 g = g.replace(RegExp(":" +
                     l + ":", "gim"), "<img src='http://f-list.com/images/smileys/" + l + ".png' alt='" + l + " emote' title=':" + l + ":' align='middle'/>")
             });
@@ -386,10 +386,10 @@ var windowController = {
         return keys;
     },
     setToolTip: function (key) {
-        $("#HoverTip").html(this._rollovers[key]);
+        //$("#HoverTip").html(this._rollovers[key]);
     },
     clearToolTip: function () {
-        $("#HoverTip").empty();
+        //$("#HoverTip").empty();
     },
     messages: {
         action: [],
@@ -418,7 +418,7 @@ var windowController = {
             return "\n[color=red]" + message + "[/color]";
         }
     },
-    _windowPanels: $(".InputPanel"),
+    _windowPanels: {},
     _activePanel: "",
     _verifyPanelExists: function (targetID) {
         if (typeof targetID !== "string") return 0;
@@ -428,29 +428,29 @@ var windowController = {
     },
 
     _updatePanel: function () {
-        if (this._activePanel === "") this._activePanel = this._windowPanels.first().attr("id");
-
-        if (!this._verifyPanelExists(this._activePanel)) {
-            console.log("windowController._updatePanel: _activePanel has been set to an invalid value. No panel with ID (#" + this._activePanel + ") exists.");
-            return;
-        }
-
-        this._windowPanels.find(":input").attr("checked", false);
-
-        var targetPanel = $("#" + this._activePanel);
-        if (targetPanel.is(':visible')) {
-            this._windowPanels.not(targetPanel).hide()
-            this._windowPanels.not(targetPanel).filter(":input").attr("disabled", true);
-        } else {
-            var disabledPanels = this._windowPanels.filter(':visible');
-            windowController.clearToolTip();
-            disabledPanels.fadeTo(300, 0, function () {
-                disabledPanels.hide();
-                disabledPanels.attr("disabled", true);
-                targetPanel.fadeIn(300);
-                targetPanel.find(":input").attr("disabled", false);
-            });
-        }
+        //if (this._activePanel === "") this._activePanel = this._windowPanels.first().attr("id");
+        //
+        //if (!this._verifyPanelExists(this._activePanel)) {
+        //    console.log("windowController._updatePanel: _activePanel has been set to an invalid value. No panel with ID (#" + this._activePanel + ") exists.");
+        //    return;
+        //}
+        //
+        //this._windowPanels.find(":input").attr("checked", false);
+        //
+        //var targetPanel = $("#" + this._activePanel);
+        //if (targetPanel.is(':visible')) {
+        //    this._windowPanels.not(targetPanel).hide()
+        //    this._windowPanels.not(targetPanel).filter(":input").attr("disabled", true);
+        //} else {
+        //    var disabledPanels = this._windowPanels.filter(':visible');
+        //    windowController.clearToolTip();
+        //    disabledPanels.fadeTo(300, 0, function () {
+        //        disabledPanels.hide();
+        //        disabledPanels.attr("disabled", true);
+        //        targetPanel.fadeIn(300);
+        //        targetPanel.find(":input").attr("disabled", false);
+        //    });
+        //}
     },
 
     switchToPanel: function (targetID) {
@@ -535,7 +535,7 @@ var windowController = {
     },
 
     setActionButton: function (name) {
-        $("#Take_Action").val("Take action as " + name);
+        //$("#Take_Action").val("Take action as " + name);
     },
 
     addAction: function (line) {
@@ -565,15 +565,15 @@ var windowController = {
     calcFormHP: function (target) {
         var hp = 0;
         if (parseInt(target.value) == target.value) hp = (target.value * 10) + 60;
-        $(target).siblings("input[name=HP]").val(hp);
-        $(target).siblings("span[name=maxHP]").html(hp);
+        //$(target).siblings("input[name=HP]").val(hp);
+        //$(target).siblings("span[name=maxHP]").html(hp);
     },
 
     calcFormMana: function (target) {
         var mana = 0;
         if (parseInt(target.value) == target.value) mana = (target.value * 10);
-        $(target).siblings("input[name=Mana]").val(mana);
-        $(target).siblings("span[name=maxMana]").html(mana);
+        //$(target).siblings("input[name=Mana]").val(mana);
+        //$(target).siblings("span[name=maxMana]").html(mana);
     }
 };
 
@@ -688,11 +688,11 @@ function fighter(settings, globalSettings) {
     var errors = [];
     this.name = settings.Name;
 
-    //Check numeric fields for invalid values
-    var nonNumericFields = ["Name"];
-    $.each(settings, function (key, value) {
-        if ((jQuery.inArray(key, nonNumericFields) == -1) && (parseInt(value) != value)) errors.push(settings.Name + " settings are invalid: " + key + " cannot have a value of " + value + ".");
-    });
+    //TODO: Check numeric fields for invalid values
+    //var nonNumericFields = ["Name"];
+    //$.each(settings, function (key, value) {
+    //    if ((jQuery.inArray(key, nonNumericFields) == -1) && (parseInt(value) != value)) errors.push(settings.Name + " settings are invalid: " + key + " cannot have a value of " + value + ".");
+    //});
 
     //Set stats from settings
     this._strength = (+settings.Strength);
