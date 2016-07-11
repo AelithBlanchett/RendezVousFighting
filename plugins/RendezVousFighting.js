@@ -11,6 +11,53 @@ module.exports = function (parent, chanName) {
         initialSetup();
     };
 
+    cmdHandler.light = function (args, data) {
+        combatInput("Light");
+    };
+
+    cmdHandler.heavy = function (args, data) {
+        combatInput("Heavy");
+    };
+
+    cmdHandler.grab = function (args, data) {
+        combatInput("Grab");
+    };
+
+    cmdHandler.tackle = function (args, data) {
+        combatInput("Tackle");
+    };
+
+    cmdHandler.ranged = function (args, data) {
+        combatInput("Ranged");
+    };
+
+    cmdHandler.focus = function (args, data) {
+        combatInput("Focus");
+    };
+
+    cmdHandler.move = function (args, data) {
+        combatInput("Move");
+    };
+    cmdHandler.escape = cmdHandler.move;
+    cmdHandler.pursue = cmdHandler.move;
+
+    cmdHandler.magic = function (args, data) {
+        combatInput("Magic");
+    };
+
+    cmdHandler.channel = function (args, data) {
+        combatInput("Channel");
+    };
+
+    cmdHandler.rest = function (args, data) {
+        combatInput("Rest");
+    };
+
+    cmdHandler.rip = function (args, data) {
+        combatInput("Rip");
+    };
+    cmdHandler.ripclothes = cmdHandler.rip;
+
 
     return cmdHandler;
 };
@@ -1716,7 +1763,7 @@ function initialSetup(arenaSettings, firstFighterSettings, secondFighterSettings
     battlefield.clearFighters();
     var fighterSettings = [];
     var settings = {};
-    settings["Name"] = "Fighter1";
+    settings["Name"] = "Fighter Uno";
     settings["Strength"] = 4;
     settings["Dexterity"] = 4;
     settings["Endurance"] = 4;
@@ -1726,8 +1773,20 @@ function initialSetup(arenaSettings, firstFighterSettings, secondFighterSettings
     settings["Mana"] = 40;
     settings["Stamina"] = 100;
     settings["Cloth"] = 40;
+
     fighterSettings.push(settings);
-    settings["Name"] = "Fighter2";
+
+    var settings = {};
+    settings["Name"] = "Fighter Dos";
+    settings["Strength"] = 3;
+    settings["Dexterity"] = 3;
+    settings["Endurance"] = 3;
+    settings["Intellect"] = 3;
+    settings["Willpower"] = 8;
+    settings["HP"] = 110;
+    settings["Mana"] = 40;
+    settings["Stamina"] = 100;
+    settings["Cloth"] = 40;
     fighterSettings.push(settings);
 
     // Check and make sure there weren't any problems with the fighter settings that might have thrown an error.
