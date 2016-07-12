@@ -1249,7 +1249,7 @@ fighter.prototype = {
 
         if (this.hp <= this._deathValue && this.isDead == false) {
             this.isDead = true;
-            windowController.addHit(this.name + " dies in the next move (or is already dead, as you wish to RP it). CLAIM YOUR SPOILS and VICTORY and FINISH YOUR OPPONENT!");
+            windowController.addHit("The fight is over! CLAIM YOUR SPOILS and VICTORY and FINISH YOUR OPPONENT!");
             windowController.addSpecial("FATALITY SUGGESTION: " + this.pickFatality());
             windowController.addSpecial("It is just a suggestion, you may not follow it if you don't want to.");
             endFight();
