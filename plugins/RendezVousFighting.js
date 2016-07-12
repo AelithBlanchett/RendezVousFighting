@@ -32,7 +32,7 @@ module.exports = function (parent, chanName) {
     };
 
     cmdHandler.register = function (args, data) {
-        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
+        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ?LIMIT 1", [data.character, channel], function(err, rows, fields){
             if(err){
                 throw err;
             }
@@ -153,8 +153,8 @@ module.exports = function (parent, chanName) {
 
     cmdHandler.ready = function (args, data) {
         if (currentFighters.length == 0) {
-            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
-                if (rows.length == 1) {
+            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function(err, rows, fields) {
+                if (rows != undefined && rows.length == 1) {
                     currentFighters[0] = rows[0];
                     var hp = 100;
                     if(currentFighters[0].endurance > 4){
@@ -172,8 +172,8 @@ module.exports = function (parent, chanName) {
         }
         else if (currentFighters.length == 1) {
             if (currentFighters[0].name != data.character) {
-                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
-                    if (rows.length == 1) {
+                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function(err, rows, fields) {
+                    if (rows != undefined && rows.length == 1) {
                         currentFighters[1] = rows[0];
                         var hp = 100;
                         if(currentFighters[1].endurance > 4){
