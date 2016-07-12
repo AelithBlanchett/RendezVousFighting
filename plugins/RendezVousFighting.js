@@ -1276,7 +1276,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll / 2; //Not directly affected by crits
-        var damage = attacker.strength();	//Affected by crits and the like
+        var damage = Math.max(attacker.dexterity() / 2, attacker.strength());	//Affected by crits and the like
         var stamDamage = attacker.intellect(); //This value + damage is drained from the targets stamina if the attack is successful
         var requiredStam = 20;
         var difficulty = 1;
@@ -1624,7 +1624,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll;
-        var damage = Math.max(attacker.dexterity(), attacker.intellect());
+        var damage = Math.max(attacker.dexterity() / 2, attacker.intellect());
         var requiredStam = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
