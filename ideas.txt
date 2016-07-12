@@ -1,1 +1,4 @@
 Renaming Intelligence to something else >> "Spellpower" or "Magic"
+
+During rest, the amount of Stamina recovered needs to be based on the roll, from 30 to 3*roll
+During rest, the recovered hp should scale with full Willpower rather than Willpower/2.
