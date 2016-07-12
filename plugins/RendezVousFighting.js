@@ -273,7 +273,7 @@ var currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, o
 
 function endFight(){
     //record stats etc
-    db.query("INSERT INTO `flistplugins`.`rdvf_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [channel, battlefield.getActor().name, battlefield.getTarget().name], function (err) {
+    db.query("INSERT INTO `flistplugins`.`RDVF_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [channel, battlefield.getActor().name, battlefield.getTarget().name], function (err) {
         if (!err) {
             fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", channel);
         }
@@ -1992,9 +1992,9 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     // Get the global settings from the fieldset Arena
     var defaultArenaSettings = {};
     defaultArenaSettings["StatPoints"] = 20;
-    defaultArenaSettings["GameSpeed"] = 10;
-    defaultArenaSettings["DisorientedAt"] = 40;
-    defaultArenaSettings["UnconsciousAt"] = 40;
+    defaultArenaSettings["GameSpeed"] = 1;
+    defaultArenaSettings["DisorientedAt"] = 25;
+    defaultArenaSettings["UnconsciousAt"] = 25;
     defaultArenaSettings["DeadAt"] = 0;
     if(arenaSettings == undefined){
         arenaSettings = defaultArenaSettings;
