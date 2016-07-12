@@ -273,7 +273,7 @@ var currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, o
 
 function endFight(){
     //record stats etc
-    db.query("INSERT INTO `flistplugins`.`rdvf_fights` (`winner`, `loser`) VALUES (?, ?)", [battlefield.getActor().name, battlefield.getTarget().name], function (err) {
+    db.query("INSERT INTO `flistplugins`.`rdvf_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [channel, battlefield.getActor().name, battlefield.getTarget().name], function (err) {
         if (!err) {
             fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", channel);
         }
