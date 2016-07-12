@@ -791,6 +791,7 @@ var windowController = {
     },
 
     updateOutput: function () {
+        this.addInfo("This is "+battlefield.getActor()+"'s turn.");
         var lines = [""];
         if (this.messages.action.length) lines[0] += this._formatMessage.action(this.messages.action.join(" "));
         if (this.messages.damage != 0) lines[0] += this._formatMessage.damage(this.messages.damage);
