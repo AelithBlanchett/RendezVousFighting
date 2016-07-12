@@ -76,7 +76,7 @@ module.exports = function (parent, chanName) {
                         }
                         else {
                             var finalArgs = [data.character, channel].concat(arrParam);
-                            db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `intellect`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
+                            db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
                                 if (!err) {
                                     fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", channel);
                                 }
@@ -93,7 +93,7 @@ module.exports = function (parent, chanName) {
     };
 
     var statsGetter = function(args, data, character){
-        db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
+        db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
             if (rows.length == 1) {
                 var stats = rows[0];
                 var hp = 100;
@@ -105,7 +105,7 @@ module.exports = function (parent, chanName) {
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Health[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
                     "[b][color=green]Endurance[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + 100 + "\n" +
-                    "[b][color=cyan]Intellect[/color][/b]:    " + stats.intellect  + "      " + "[b][color=pink]Cloth[/color][/b]: " + stats.cloth + "\n" +
+                    "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower  + "      " + "[b][color=pink]Cloth[/color][/b]: " + stats.cloth + "\n" +
                     "[b][color=purple]Willpower[/color][/b]: " + stats.willpower);
             }
             else {
@@ -153,7 +153,7 @@ module.exports = function (parent, chanName) {
 
     cmdHandler.ready = function (args, data) {
         if (currentFighters.length == 0) {
-            db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
+            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
                 if (rows.length == 1) {
                     currentFighters[0] = rows[0];
                     var hp = 100;
@@ -172,7 +172,7 @@ module.exports = function (parent, chanName) {
         }
         else if (currentFighters.length == 1) {
             if (currentFighters[0].name != data.character) {
-                db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
+                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
                     if (rows.length == 1) {
                         currentFighters[1] = rows[0];
                         var hp = 100;
@@ -652,7 +652,7 @@ var windowController = {
         "Strength": "Strength. <br /> This is your base damage stat; the higher this is, the higher your basic attacks will be. This affects all attacks besides ranged attacks and magic.",
         "Dexterity": "Dexterity. <br /> This is your accuracy and dodge stat; the higher this is, the more likely you will be able to dodge attacks or reduce their effects, or strike with more precision on your own.",
         "Endurance": "Endurance. <br /> This is your basic defense stat; the higher this is the more health you will have and the faster your stamina will refill over time.",
-        "Intellect": "Intellect. <br /> This is your magic stat; the higher this is, the more damage you will deal.",
+        "Spellpower": "Spellpower. <br /> This is your magic stat; the higher this is, the more damage you will deal.",
         "Willpower": "Willpower. <br /> This is your mana-pool stat; the higher this is, the more magic attacks you can perform and the faster you will regain mana. Willpower also makes you more resistant to being knocked out or disoriented.",
         "HP": "Hit Points. <br />How much health you have initially.",
         "Mana": "Mana. <br />How much mana you have initially.",
@@ -998,7 +998,7 @@ function fighter(settings, globalSettings) {
     this._strength = (+settings.Strength);
     this._dexterity = (+settings.Dexterity);
     this._endurance = (+settings.Endurance);
-    this._intellect = (+settings.Intellect);
+    this._spellpower = (+settings.Spellpower);
     this._willpower = (+settings.Willpower);
 
     this._dizzyValue = Math.max(globalSettings.DisorientedAt - (this._willpower * 2), 0);
@@ -1009,10 +1009,10 @@ function fighter(settings, globalSettings) {
     if (this._strength > 10 || this._strength < 1) errors.push(settings.Name + "'s Strength is outside the allowed range (1 to 10).");
     if (this._dexterity > 10 || this._dexterity < 1) errors.push(settings.Name + "'s Dexterity is outside the allowed range (1 to 10).");
     if (this._endurance > 10 || this._endurance < 1) errors.push(settings.Name + "'s Endurance is outside the allowed range (1 to 10).");
-    if (this._intellect > 10 || this._intellect < 1) errors.push(settings.Name + "'s Intellect is outside the allowed range (1 to 10).");
+    if (this._spellpower > 10 || this._spellpower < 1) errors.push(settings.Name + "'s Spellpower is outside the allowed range (1 to 10).");
     if (this._willpower > 10 || this._willpower < 1) errors.push(settings.Name + "'s Willpower is outside the allowed range (1 to 10).");
 
-    var stattotal = this._strength + this._dexterity + this._endurance + this._intellect + this._willpower;
+    var stattotal = this._strength + this._dexterity + this._endurance + this._spellpower + this._willpower;
     if (stattotal != globalSettings.StatPoints && globalSettings.StatPoints != 0)  errors.push(settings.Name + " has stats that are too high or too low (" + stattotal + " out of " + globalSettings.StatPoints + " points spent).");
 
     if (errors.length) {
@@ -1081,8 +1081,8 @@ fighter.prototype = {
         return total;
     },
 
-    intellect: function () {
-        var total = this._intellect;
+    spellpower: function () {
+        var total = this._spellpower;
         if (this.isDisoriented > 0) total -= 1;
         total = Math.max(total, 1);
         total = Math.ceil(total);
@@ -1199,7 +1199,7 @@ fighter.prototype = {
     },
 
     getStatBlock: function () {
-        return "[color=cyan]" + this.name + " stats: Strength:" + this.strength() + " Dexterity:" + this.dexterity() + " Endurance:" + this.endurance() + " Intellect:" + this.intellect() + " Willpower:" + this.willpower() + "[/color]";
+        return "[color=cyan]" + this.name + " stats: Strength:" + this.strength() + " Dexterity:" + this.dexterity() + " Endurance:" + this.endurance() + " Spellpower:" + this.spellpower() + " Willpower:" + this.willpower() + "[/color]";
     },
 
     getStatus: function () {
@@ -1292,7 +1292,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll / 2; //Not directly affected by crits
         var damage = Math.max(attacker.dexterity() / 2, attacker.strength());	//Affected by crits and the like
-        var stamDamage = attacker.intellect(); //This value + damage is drained from the targets stamina if the attack is successful
+        var stamDamage = attacker.spellpower(); //This value + damage is drained from the targets stamina if the attack is successful
         var requiredStam = 20;
         var difficulty = 1;
 
@@ -1321,14 +1321,14 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            attacker.hitStamina(requiredStam - (attacker.intellect() * 2));
+            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitStamina(requiredStam - (attacker.intellect() * 2));
+            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1394,14 +1394,14 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            attacker.hitStamina(requiredStam - (attacker.intellect() * 2));
+            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitStamina(requiredStam - (attacker.intellect() * 2));
+            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1466,7 +1466,7 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
             windowController.addHint(attacker.name + " failed to establish a hold!");
-            attacker.hitStamina(requiredStam - (attacker.intellect() * 2));
+            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
 
             //attacker.hitStamina (15);
             return 0; //Failed attack, if we ever need to check that.
@@ -1475,7 +1475,7 @@ fighter.prototype = {
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " was too fast, and escaped before " + attacker.name + " could establish a hold.");
-            attacker.hitStamina(requiredStam - (attacker.intellect() * 2));
+            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
 
             //attacker.hitStamina (15);
             return 0; //Failed attack, if we ever need to check that.
@@ -1573,7 +1573,7 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
 
-            attacker.hitStamina(requiredStam - (attacker.intellect() * 2));
+            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
             //attacker.hitStamina (20);
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1582,7 +1582,7 @@ fighter.prototype = {
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
 
-            attacker.hitStamina(requiredStam - (attacker.intellect() * 2));
+            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
             //attacker.hitStamina (20);
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1639,7 +1639,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll;
-        var damage = Math.max(attacker.dexterity() / 2, attacker.intellect());
+        var damage = Math.max(attacker.dexterity() / 2, attacker.spellpower());
         var requiredStam = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
@@ -1700,8 +1700,8 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 2 + attacker.intellect();
-        var damage = 2 * attacker.intellect();
+        var baseDamage = roll / 2 + attacker.spellpower();
+        var damage = 2 * attacker.spellpower();
         var requiredMana = 24;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
@@ -1723,7 +1723,7 @@ fighter.prototype = {
         }
         // attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.intellect());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.spellpower());
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
@@ -1928,16 +1928,16 @@ fighter.prototype = {
 
         switch (action) {
             case "Light":
-                attacker.hitStamina(20 - (attacker.intellect() * 2));
+                attacker.hitStamina(20 - (attacker.spellpower() * 2));
                 break;
             case "Heavy":
-                attacker.hitStamina(35 - (attacker.intellect() * 2));
+                attacker.hitStamina(35 - (attacker.spellpower() * 2));
                 break;
             case "Grab":
-                attacker.hitStamina(25 - (attacker.intellect() * 2));
+                attacker.hitStamina(25 - (attacker.spellpower() * 2));
                 break;
             case "Tackle":
-                attacker.hitStamina(30 - (attacker.intellect() * 2));
+                attacker.hitStamina(30 - (attacker.spellpower() * 2));
                 break;
             case "Ranged":
                 attacker.hitStamina(15);
@@ -1983,7 +1983,7 @@ var battlefield = new arena(); //Create an arena named battlefield. It's importa
 // Event Handlers
 //----------------------------------------------------------------------------------
 
-// Catch any changes to Endurance or Intellect and alter the current/maximum HP or Mana to match.
+// Catch any changes to Endurance or Spellpower and alter the current/maximum HP or Mana to match.
 
 //TODO: Check if necessary or not
 //$( "fieldset[id^=Fighter]" ).each( function() {
@@ -2024,7 +2024,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     fighterOne["Strength"] = parseInt(firstFighterSettings.strength);
     fighterOne["Dexterity"] = parseInt(firstFighterSettings.dexterity);
     fighterOne["Endurance"] = parseInt(firstFighterSettings.endurance);
-    fighterOne["Intellect"] = parseInt(firstFighterSettings.intellect);
+    fighterOne["Spellpower"] = parseInt(firstFighterSettings.spellpower);
     fighterOne["Willpower"] = parseInt(firstFighterSettings.willpower);
     fighterOne["HP"] = parseInt(firstFighterSettings.hp);
     fighterOne["Mana"] = parseInt(firstFighterSettings.mana);
@@ -2036,7 +2036,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     fighterTwo["Strength"] = parseInt(secondFighterSettings.strength);
     fighterTwo["Dexterity"] = parseInt(secondFighterSettings.dexterity);
     fighterTwo["Endurance"] = parseInt(secondFighterSettings.endurance);
-    fighterTwo["Intellect"] = parseInt(secondFighterSettings.intellect);
+    fighterTwo["Spellpower"] = parseInt(secondFighterSettings.spellpower);
     fighterTwo["Willpower"] = parseInt(secondFighterSettings.willpower);
     fighterTwo["HP"] = parseInt(secondFighterSettings.hp);
     fighterTwo["Mana"] = parseInt(secondFighterSettings.mana);
