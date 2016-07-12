@@ -183,12 +183,16 @@ module.exports = function (parent, chanName) {
                         currentFighters[1].mana = parseInt(currentFighters[1].willpower)*10;
                         currentFighters[1].stamina = 100;
                         fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", channel);
-                        initialSetup(currentFighters[0], currentFighters[1]);
                     }
                     else{
                         fChatLibInstance.sendMessage("You aren't registered yet.", channel);
                     }
                 });
+                setTimeout(function(){
+                    if(currentFighters.length == 2){
+                        initialSetup(currentFighters[0], currentFighters[1]);
+                    }
+                }, 2500);
             }
             else {
                 fChatLibInstance.sendMessage("You can't set yourself ready twice!", channel);
