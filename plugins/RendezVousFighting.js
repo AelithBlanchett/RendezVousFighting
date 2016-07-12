@@ -63,15 +63,26 @@ module.exports = function (parent, chanName) {
                     }
                     else{
                         //register
-                        var finalArgs = [data.character, channel].concat(arrParam);
-                        db.query("INSERT INTO `flistplugins`.`rendezvous` (`name`, `room`, `strength`, `dexterity`, `endurance`, `intellect`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function(err){
-                            if(!err){
-                                fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", channel);
-                            }
-                            else{
-                                fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. "+err, channel);
-                            }
-                        });
+                        var total = 0;
+                        var statsOnly = arrParam.slice(0,5);
+                        total = statsOnly.reduce(function(a, b) { return parseInt(a) + parseInt(b); }, 0);
+                        if(total != 20){
+                            fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 20. ("+total+"). Example: !register 4,3,5,1,7,30", channel);
+                        }
+                        else if(parseInt(arrParam[5]) > 100){
+                            fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100. Example: !register 4,3,5,1,7,30", channel);
+                        }
+                        else {
+                            var finalArgs = [data.character, channel].concat(arrParam);
+                            db.query("INSERT INTO `flistplugins`.`rendezvous` (`name`, `room`, `strength`, `dexterity`, `endurance`, `intellect`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
+                                if (!err) {
+                                    fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", channel);
+                                }
+                                else {
+                                    fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. " + err, channel);
+                                }
+                            });
+                        }
                     }
                 }
             }
