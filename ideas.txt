@@ -7,3 +7,4 @@ Light Attack damage could also be the max of STR and DEX/2.
 Check stats min/max values on registration (1min 9 max)
 Remove KO Message
 Remove "X won the match"
+Eliminate the defensive bonus of Focus and instead increase the offensive bonus by an equal amount
