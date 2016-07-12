@@ -6,6 +6,8 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "fchatlib": "*"
+    "fchatlib": "*",
+    "redis": "*",
+    "mysql": "*"
   }
 }

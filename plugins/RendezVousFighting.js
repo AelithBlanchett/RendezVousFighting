@@ -1,15 +1,209 @@
 var fChatLibInstance;
 var channel;
 
+var mysql      = require('mysql');
+var mySqlConfig = require('../config/config.mysql.js')
+var db = mysql.createConnection(mySqlConfig);
+
+db.connect();
+
 module.exports = function (parent, chanName) {
     fChatLibInstance = parent;
 
     var cmdHandler = {};
     channel = chanName;
 
-    cmdHandler.ready = function (args, data) {
-        initialSetup();
+    cmdHandler.select = function (args, data) {
+        db.query("SELECT * FROM rendezvous WHERE name LIKE ? LIMIT 1", '%' + args + '%', function(err, rows, fields){
+            if(err){
+                throw err;
+            }
+            else{
+                if(rows.length > 0){
+                    fChatLibInstance.sendMessage("" + JSON.stringify(rows), channel);
+                }
+                else{
+                    fChatLibInstance.sendMessage("No fighter found.", channel);
+                }
+            }
+
+        });
     };
+
+    cmdHandler.myStats = function (args, data) {
+        statsGetter(args, data, data.character);
+    };
+    cmdHandler.stats = cmdHandler.myStats;
+
+    cmdHandler.getStats = function (args, data) {
+        if (fChatLibInstance.isUserChatOP(data.character, channel)) {
+            statsGetter(args, data, args);
+        }
+        else{
+            fChatLibInstance.sendMessage("You don't have sufficient rights.", channel);
+        }
+    };
+
+    cmdHandler.register = function (args, data) {
+        db.query("SELECT 1 FROM rendezvous WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
+            if(err){
+                throw err;
+            }
+            else{
+                if(rows.length > 0){
+                    fChatLibInstance.sendMessage("You're already registered.", channel);
+                }
+                else{
+                    var arrParam = args.split(",");
+                    if(arrParam.length != 6){
+                        fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,3,5,1,6,30", channel);
+                    }
+                    else if(!arrParam.every(arg => isInt(arg))){
+                        fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 4,3,5,1,6,30", channel);
+                    }
+                    else{
+                        //register
+                        var finalArgs = [data.character, channel].concat(arrParam);
+                        db.query("INSERT INTO `flistplugins`.`rendezvous` (`name`, `room`, `strength`, `dexterity`, `endurance`, `intellect`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function(err){
+                            if(!err){
+                                fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", channel);
+                            }
+                            else{
+                                fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. "+err, channel);
+                            }
+                        });
+                    }
+                }
+            }
+
+        });
+    };
+
+    var statsGetter = function(args, data, character){
+        db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM rendezvous WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
+            if (rows.length == 1) {
+                var stats = rows[0];
+                var hp = 100;
+                if(stats.endurance > 4){
+                    hp += (stats.endurance - 4)*10;
+                }
+                var mana = stats.willpower + "0";
+                fChatLibInstance.sendPrivMessage(data.character, "[b]" + data.character + "[/b]'s stats" + "\n" +
+                    "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Health[/color][/b]: " + hp + "\n" +
+                    "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
+                    "[b][color=green]Endurance[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + 100 + "\n" +
+                    "[b][color=cyan]Intellect[/color][/b]:    " + stats.intellect  + "      " + "[b][color=pink]Cloth[/color][/b]: " + stats.cloth + "\n" +
+                    "[b][color=purple]Willpower[/color][/b]: " + stats.willpower);
+            }
+            else {
+                fChatLibInstance.sendPrivMessage(data.character, "You aren't registered yet.");
+            }
+        });
+    };
+
+    cmdHandler.deleteProfile = function (args, data) {
+        if (fChatLibInstance.isUserChatOP(channel, data.character)) {
+            if (checkIfFightIsGoingOn()) {
+                if (currentFighters[0].character == data.character || currentFighters[1].character == data.character) {
+                    fChatLibInstance.sendMessage("You can't add remove this profile if it's in a fight.", channel);
+                    return;
+                }
+            }
+            client.del(args, function (err, result) {
+                if (result == 1) {
+                    fChatLibInstance.sendMessage(args + "'s stats have been deleted. Thank you for playing!", channel);
+                }
+                else {
+                    fChatLibInstance.sendMessage("This profile hasn't been found in the database.", channel);
+                }
+            });
+        }
+        else {
+            fChatLibInstance.sendMessage("You don't have sufficient rights.", channel);
+        }
+    };
+
+    cmdHandler.reset = function (args, data) {
+        if (fChatLibInstance.isUserChatOP(channel, data.character)) {
+            if (checkIfFightIsGoingOn()) {
+                resetFight();
+                fChatLibInstance.sendMessage("The ring has been cleared.", channel);
+            }
+            else {
+                fChatLibInstance.sendMessage("The ring isn't occupied.", channel);
+            }
+        }
+        else {
+            fChatLibInstance.sendMessage("You don't have sufficient rights.", channel);
+        }
+    };
+
+    cmdHandler.ready = function (args, data) {
+        if (currentFighters.length == 0) {
+            db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM rendezvous WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
+                if (rows.length == 1) {
+                    currentFighters[0] = rows[0];
+                    var hp = 100;
+                    if(currentFighters[0].endurance > 4){
+                        hp += (currentFighters[0].endurance - 4)*10;
+                    }
+                    currentFighters[0].hp = hp;
+                    currentFighters[0].mana = parseInt(currentFighters[0].willpower)*10;
+                    currentFighters[0].stamina = 100;
+                    fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", channel);
+                }
+                else{
+                    fChatLibInstance.sendMessage("You aren't registered yet.", channel);
+                }
+            });
+        }
+        else if (currentFighters.length == 1) {
+            if (currentFighters[0].name != data.character) {
+                db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM rendezvous WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
+                    if (rows.length == 1) {
+                        currentFighters[1] = rows[0];
+                        var hp = 100;
+                        if(currentFighters[1].endurance > 4){
+                            hp += (currentFighters[1].endurance - 4)*10;
+                        }
+                        currentFighters[1].hp = hp;
+                        currentFighters[1].mana = parseInt(currentFighters[1].willpower)*10;
+                        currentFighters[1].stamina = 100;
+                        fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", channel);
+                        initialSetup(currentFighters[0], currentFighters[1]);
+                    }
+                    else{
+                        fChatLibInstance.sendMessage("You aren't registered yet.", channel);
+                    }
+                });
+            }
+            else {
+                fChatLibInstance.sendMessage("You can't set yourself ready twice!", channel);
+            }
+        }
+        else {
+            fChatLibInstance.sendMessage("Sorry, our two wrestlers are still in the fight!", channel);
+        }
+    };
+
+    cmdHandler.exit = function (args, data) {
+        if (currentFighters.length > 0) {
+            if ((currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].character == data.character) || (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].character == data.character)) {
+                fChatLibInstance.sendMessage("The fight has been ended.", channel);
+                setTimeout(resetFight(),2500);
+            }
+            else {
+                fChatLibInstance.sendMessage("You are not in a fight.", channel);
+            }
+        }
+        else {
+            fChatLibInstance.sendMessage("There isn't any fight going on at the moment.", channel);
+        }
+    };
+    cmdHandler.leave = cmdHandler.exit;
+    cmdHandler.leaveFight = cmdHandler.exit;
+    cmdHandler.forfeit = cmdHandler.exit;
+    cmdHandler.unready = cmdHandler.exit;
 
     cmdHandler.light = function (args, data) {
         combatInput("Light");
@@ -62,6 +256,25 @@ module.exports = function (parent, chanName) {
     return cmdHandler;
 };
 
+var currentFighters = [];
+var currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, orgasms: 0, winner: -1, currentHold: {}, actionTier: "", actionType: "", dmgHp: 0, dmgLust: 0, actionIsHold: false, diceResult: 0, intMovesCount: [0,0]};
+
+
+function isInt(value) {
+    return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
+}
+
+function checkIfFightIsGoingOn() {
+    if (currentFighters.length == 2) {
+        return true;
+    }
+    return false;
+}
+
+function resetFight() {
+    currentFighters = [];
+    currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, orgasms: 0, winner: -1, currentHold: {}, actionTier: "", actionType: "", dmgHp: 0, dmgLust: 0, actionIsHold: false, diceResult: 0, intMovesCount: [0,0]};
+}
 
 //BBParser shamelessly borrowed from the f-chat javascript. Feel free to skip on past this bit.
 BBParser = function () {
@@ -1747,47 +1960,50 @@ var battlefield = new arena(); //Create an arena named battlefield. It's importa
 //});
 
 // Take input from the setup form, add fighters to the arena, and then switch to the next panel.
-function initialSetup(arenaSettings, firstFighterSettings, secondFighterSettings) {
+function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings) {
     //event.preventDefault();
 
     // Get the global settings from the fieldset Arena
-    var arenaSettings = {};
-    arenaSettings["StatPoints"] = 20;
-    arenaSettings["GameSpeed"] = 1;
-    arenaSettings["DisorientedAt"] = 40;
-    arenaSettings["UnconsciousAt"] = 40;
-    arenaSettings["DeadAt"] = 0;
+    var defaultArenaSettings = {};
+    defaultArenaSettings["StatPoints"] = 20;
+    defaultArenaSettings["GameSpeed"] = 1;
+    defaultArenaSettings["DisorientedAt"] = 40;
+    defaultArenaSettings["UnconsciousAt"] = 40;
+    defaultArenaSettings["DeadAt"] = 0;
+    if(arenaSettings == undefined){
+        arenaSettings = defaultArenaSettings;
+    }
     battlefield.setGlobalFighterSettings(arenaSettings);
 
     // Clear the list of Fighters (just in case) and then get each fighters settings from the FighterN fieldsets. Any number of fighters could potentially be added, but currently the UI is only set up to allow two.
     battlefield.clearFighters();
     var fighterSettings = [];
-    var settings = {};
-    settings["Name"] = "Fighter Uno";
-    settings["Strength"] = 4;
-    settings["Dexterity"] = 4;
-    settings["Endurance"] = 4;
-    settings["Intellect"] = 4;
-    settings["Willpower"] = 4;
-    settings["HP"] = 100;
-    settings["Mana"] = 40;
-    settings["Stamina"] = 100;
-    settings["Cloth"] = 40;
+    var fighterOne = {};
+    fighterOne["Name"] = firstFighterSettings.name;
+    fighterOne["Strength"] = parseInt(firstFighterSettings.strength);
+    fighterOne["Dexterity"] = parseInt(firstFighterSettings.dexterity);
+    fighterOne["Endurance"] = parseInt(firstFighterSettings.endurance);
+    fighterOne["Intellect"] = parseInt(firstFighterSettings.intellect);
+    fighterOne["Willpower"] = parseInt(firstFighterSettings.willpower);
+    fighterOne["HP"] = parseInt(firstFighterSettings.hp);
+    fighterOne["Mana"] = parseInt(firstFighterSettings.mana);
+    fighterOne["Stamina"] = parseInt(firstFighterSettings.stamina);
+    fighterOne["Cloth"] = parseInt(firstFighterSettings.cloth);
 
-    fighterSettings.push(settings);
+    var fighterTwo = {};
+    fighterTwo["Name"] = secondFighterSettings.name;
+    fighterTwo["Strength"] = parseInt(secondFighterSettings.strength);
+    fighterTwo["Dexterity"] = parseInt(secondFighterSettings.dexterity);
+    fighterTwo["Endurance"] = parseInt(secondFighterSettings.endurance);
+    fighterTwo["Intellect"] = parseInt(secondFighterSettings.intellect);
+    fighterTwo["Willpower"] = parseInt(secondFighterSettings.willpower);
+    fighterTwo["HP"] = parseInt(secondFighterSettings.hp);
+    fighterTwo["Mana"] = parseInt(secondFighterSettings.mana);
+    fighterTwo["Stamina"] = parseInt(secondFighterSettings.stamina);
+    fighterTwo["Cloth"] = parseInt(secondFighterSettings.cloth);
 
-    var settings = {};
-    settings["Name"] = "Fighter Dos";
-    settings["Strength"] = 3;
-    settings["Dexterity"] = 3;
-    settings["Endurance"] = 3;
-    settings["Intellect"] = 3;
-    settings["Willpower"] = 8;
-    settings["HP"] = 110;
-    settings["Mana"] = 40;
-    settings["Stamina"] = 100;
-    settings["Cloth"] = 40;
-    fighterSettings.push(settings);
+    fighterSettings.push(fighterOne);
+    fighterSettings.push(fighterTwo);
 
     // Check and make sure there weren't any problems with the fighter settings that might have thrown an error.
     var fightersAdded = 0;
