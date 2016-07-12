@@ -273,6 +273,14 @@ var currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, o
 
 function endFight(){
     //record stats etc
+    db.query("INSERT INTO `flistplugins`.`rdvf_fights` (`winner`, `loser`) VALUES (?, ?)", [battlefield.getActor().name, battlefield.getTarget().name], function (err) {
+        if (!err) {
+            fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", channel);
+        }
+        else {
+            fChatLibInstance.sendMessage("There was an error while adding the fight record to the database. Contact Lustful Aelith. " + err, channel);
+        }
+    });
     resetFight();
 }
 
@@ -1983,7 +1991,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     // Get the global settings from the fieldset Arena
     var defaultArenaSettings = {};
     defaultArenaSettings["StatPoints"] = 20;
-    defaultArenaSettings["GameSpeed"] = 1;
+    defaultArenaSettings["GameSpeed"] = 10;
     defaultArenaSettings["DisorientedAt"] = 40;
     defaultArenaSettings["UnconsciousAt"] = 40;
     defaultArenaSettings["DeadAt"] = 0;
