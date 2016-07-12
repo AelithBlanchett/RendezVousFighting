@@ -13,21 +13,8 @@ module.exports = function (parent, chanName) {
     var cmdHandler = {};
     channel = chanName;
 
-    cmdHandler.select = function (args, data) {
-        db.query("SELECT * FROM rendezvous WHERE name LIKE ? LIMIT 1", '%' + args + '%', function(err, rows, fields){
-            if(err){
-                throw err;
-            }
-            else{
-                if(rows.length > 0){
-                    fChatLibInstance.sendMessage("" + JSON.stringify(rows), channel);
-                }
-                else{
-                    fChatLibInstance.sendMessage("No fighter found.", channel);
-                }
-            }
-
-        });
+    cmdHandler.currentTurn = function (args, data) {
+        fChatLibInstance.sendMessage(battlefield.getActor(), channel);
     };
 
     cmdHandler.myStats = function (args, data) {
@@ -45,7 +32,7 @@ module.exports = function (parent, chanName) {
     };
 
     cmdHandler.register = function (args, data) {
-        db.query("SELECT 1 FROM rendezvous WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
+        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
             if(err){
                 throw err;
             }
@@ -74,7 +61,7 @@ module.exports = function (parent, chanName) {
                         }
                         else {
                             var finalArgs = [data.character, channel].concat(arrParam);
-                            db.query("INSERT INTO `flistplugins`.`rendezvous` (`name`, `room`, `strength`, `dexterity`, `endurance`, `intellect`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
+                            db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `intellect`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
                                 if (!err) {
                                     fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", channel);
                                 }
@@ -91,7 +78,7 @@ module.exports = function (parent, chanName) {
     };
 
     var statsGetter = function(args, data, character){
-        db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM rendezvous WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
+        db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
             if (rows.length == 1) {
                 var stats = rows[0];
                 var hp = 100;
@@ -112,27 +99,27 @@ module.exports = function (parent, chanName) {
         });
     };
 
-    cmdHandler.deleteProfile = function (args, data) {
-        if (fChatLibInstance.isUserChatOP(channel, data.character)) {
-            if (checkIfFightIsGoingOn()) {
-                if (currentFighters[0].character == data.character || currentFighters[1].character == data.character) {
-                    fChatLibInstance.sendMessage("You can't add remove this profile if it's in a fight.", channel);
-                    return;
-                }
-            }
-            client.del(args, function (err, result) {
-                if (result == 1) {
-                    fChatLibInstance.sendMessage(args + "'s stats have been deleted. Thank you for playing!", channel);
-                }
-                else {
-                    fChatLibInstance.sendMessage("This profile hasn't been found in the database.", channel);
-                }
-            });
-        }
-        else {
-            fChatLibInstance.sendMessage("You don't have sufficient rights.", channel);
-        }
-    };
+    //cmdHandler.deleteProfile = function (args, data) {
+    //    if (fChatLibInstance.isUserChatOP(channel, data.character)) {
+    //        if (checkIfFightIsGoingOn()) {
+    //            if (currentFighters[0].character == data.character || currentFighters[1].character == data.character) {
+    //                fChatLibInstance.sendMessage("You can't add remove this profile if it's in a fight.", channel);
+    //                return;
+    //            }
+    //        }
+    //        client.del(args, function (err, result) {
+    //            if (result == 1) {
+    //                fChatLibInstance.sendMessage(args + "'s stats have been deleted. Thank you for playing!", channel);
+    //            }
+    //            else {
+    //                fChatLibInstance.sendMessage("This profile hasn't been found in the database.", channel);
+    //            }
+    //        });
+    //    }
+    //    else {
+    //        fChatLibInstance.sendMessage("You don't have sufficient rights.", channel);
+    //    }
+    //};
 
     cmdHandler.reset = function (args, data) {
         if (fChatLibInstance.isUserChatOP(channel, data.character)) {
@@ -151,7 +138,7 @@ module.exports = function (parent, chanName) {
 
     cmdHandler.ready = function (args, data) {
         if (currentFighters.length == 0) {
-            db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM rendezvous WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
+            db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
                 if (rows.length == 1) {
                     currentFighters[0] = rows[0];
                     var hp = 100;
@@ -170,7 +157,7 @@ module.exports = function (parent, chanName) {
         }
         else if (currentFighters.length == 1) {
             if (currentFighters[0].name != data.character) {
-                db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM rendezvous WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
+                db.query("SELECT name, strength, dexterity, endurance, intellect, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields) {
                     if (rows.length == 1) {
                         currentFighters[1] = rows[0];
                         var hp = 100;
@@ -216,50 +203,64 @@ module.exports = function (parent, chanName) {
     cmdHandler.forfeit = cmdHandler.exit;
     cmdHandler.unready = cmdHandler.exit;
 
+    var attackFunc = function(attack, character){
+        if(checkIfFightIsGoingOn()) {
+            if (character.toLowerCase() == battlefield.getActor().name.toLowerCase()) {
+                combatInput(attack);
+            }
+            else {
+                fChatLibInstance.sendMessage("It's not your turn.", channel);
+            }
+        }
+        else{
+            fChatLibInstance.sendMessage("There isn't any fights going on right now.", channel);
+        }
+    };
+
     cmdHandler.light = function (args, data) {
-        combatInput("Light");
+        attackFunc("Light", data.character);
     };
 
     cmdHandler.heavy = function (args, data) {
-        combatInput("Heavy");
+        attackFunc("Heavy", data.character);
     };
 
     cmdHandler.grab = function (args, data) {
-        combatInput("Grab");
+        attackFunc("Grab", data.character);
     };
 
     cmdHandler.tackle = function (args, data) {
-        combatInput("Tackle");
+        attackFunc("Tackle", data.character);
     };
 
     cmdHandler.ranged = function (args, data) {
-        combatInput("Ranged");
+        attackFunc("Ranged", data.character);
     };
 
     cmdHandler.focus = function (args, data) {
-        combatInput("Focus");
+        attackFunc("Focus", data.character);
     };
 
     cmdHandler.move = function (args, data) {
-        combatInput("Move");
+        attackFunc("Move", data.character);
     };
     cmdHandler.escape = cmdHandler.move;
     cmdHandler.pursue = cmdHandler.move;
 
     cmdHandler.magic = function (args, data) {
-        combatInput("Magic");
+        attackFunc("Magic", data.character);
     };
 
     cmdHandler.channel = function (args, data) {
-        combatInput("Channel");
+        attackFunc("Channel", data.character);
     };
 
     cmdHandler.rest = function (args, data) {
-        combatInput("Rest");
+        attackFunc("Rest", data.character);
     };
 
     cmdHandler.rip = function (args, data) {
-        combatInput("Rip");
+        attackFunc("Rip", data.character);
     };
     cmdHandler.ripclothes = cmdHandler.rip;
 
@@ -270,6 +271,10 @@ module.exports = function (parent, chanName) {
 var currentFighters = [];
 var currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, orgasms: 0, winner: -1, currentHold: {}, actionTier: "", actionType: "", dmgHp: 0, dmgLust: 0, actionIsHold: false, diceResult: 0, intMovesCount: [0,0]};
 
+function endFight(){
+    //record stats etc
+    resetFight();
+}
 
 function isInt(value) {
     return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
@@ -1238,6 +1243,7 @@ fighter.prototype = {
             windowController.addHit(this.name + " dies in the next move (or is already dead, as you wish to RP it). CLAIM YOUR SPOILS and VICTORY and FINISH YOUR OPPONENT!");
             windowController.addSpecial("FATALITY SUGGESTION: " + this.pickFatality());
             windowController.addSpecial("It is just a suggestion, you may not follow it if you don't want to.");
+            endFight();
         }
     },
 
