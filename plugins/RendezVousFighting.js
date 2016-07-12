@@ -56,6 +56,21 @@ module.exports = function (parent, chanName) {
                         if(total != 20){
                             fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 20. ("+total+"). Example: !register 4,3,5,1,7,30", channel);
                         }
+                        else if(parseInt(arrParam[0]) > 10 || (parseInt(arrParam[0]) < 1)){
+                            fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                        }
+                        else if(parseInt(arrParam[1]) > 10 || (parseInt(arrParam[1]) < 1)){
+                            fChatLibInstance.sendMessage("The Dexterity stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                        }
+                        else if(parseInt(arrParam[2]) > 10 || (parseInt(arrParam[2]) < 1)){
+                            fChatLibInstance.sendMessage("The Endurance stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                        }
+                        else if(parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 1)){
+                            fChatLibInstance.sendMessage("The Spellpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                        }
+                        else if(parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 1)){
+                            fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                        }
                         else if(parseInt(arrParam[5]) > 100){
                             fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100. Example: !register 4,3,5,1,7,30", channel);
                         }
