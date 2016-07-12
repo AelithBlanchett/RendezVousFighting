@@ -275,7 +275,7 @@ function endFight(){
     //record stats etc
     db.query("INSERT INTO `flistplugins`.`RDVF_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [channel, battlefield.getActor().name, battlefield.getTarget().name], function (err) {
         if (!err) {
-            fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", channel);
+            //fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", channel);
         }
         else {
             fChatLibInstance.sendMessage("There was an error while adding the fight record to the database. Contact Lustful Aelith. " + err, channel);
@@ -1244,7 +1244,7 @@ fighter.prototype = {
 
         if (this.hp <= this._koValue && this.isUnconscious == false) {
             this.isUnconscious = true;
-            windowController.addHit(this.name + " is permanently Knocked Out (or extremely dizzy, and can not resist)! Feel free to use this opportunity! " + this.name + " must not resist! Continue beating them to get a fatality suggestion.");
+            //windowController.addHit(this.name + " is permanently Knocked Out (or extremely dizzy, and can not resist)! Feel free to use this opportunity! " + this.name + " must not resist! Continue beating them to get a fatality suggestion.");
         }
 
         if (this.hp <= this._deathValue && this.isDead == false) {
@@ -1767,8 +1767,8 @@ fighter.prototype = {
             return 0; //Failed action, if we ever need to check that.
         }
 
-        var stamBonus = 30 + (attacker.endurance() * 2);
-        var hpBonus = Math.floor(3 + ( attacker.willpower() / 2 ));
+        var stamBonus = (3 * parseInt(roll)) + (attacker.endurance() * 2);
+        var hpBonus = Math.floor(3 + attacker.willpower());
         var manaBonus = hpBonus;
         attacker.addStamina(stamBonus);
         attacker.addHp(hpBonus);
