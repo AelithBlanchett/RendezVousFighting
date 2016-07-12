@@ -1994,7 +1994,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     defaultArenaSettings["StatPoints"] = 20;
     defaultArenaSettings["GameSpeed"] = 1;
     defaultArenaSettings["DisorientedAt"] = 25;
-    defaultArenaSettings["UnconsciousAt"] = 25;
+    defaultArenaSettings["UnconsciousAt"] = 0;
     defaultArenaSettings["DeadAt"] = 0;
     if(arenaSettings == undefined){
         arenaSettings = defaultArenaSettings;
