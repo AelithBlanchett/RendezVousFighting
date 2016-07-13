@@ -54,7 +54,7 @@ module.exports = function (parent, chanName) {
         });
     };
 
-    function checkIfValidStats(arrParamToCheck){
+    function checkIfValidStats(arrParam){
         if(arrParam.length != 6){
             fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,3,5,1,6,30", channel);
         }
