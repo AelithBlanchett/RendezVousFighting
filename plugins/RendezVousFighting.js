@@ -1538,11 +1538,11 @@ fighter.prototype = {
     actionTackle: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 4;
-        var damage = attacker.strength() / 4;
+        var baseDamage = roll / 2; //Not directly affected by crits
+        var damage = Math.max(attacker.dexterity() / 2, attacker.strength());	//Affected by crits and the like
         var stamDamage = 30;
         var requiredStam = 40;
-        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isRestrained) difficulty += Math.max(0, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
@@ -1573,7 +1573,7 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
 
-            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
+            attacker.hitStamina(requiredStam);
             //attacker.hitStamina (20);
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1582,18 +1582,18 @@ fighter.prototype = {
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
 
-            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
+            attacker.hitStamina(requiredStam);
             //attacker.hitStamina (20);
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
             windowController.addHint(target.name + " rolled with the blow. They are still stunned, but lost less stamina. ");
-            stamDamage -= 10;
+            //stamDamage -= 10;
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHint("Critical Hit! " + attacker.name + " really drove that one home!");
             damage *= 2;
-            stamDamage *= 1.5;
+            //stamDamage *= 1.5;
         }
 
         if (target.isEvading || attacker.isEvading) {
@@ -1623,14 +1623,14 @@ fighter.prototype = {
 
         //Deal all the actual damage/effects here.
 
-        attacker.hitStamina(requiredStam - 20); //Successful tackle attacks have the cost reduced
+        attacker.hitStamina(requiredStam); //Successful or not, the cost is the same.
 
         damage += baseDamage;
         damage = Math.max(damage, 1);
         stamDamage = Math.max(stamDamage, 1);
         target.hitHp(damage);
         windowController.addHint(attacker.name + " dealt " + Math.floor(stamDamage) + " stamina damage to " + target.name + ".");
-        target.hitStamina(stamDamage);
+        //target.hitStamina(stamDamage);
         target.isStunned = true;
         return 1; //Successful attack, if we ever need to check that.
     },
