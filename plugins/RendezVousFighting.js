@@ -13,14 +13,9 @@ module.exports = function (parent, chanName) {
     var cmdHandler = {};
     channel = chanName;
 
-    cmdHandler.currentTurn = function (args, data) {
-        fChatLibInstance.sendMessage(battlefield.getActor(), channel);
-    };
-
-    cmdHandler.myStats = function (args, data) {
+    cmdHandler.stats = function (args, data) {
         statsGetter(args, data, data.character);
     };
-    cmdHandler.stats = cmdHandler.myStats;
 
     cmdHandler.getStats = function (args, data) {
         if (fChatLibInstance.isUserChatOP(data.character, channel)) {
