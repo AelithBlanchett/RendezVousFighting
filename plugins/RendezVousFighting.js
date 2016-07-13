@@ -1387,7 +1387,7 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         stamDamage += damage;
-        windowController.addHint(attacker.name + " dealt " + Math.floor(stamDamage) + " stamina damage to " + target.name + ".");
+        //windowController.addHint(attacker.name + " dealt " + Math.floor(stamDamage) + " stamina damage to " + target.name + ".");
         //disabled for now
         //target.hitStamina(stamDamage);
         target.hitCloth(3);
