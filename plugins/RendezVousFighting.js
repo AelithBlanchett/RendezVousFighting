@@ -27,7 +27,7 @@ module.exports = function (parent, chanName) {
     };
 
     cmdHandler.register = function (args, data) {
-        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ?LIMIT 1", [data.character, channel], function(err, rows, fields){
+        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function(err, rows, fields){
             if(err){
                 throw err;
             }
@@ -37,50 +37,85 @@ module.exports = function (parent, chanName) {
                 }
                 else{
                     var arrParam = args.split(",");
-                    if(arrParam.length != 6){
-                        fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,3,5,1,6,30", channel);
+                    if(checkIfValidStats(arrParam)){
+                        var finalArgs = [data.character, channel].concat(arrParam);
+                        db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
+                            if (!err) {
+                                fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", channel);
+                            }
+                            else {
+                                fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. " + err, channel);
+                            }
+                        });
                     }
-                    else if(!arrParam.every(arg => isInt(arg))){
-                        fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 4,3,5,1,6,30", channel);
+                }
+            }
+
+        });
+    };
+
+    function checkIfValidStats(arrParamToCheck){
+        if(arrParam.length != 6){
+            fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,3,5,1,6,30", channel);
+        }
+        else if(!arrParam.every(arg => isInt(arg))){
+            fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 4,3,5,1,6,30", channel);
+        }
+        else{
+            //register
+            var total = 0;
+            var statsOnly = arrParam.slice(0,5);
+            total = statsOnly.reduce(function(a, b) { return parseInt(a) + parseInt(b); }, 0);
+            if(total != 20){
+                fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 20. ("+total+"). Example: !register 4,3,5,1,7,30", channel);
+            }
+            else if(parseInt(arrParam[0]) > 10 || (parseInt(arrParam[0]) < 1)){
+                fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+            }
+            else if(parseInt(arrParam[1]) > 10 || (parseInt(arrParam[1]) < 1)){
+                fChatLibInstance.sendMessage("The Dexterity stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+            }
+            else if(parseInt(arrParam[2]) > 10 || (parseInt(arrParam[2]) < 1)){
+                fChatLibInstance.sendMessage("The Endurance stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+            }
+            else if(parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 1)){
+                fChatLibInstance.sendMessage("The Spellpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+            }
+            else if(parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 1)){
+                fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+            }
+            else if(parseInt(arrParam[5]) < 0 || parseInt(arrParam[5]) > 100){
+                fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 4,3,5,1,7,30", channel);
+            }
+            else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    cmdHandler.restat = function (args, data) {
+        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function(err, rows, fields){
+            if(err){
+                throw err;
+            }
+            else{
+                if(rows.length > 0){
+                    var arrParam = args.split(",");
+                    if(checkIfValidStats(arrParam)){
+                        var finalArgs = arrParam.concat([data.character, channel]);
+                        db.query("UPDATE `flistplugins`.`rdvf_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ?, `cloth` = ? WHERE `name` = ? AND `room` = ?;", finalArgs, function (err) {
+                            if (!err) {
+                                fChatLibInstance.sendMessage("Your stats have successfully been changed.", channel);
+                            }
+                            else {
+                                fChatLibInstance.sendMessage("There was an error during the restat. Contact Lustful Aelith. " + err, channel);
+                            }
+                        });
                     }
-                    else{
-                        //register
-                        var total = 0;
-                        var statsOnly = arrParam.slice(0,5);
-                        total = statsOnly.reduce(function(a, b) { return parseInt(a) + parseInt(b); }, 0);
-                        if(total != 20){
-                            fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 20. ("+total+"). Example: !register 4,3,5,1,7,30", channel);
-                        }
-                        else if(parseInt(arrParam[0]) > 10 || (parseInt(arrParam[0]) < 1)){
-                            fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
-                        }
-                        else if(parseInt(arrParam[1]) > 10 || (parseInt(arrParam[1]) < 1)){
-                            fChatLibInstance.sendMessage("The Dexterity stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
-                        }
-                        else if(parseInt(arrParam[2]) > 10 || (parseInt(arrParam[2]) < 1)){
-                            fChatLibInstance.sendMessage("The Endurance stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
-                        }
-                        else if(parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 1)){
-                            fChatLibInstance.sendMessage("The Spellpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
-                        }
-                        else if(parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 1)){
-                            fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
-                        }
-                        else if(parseInt(arrParam[5]) < 0 || parseInt(arrParam[5]) > 100){
-                            fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 4,3,5,1,7,30", channel);
-                        }
-                        else {
-                            var finalArgs = [data.character, channel].concat(arrParam);
-                            db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
-                                if (!err) {
-                                    fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", channel);
-                                }
-                                else {
-                                    fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. " + err, channel);
-                                }
-                            });
-                        }
-                    }
+                }
+                else{
+                    fChatLibInstance.sendMessage("You are not registered.", channel);
                 }
             }
 
