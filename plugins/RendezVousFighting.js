@@ -104,7 +104,7 @@ module.exports = function (parent, chanName) {
                     var arrParam = args.split(",");
                     if(checkIfValidStats(arrParam)){
                         var finalArgs = arrParam.concat([data.character, channel]);
-                        db.query("UPDATE `flistplugins`.`rdvf_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ?, `cloth` = ? WHERE `name` = ? AND `room` = ?;", finalArgs, function (err) {
+                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ?, `cloth` = ? WHERE `name` = ? AND `room` = ?;", finalArgs, function (err) {
                             if (!err) {
                                 fChatLibInstance.sendMessage("Your stats have successfully been changed.", channel);
                             }
