@@ -71,8 +71,8 @@ module.exports = function (parent, chanName) {
                         else if(parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 1)){
                             fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
                         }
-                        else if(parseInt(arrParam[5]) > 100){
-                            fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100. Example: !register 4,3,5,1,7,30", channel);
+                        else if(parseInt(arrParam[5]) < 0 || parseInt(arrParam[5]) > 100){
+                            fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 4,3,5,1,7,30", channel);
                         }
                         else {
                             var finalArgs = [data.character, channel].concat(arrParam);
@@ -1358,7 +1358,8 @@ fighter.prototype = {
         target.hitHp(damage);
         stamDamage += damage;
         windowController.addHint(attacker.name + " dealt " + Math.floor(stamDamage) + " stamina damage to " + target.name + ".");
-        target.hitStamina(stamDamage);
+        //disabled for now
+        //target.hitStamina(stamDamage);
         target.hitCloth(3);
         return 1; //Successful attack, if we ever need to check that.
     },
