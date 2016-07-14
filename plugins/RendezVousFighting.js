@@ -235,7 +235,7 @@ module.exports = function (parent, chanName) {
 
     cmdHandler.exit = function (args, data) {
         if (currentFighters.length > 0) {
-            if ((currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].character == data.character) || (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].character == data.character)) {
+            if ((currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character) || (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].name == data.character)) {
                 fChatLibInstance.sendMessage("The fight has been ended.", channel);
                 setTimeout(resetFight(),2500);
             }
