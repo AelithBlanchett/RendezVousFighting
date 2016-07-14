@@ -1664,7 +1664,7 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         stamDamage = Math.max(stamDamage, 1);
         target.hitHp(damage);
-        windowController.addHint(attacker.name + " dealt " + Math.floor(stamDamage) + " stamina damage to " + target.name + ".");
+        //windowController.addHint(attacker.name + " dealt " + Math.floor(stamDamage) + " stamina damage to " + target.name + ".");
         //target.hitStamina(stamDamage);
         target.isStunned = true;
         return 1; //Successful attack, if we ever need to check that.
