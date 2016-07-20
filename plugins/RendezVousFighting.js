@@ -39,7 +39,7 @@ module.exports = function (parent, chanName) {
             if (err) {
                 fChatLibInstance.sendMessage(JSON.stringify(err), channel);
                 fChatLibInstance.throwError(args, err);
-                throw err;
+                //throw err;
             }
         });
     };
