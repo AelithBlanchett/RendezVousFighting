@@ -35,11 +35,10 @@ module.exports = function (parent, chanName) {
     channel = chanName;
 
     cmdHandler.crashpls = function (args, data) {
-        var myArgs = args;
         db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function (err, rows, fields) {
             if (err) {
                 //fChatLibInstance.sendMessage(JSON.stringify(err), channel);
-                fChatLibInstance.throwError(myArgs, err, channel);
+                fChatLibInstance.throwError(data, err, channel);
                 //throw err;
             }
         });
