@@ -34,14 +34,6 @@ module.exports = function (parent, chanName) {
     var cmdHandler = {};
     channel = chanName;
 
-    cmdHandler.crashpls = function (args, data) {
-        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function (err, rows, fields) {
-            if (err) {
-                fChatLibInstance.throwError(data, err, channel);
-            }
-        });
-    };
-
     cmdHandler.stats = function (args, data) {
         statsGetter(args, data, data.character);
     };
