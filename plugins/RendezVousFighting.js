@@ -1,17 +1,47 @@
 var fChatLibInstance;
 var channel;
 
-var mysql      = require('mysql');
-var mySqlConfig = require('../config/config.mysql.js')
-var db = mysql.createConnection(mySqlConfig);
+var mysql = require('mysql');
+var mySqlConfig = require('../config/config.mysql.js');
+var db;
 
-db.connect();
+function dbConnect() {
+    db = mysql.createConnection(mySqlConfig); // Recreate the connection, since
+                                                    // the old one cannot be reused.
+
+    db.connect(function(err) {              // The server is either down
+        if(err) {                                     // or restarting (takes a while sometimes).
+            console.log('error when connecting to db:', err);
+            setTimeout(dbConnect, 2000); // We introduce a delay before attempting to reconnect,
+        }                                     // to avoid a hot loop, and to allow our node script to
+    });                                     // process asynchronous requests in the meantime.
+                                            // If you're also serving http, display a 503 error.
+    db.on('error', function(err) {
+        console.log('db error', err);
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+            dbConnect();                         // lost due to either server restart, or a
+        } else {                                      // connnection idle timeout (the wait_timeout
+            throw err;                                  // server variable configures this)
+        }
+    });
+}
+
+dbConnect();
 
 module.exports = function (parent, chanName) {
     fChatLibInstance = parent;
 
     var cmdHandler = {};
     channel = chanName;
+
+    cmdHandler.crashpls = function (args, data) {
+        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function (err, rows, fields) {
+            if (err) {
+                fChatLibInstance.sendMessage(JSON.stringify(err), channel);
+                throw err;
+            }
+        });
+    };
 
     cmdHandler.stats = function (args, data) {
         statsGetter(args, data, data.character);
