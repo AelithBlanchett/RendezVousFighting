@@ -145,7 +145,7 @@ module.exports = function (parent, chanName) {
 
     var statsGetter = function(args, data, character){
         db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function(err, rows, fields){
-            if (rows.length == 1) {
+            if (rows != undefined && rows.length == 1) {
                 var stats = rows[0];
                 var hp = 100;
                 if(stats.endurance > 4){
@@ -1595,7 +1595,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll / 2; //Not directly affected by crits
-        var damage = Math.max(attacker.dexterity() / 2, attacker.strength());	//Affected by crits and the like
+        var damage = attacker.strength();	//Affected by crits and the like
         var stamDamage = 30;
         var requiredStam = 40;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
