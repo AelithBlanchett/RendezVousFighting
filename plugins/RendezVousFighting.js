@@ -34,14 +34,6 @@ module.exports = function (parent, chanName) {
     var cmdHandler = {};
     channel = chanName;
 
-    cmdHandler.stage = function (args, data) {
-        var stages = [];
-        for(var i = 0; i < 100; i++){
-            stages.push(arena().pickStage());
-        }
-        fChatLibInstance.sendMessage(JSON.stringify(stages), channel);
-    };
-
     cmdHandler.stats = function (args, data) {
         statsGetter(args, data, data.character);
     };
