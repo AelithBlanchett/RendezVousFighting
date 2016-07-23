@@ -188,7 +188,7 @@ module.exports = function (parent, chanName) {
     //};
 
     cmdHandler.reset = function (args, data) {
-        if (fChatLibInstance.isUserChatOP(channel, data.character)) {
+        if (fChatLibInstance.isUserChatOP(data.character, channel)) {
             if (checkIfFightIsGoingOn()) {
                 resetFight();
                 fChatLibInstance.sendMessage("The ring has been cleared.", channel);
