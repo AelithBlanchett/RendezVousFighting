@@ -241,6 +241,7 @@ module.exports = function (parent, chanName) {
                 });
                 setTimeout(function(){
                     if(currentFighters.length == 2){
+                        battlefield = new arena();
                         initialSetup(currentFighters[0], currentFighters[1]);
                     }
                 }, 2500);
