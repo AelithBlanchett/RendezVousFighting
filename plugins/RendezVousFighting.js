@@ -48,7 +48,7 @@ module.exports = function (parent, chanName) {
     };
 
     cmdHandler.register = function (args, data) {
-        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function(err, rows, fields){
+        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
             if(err){
                 fChatLibInstance.throwError(data, err, channel);
             }
@@ -116,7 +116,7 @@ module.exports = function (parent, chanName) {
     }
 
     cmdHandler.restat = function (args, data) {
-        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function(err, rows, fields){
+        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
             if(err){
                 fChatLibInstance.throwError(data, err, channel);
             }
@@ -124,8 +124,8 @@ module.exports = function (parent, chanName) {
                 if(rows.length > 0){
                     var arrParam = args.split(",");
                     if(checkIfValidStats(arrParam)){
-                        var finalArgs = arrParam.concat([data.character, channel]);
-                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ?, `cloth` = ? WHERE `name` = ? AND `room` = ?;", finalArgs, function (err) {
+                        var finalArgs = arrParam.concat([data.character]);
+                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ?, `cloth` = ? WHERE `name` = ?;", finalArgs, function (err) {
                             if (!err) {
                                 fChatLibInstance.sendMessage("Your stats have successfully been changed.", channel);
                             }
@@ -204,7 +204,7 @@ module.exports = function (parent, chanName) {
 
     cmdHandler.ready = function (args, data) {
         if (currentFighters.length == 0) {
-            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function(err, rows, fields) {
+            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields) {
                 if (rows != undefined && rows.length == 1) {
                     currentFighters[0] = rows[0];
                     var hp = 100;
@@ -223,7 +223,7 @@ module.exports = function (parent, chanName) {
         }
         else if (currentFighters.length == 1) {
             if (currentFighters[0].name != data.character) {
-                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? AND room = ? LIMIT 1", [data.character, channel], function(err, rows, fields) {
+                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields) {
                     if (rows != undefined && rows.length == 1) {
                         currentFighters[1] = rows[0];
                         var hp = 100;
