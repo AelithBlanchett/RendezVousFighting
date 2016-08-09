@@ -1839,7 +1839,7 @@ fighter.prototype = {
             return 0; //Failed action, if we ever need to check that.
         }
 
-        var stamBonus = (3 * parseInt(roll)) + (attacker.endurance() * 2);
+        var stamBonus =  10+(2 * parseInt(roll))+ (attacker.willpower() * 3);  //(3 * parseInt(roll)) + (attacker.endurance() * 2);
         var hpBonus = Math.floor(3 + attacker.willpower());
         var manaBonus = hpBonus;
         attacker.addStamina(stamBonus);
