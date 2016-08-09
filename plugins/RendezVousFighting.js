@@ -1243,7 +1243,7 @@ fighter.prototype = {
 
         if (this.isUnconscious == false) {
             if (this.isEvading == false) {
-                var stamBonus = 2 + this.willpower();
+                var stamBonus = 2 + this.endurance();
                 this.addStamina(stamBonus);
             }
             var manaBonus = 2 + this.willpower();
