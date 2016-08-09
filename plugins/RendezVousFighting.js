@@ -1114,7 +1114,7 @@ fighter.prototype = {
     strength: function () {
         var total = this._strength;
         if (this.isDisoriented > 0) total -= 1;
-        if (this.isRestrained) total -= 2;
+        //if (this.isRestrained) total -= 2;
         total = Math.max(total, 1);
         total = Math.ceil(total);
         return total;
@@ -1123,7 +1123,7 @@ fighter.prototype = {
     dexterity: function () {
         var total = this._dexterity;
         if (this.isDisoriented > 0) total -= 1;
-        if (this.isRestrained) total -= 2;
+        //if (this.isRestrained) total -= 2;
         total = Math.max(total, 1);
         total = Math.ceil(total);
         return total;
@@ -1328,16 +1328,16 @@ fighter.prototype = {
     },
 
     buildActionTable: function (difficulty, targetDex, attackerDex, attackerHitBonus) {
-        var rangeMult = (20 - difficulty) / 40;
+        var rangeMult = (20 - difficulty) / 40; //0.225
         var attackTable = {miss: 0, dodge: 0, glancing: 0, crit: 0}
 
-        attackTable.miss = difficulty;
+        attackTable.miss = difficulty; //11
         if (typeof attackerHitBonus !== 'undefined') {
-            attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult);
-            attackTable.miss = Math.max(0, attackTable.miss);
+            attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult); //8
+            attackTable.miss = Math.max(0, attackTable.miss); //8
         }
 
-        attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult);
+        attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult); //9
         attackTable.glancing = attackTable.dodge + Math.floor(((targetDex * 2) - attackerDex) * rangeMult);
         attackTable.crit = 21 - Math.ceil(attackerDex * rangeMult);
         return attackTable;
