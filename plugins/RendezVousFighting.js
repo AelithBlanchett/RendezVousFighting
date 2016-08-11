@@ -269,6 +269,9 @@ module.exports = function (parent, chanName) {
                     fChatLibInstance.sendMessage("The fight has been ended.", channel);
                     setTimeout(resetFight(),2500);
                 }
+                else{
+                    fChatLibInstance.sendMessage("The fight will end if your opponent types !exit too.", channel);
+                }
             }
             else {
                 fChatLibInstance.sendMessage("You are not in a fight.", channel);
