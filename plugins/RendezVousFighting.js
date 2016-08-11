@@ -1347,9 +1347,9 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll / 2; //Not directly affected by crits
-        var damage = Math.max(attacker.dexterity() / 2, attacker.strength());	//Affected by crits and the like
+        var damage = Math.max( (attacker.strength() + attacker.dexterity()) / 2, attacker.strength());	//Affected by crits and the like
         var stamDamage = attacker.spellpower(); //This value + damage is drained from the targets stamina if the attack is successful
-        var requiredStam = 20;
+        var requiredStam = 15;
         var difficulty = 1;
 
         if (attacker.isDisoriented) difficulty += 1; //Up the difficulty if the attacker is dizzy.
@@ -1696,8 +1696,8 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll;
-        var damage = Math.max(attacker.dexterity() / 2, attacker.spellpower());
-        var requiredStam = 20;
+        var damage = Math.max( (attacker.dexterity() + attacker.strength()) / 2, (attacker.dexterity() + attacker.spellpower()) / 2);
+        var requiredStam = 25;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isDisoriented) difficulty += 3; //Up the difficulty considerably if the attacker is dizzy.
@@ -1757,9 +1757,9 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 2 + attacker.spellpower();
+        var baseDamage = roll;
         var damage = 2 * attacker.spellpower();
-        var requiredMana = 24;
+        var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isRestrained) difficulty += Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
@@ -1780,7 +1780,7 @@ fighter.prototype = {
         }
         // attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.spellpower());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
