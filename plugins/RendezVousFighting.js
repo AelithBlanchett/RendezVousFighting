@@ -1407,6 +1407,7 @@ fighter.prototype = {
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
@@ -1446,7 +1447,6 @@ fighter.prototype = {
         //disabled for now
         //target.hitStamina(stamDamage);
         target.hitCloth(3);
-        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1482,6 +1482,7 @@ fighter.prototype = {
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
@@ -1553,6 +1554,7 @@ fighter.prototype = {
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
@@ -1660,6 +1662,7 @@ fighter.prototype = {
         if (target.isEvading) attacker.hitStamina(10);
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
@@ -1752,6 +1755,7 @@ fighter.prototype = {
         // attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
@@ -1815,6 +1819,7 @@ fighter.prototype = {
         // attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
@@ -1873,6 +1878,7 @@ fighter.prototype = {
             return 0; //Failed action, if we ever need to check that.
         }
 
+        windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         var stamBonus =  10+(2 * parseInt(roll))+ (attacker.willpower() * 3);  //(3 * parseInt(roll)) + (attacker.endurance() * 2);
         var hpBonus = Math.floor(3 + attacker.willpower());
         var manaBonus = hpBonus;
@@ -1901,6 +1907,7 @@ fighter.prototype = {
             return 0; //Failed action, if we ever need to check that.
         }
 
+        windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         windowController.addHit(attacker.name + " FOCUSES/AIMS!");
         attacker.isFocused = (roll + attacker.willpower()) * 2;
         return 1;
@@ -1923,6 +1930,7 @@ fighter.prototype = {
             return 0; //Failed action, if we ever need to check that.
         }
 
+        windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         var manaShift = 18 + roll + (attacker.willpower() * 2);
         manaShift = Math.min(manaShift, attacker.stamina);
         // manaShift = Math.min( manaShift, attacker._maxMana - attacker.mana);
@@ -1960,6 +1968,7 @@ fighter.prototype = {
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
         var tempGrappleFlag = true;
         if (attacker.isGrappling(target)) { //If you're grappling someone they are freed, regardless of the outcome.
             windowController.addHint(attacker.name + " used ESCAPE. " + target.name + " is no longer being grappled. ");
