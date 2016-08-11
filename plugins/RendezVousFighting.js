@@ -1446,6 +1446,7 @@ fighter.prototype = {
         //disabled for now
         //target.hitStamina(stamDamage);
         target.hitCloth(3);
+        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
         return 1; //Successful attack, if we ever need to check that.
     },
 
