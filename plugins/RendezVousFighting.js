@@ -258,8 +258,17 @@ module.exports = function (parent, chanName) {
     cmdHandler.exit = function (args, data) {
         if (currentFighters.length > 0) {
             if ((currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character) || (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].name == data.character)) {
-                fChatLibInstance.sendMessage("The fight has been ended.", channel);
-                setTimeout(resetFight(),2500);
+                var isFirst = (currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character);
+                if(isFirst){
+                    currentFighters[0].exit = true;
+                }
+                else{
+                    currentFighters[1].exit = true;
+                }
+                if((currentFighters.length == 1 && isFirst) || (currentFighters[0].exit == true && currentFighters[1].exit == true)){
+                    fChatLibInstance.sendMessage("The fight has been ended.", channel);
+                    setTimeout(resetFight(),2500);
+                }
             }
             else {
                 fChatLibInstance.sendMessage("You are not in a fight.", channel);
@@ -271,8 +280,32 @@ module.exports = function (parent, chanName) {
     };
     cmdHandler.leave = cmdHandler.exit;
     cmdHandler.leaveFight = cmdHandler.exit;
-    cmdHandler.forfeit = cmdHandler.exit;
-    cmdHandler.unready = cmdHandler.exit;
+
+    cmdHandler.forfeit = function (args, data) {
+        if (currentFighters.length > 0) {
+            var isFirst = (currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character);
+            var isSecond = (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].name == data.character);
+            if (isFirst || isSecond) {
+                var winner, loser;
+                if(isFirst){
+                    loser = currentFighters[0].name;
+                    winner = currentFighters[1].name;
+                }
+                else{
+                    loser = currentFighters[1].name;
+                    winner = currentFighters[0].name;
+                }
+                fChatLibInstance.sendMessage(""+ loser + " has forfeited the match.", channel);
+                endFight(winner, loser);
+            }
+            else {
+                fChatLibInstance.sendMessage("You are not in a fight.", channel);
+            }
+        }
+        else {
+            fChatLibInstance.sendMessage("There isn't any fight going on at the moment.", channel);
+        }
+    };
 
     var attackFunc = function(attack, character){
         if(checkIfFightIsGoingOn()) {
@@ -342,9 +375,9 @@ module.exports = function (parent, chanName) {
 var currentFighters = [];
 var currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, orgasms: 0, winner: -1, currentHold: {}, actionTier: "", actionType: "", dmgHp: 0, dmgLust: 0, actionIsHold: false, diceResult: 0, intMovesCount: [0,0]};
 
-function endFight(){
+function endFight(winner, loser){
     //record stats etc
-    db.query("INSERT INTO `flistplugins`.`RDVF_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [channel, battlefield.getActor().name, battlefield.getTarget().name], function (err) {
+    db.query("INSERT INTO `flistplugins`.`RDVF_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [channel, winner, loser], function (err) {
         if (!err) {
             //fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", channel);
         }
@@ -1323,7 +1356,7 @@ fighter.prototype = {
             windowController.addHit("The fight is over! CLAIM YOUR SPOILS and VICTORY and FINISH YOUR OPPONENT!");
             windowController.addSpecial("FATALITY SUGGESTION: " + this.pickFatality());
             windowController.addSpecial("It is just a suggestion, you may not follow it if you don't want to.");
-            endFight();
+            endFight(battlefield.getActor().name, battlefield.getTarget().name);
         }
     },
 
