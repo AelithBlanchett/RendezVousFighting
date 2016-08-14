@@ -1,9 +1,9 @@
-# FChatBot-ExamplePlugin
+# RendezVousFighting
 
 ## How to start?
 
 0. [Install Node.JS](https://nodejs.org/en/)
-1. Pull the project from github, or just [download](https://github.com/AelithBlanchett/FChatBot-ExamplePlugin/archive/master.zip) then extract the archive.
+1. Pull the project from github, or just [download](https://github.com/AelithBlanchett/RendezVousFighting/archive/master.zip) then extract the archive.
 2. Open a console (Command invite on windows, or terminal on linux), then go to the directory where you extracted the files. (cd "C:\the\directory")
 3. Type 'npm install'
 4. Edit the app.js file, especially the options variable. Fill in your credentials, the character your bot show as, and the room ID where the bot will go first.
@@ -14,6 +14,5 @@ The usual format for the code is like this: 'ADH-xxxxxxxxxxxxxxxxxxxx'
 !availableplugins will show the list of plugins in the /plugins folder.
 !loadplugin pluginname will load the plugin /plugins/pluginname.js
 Once the bot loads a plugin or joins a room, the bot will save and remember to connect to these rooms, and automatically load these plugins.
-6. Type '!loadplugin my_plugin' in the chat, and it will tell you which commands it has loaded.
-7. You should see that the !guide command has been added, so type it into the chat, and read its output.
-8. Once you have read it, you're ready to go!
+6. Type '!loadplugin RendezVousFighting' in the chat, and it will tell you which commands it has loaded.
+7. You're ready to go!
