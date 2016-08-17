@@ -1372,8 +1372,13 @@ fighter.prototype = {
             attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult); //8
             attackTable.miss = Math.max(0, attackTable.miss); //8
         }
-
-        attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult); //9
+        // Basing hit chance on difference multiplied by rangeMulti so that we have ideal DEX difference rather than ideal absolute DEX value.
+        if (attackerDex > targetDex) {
+            attackTable.dodge = difficulty + Math.floor((targetDex - attackerDex) * rangeMult); //Used floor to make the result a more negative value.
+        } else {
+            attackTable.dodge = difficulty + Math.ceil((targetDex - attackerDex) * rangeMult);
+        }
+        //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult); //9
         attackTable.glancing = attackTable.dodge + Math.floor(((targetDex * 2) - attackerDex) * rangeMult);
         attackTable.crit = 21 - Math.ceil(attackerDex * rangeMult);
         return attackTable;
@@ -1386,18 +1391,18 @@ fighter.prototype = {
         var damage = Math.max( (attacker.strength() + attacker.dexterity()) / 2, attacker.strength());	//Affected by crits and the like
         var stamDamage = attacker.spellpower(); //This value + damage is drained from the targets stamina if the attack is successful
         var requiredStam = 15;
-        var difficulty = 1;
+        var difficulty = 4;
 
-        if (attacker.isDisoriented) difficulty += 1; //Up the difficulty if the attacker is dizzy.
+        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
         if (target.isFocused) difficulty += 2;
-        if (target.isDisoriented) difficulty -= 1; //Lower the difficulty if the target is dizzy.
+        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
-        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused.
+        if (attacker.isFocused) difficulty -= 2; //Lower the difficulty if the attacker is focused.
 
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             damage *= attacker.stamina / requiredStam;
-            difficulty += 2; // Too tired? You might miss more often.
+            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You might miss more often.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
         // attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
@@ -1410,11 +1415,11 @@ fighter.prototype = {
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
+        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
+            attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1464,16 +1469,16 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
         if (target.isFocused) difficulty += 2;
-        if (target.isDisoriented) difficulty -= 1; //Lower the difficulty if the target is dizzy.
+        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
-        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (attacker.isFocused) difficulty -= 2; //Lower the difficulty if the attacker is focused
 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
             baseDamage *= attacker.stamina / requiredStam;
             damage *= attacker.stamina / requiredStam;
-            difficulty += 4; // Too tired? You're likely to miss.
+            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
         //attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
@@ -1485,11 +1490,11 @@ fighter.prototype = {
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
+        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
+            attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1546,7 +1551,7 @@ fighter.prototype = {
             critCheck = false;
             baseDamage *= attacker.stamina / requiredStam;
             damage *= attacker.stamina / requiredStam;
-            difficulty += 4; // Too tired? You're likely to miss.
+            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
         //attacker.hitStamina (20); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
@@ -1557,12 +1562,12 @@ fighter.prototype = {
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
+        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
             windowController.addHint(attacker.name + " failed to establish a hold!");
-            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
+            attacker.hitStamina(requiredStam);
 
             //attacker.hitStamina (15);
             return 0; //Failed attack, if we ever need to check that.
@@ -1643,10 +1648,10 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += Math.max(0, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
-        if (attacker.isDisoriented) difficulty += 1; //Up the difficulty if the attacker is dizzy.
+        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isEvading) difficulty += 4; //Increase the difficulty if the target is not in melee, but don't make it impossible.
         if (target.isFocused) difficulty += 2;
-        if (target.isDisoriented) difficulty -= 1; //Lower the difficulty if the target is dizzy.
+        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 2; //Lower the difficulty if the attacker is focused
 
         // if (target.isEvading) requiredStam += 20; //Increase the stamina cost if the target is not in melee
@@ -1657,7 +1662,7 @@ fighter.prototype = {
             baseDamage *= attacker.stamina / requiredStam;
             damage *= attacker.stamina / requiredStam;
             stamDamage *= attacker.stamina / requiredStam;
-            difficulty += 4; // Too tired? You're likely to miss.
+            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
         // attacker.hitStamina (requiredStam - 20); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
@@ -1665,13 +1670,12 @@ fighter.prototype = {
         if (target.isEvading) attacker.hitStamina(10);
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
+        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
 
             attacker.hitStamina(requiredStam);
-            //attacker.hitStamina (20);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1680,7 +1684,6 @@ fighter.prototype = {
             windowController.addHint(target.name + " dodged the attack. ");
 
             attacker.hitStamina(requiredStam);
-            //attacker.hitStamina (20);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1740,10 +1743,10 @@ fighter.prototype = {
         var requiredStam = 25;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
-        if (attacker.isDisoriented) difficulty += 3; //Up the difficulty considerably if the attacker is dizzy.
+        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
-        if (target.isFocused) difficulty += 3;
-        if (target.isDisoriented) difficulty -= 1; //Lower the difficulty if the target is dizzy.
+        if (target.isFocused) difficulty += 4;
+        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
 
@@ -1752,24 +1755,24 @@ fighter.prototype = {
             critCheck = false;
             baseDamage *= attacker.stamina / requiredStam;
             damage *= attacker.stamina / requiredStam;
-            difficulty += 4; // Too tired? You're likely to miss.
+            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
         // attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
+        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            attacker.hitStamina(requiredStam - 5);
+            attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitStamina(requiredStam - 5);
+            attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1798,17 +1801,17 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll;
+        var baseDamage = roll - target.spellpower();
         var damage = 2 * attacker.spellpower();
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
-        if (attacker.isRestrained) difficulty += Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
+        if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isFocused) difficulty += 2;
-        if (target.isDisoriented) difficulty -= 1; //Lower the difficulty if the target is dizzy.
+        if (target.isFocused) difficulty += 4;
+        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
 
         var critCheck = true;
@@ -1816,24 +1819,24 @@ fighter.prototype = {
             critCheck = false;
             baseDamage *= attacker.mana / requiredMana;
             damage *= attacker.mana / requiredMana;
-            difficulty += 4; // Too tired? You're likely to have your spell fizzle.
+            difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana)*(20 - difficulty)); // Too tired? You're likely to have your spell fizzle.
             windowController.addHint(attacker.name + " did not have enough mana, and took penalties to the attack.");
         }
         // attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
+        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
-            attacker.hitMana(requiredMana - 6);
+            attacker.hitMana(requiredMana);
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitMana(requiredMana - 6);
+            attacker.hitMana(requiredMana);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1965,13 +1968,13 @@ fighter.prototype = {
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
 
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
-            difficulty += 20; // Too tired? You're going to fail.
+            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're going to fail.
             windowController.addHint(attacker.name + " was just too tired.");
         }
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.glancing +1));
+        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
         var tempGrappleFlag = true;
         if (attacker.isGrappling(target)) { //If you're grappling someone they are freed, regardless of the outcome.
             windowController.addHint(attacker.name + " used ESCAPE. " + target.name + " is no longer being grappled. ");
@@ -2031,22 +2034,22 @@ fighter.prototype = {
 
         switch (action) {
             case "Light":
-                attacker.hitStamina(20 - (attacker.spellpower() * 2));
-                break;
-            case "Heavy":
-                attacker.hitStamina(35 - (attacker.spellpower() * 2));
-                break;
-            case "Grab":
-                attacker.hitStamina(25 - (attacker.spellpower() * 2));
-                break;
-            case "Tackle":
-                attacker.hitStamina(30 - (attacker.spellpower() * 2));
-                break;
-            case "Ranged":
                 attacker.hitStamina(15);
                 break;
+            case "Heavy":
+                attacker.hitStamina(35);
+                break;
+            case "Grab":
+                attacker.hitStamina(25);
+                break;
+            case "Tackle":
+                attacker.hitStamina(35);
+                break;
+            case "Ranged":
+                attacker.hitStamina(25);
+                break;
             case "Magic":
-                attacker.hitMana(18);
+                attacker.hitMana(20);
                 break;
             case "Escape":
                 attacker.hitStamina(20);
