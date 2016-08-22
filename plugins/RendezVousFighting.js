@@ -1828,7 +1828,7 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll - target.spellpower();
+        var baseDamage = roll - 2 * target.spellpower();
         var damage = 2 * attacker.spellpower();
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
