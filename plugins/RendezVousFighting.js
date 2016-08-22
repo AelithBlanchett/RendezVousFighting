@@ -1143,7 +1143,7 @@ function fighter(settings, globalSettings) {
     this.isDisoriented = 0;
     this.isGrappledBy = [];
     this.isFocused = 0;
-    this.isEscaping = 0;
+    this.isEscaping = 0;//A bonus to escape attempts that increases whenever you fail one.
     //this.isEvading = false;
 };
 
@@ -1995,7 +1995,8 @@ fighter.prototype = {
         }
         return 1; //Successful attack, if we ever need to check that.
 
-        if (attacker.isRestrained) difficulty += Math.max(0, 2 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +6.
+        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
+        if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
@@ -2018,12 +2019,14 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit("FAILED! ");
+            attacker.isEscaping += 4;
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(target.name + " WAS TOO QUICK! ");
             windowController.addHint(attacker.name + " failed. " + target.name + " was just too quick for them.");
+            attacker.isEscaping += 4;
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2048,6 +2051,7 @@ fighter.prototype = {
         if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
+            attacker.isEscaping = 0;
             tempGrappleFlag = false;
         }
 
