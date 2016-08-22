@@ -1966,6 +1966,11 @@ fighter.prototype = {
         //    return 1;
         //}
 
+        if (!inGrabRange && !attacker.isGrappled) { //If you were neither grappled nor in grab range, you didn't need to do this.
+            windowController.addHint(attacker.name + " was neither grappled nor in grapple range and just wasted a turn.");
+        }
+        return 1; //Successful attack, if we ever need to check that.
+
         if (attacker.isRestrained) difficulty += Math.max(0, 2 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +6.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
@@ -2022,10 +2027,14 @@ fighter.prototype = {
             tempGrappleFlag = false;
         }
 
-        //if (tempGrappleFlag) { //If you weren't grappling or being grappled, try to evade.
+        if (tempGrappleFlag) { //If you weren't grappling or being grappled but you were in grapple range, move out of grapple range.
+            if (inGrabRange) {
+                inGrabRange = false;
+                windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
+            }
         //    windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + ". " + attacker.name + " is now actively evading melee, at the cost of their normal stamina regen.");
         //    attacker.isEvading = true;
-        //}
+        }
         return 1; //Successful attack, if we ever need to check that.
     },
 
