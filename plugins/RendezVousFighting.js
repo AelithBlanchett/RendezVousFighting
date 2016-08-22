@@ -2084,7 +2084,7 @@ fighter.prototype = {
                 attacker.hitStamina(35);
                 break;
             case "Grab":
-                attacker.hitStamina(25);
+                attacker.hitStamina(20);
                 break;
             case "Tackle":
                 attacker.hitStamina(35);
