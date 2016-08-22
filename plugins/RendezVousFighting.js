@@ -1373,9 +1373,9 @@ fighter.prototype = {
         }
         // Basing hit chance on difference multiplied by rangeMulti so that we have ideal DEX difference rather than ideal absolute DEX value.
         if (attackerDex > targetDex) {
-            attackTable.dodge = difficulty + Math.floor((targetDex - attackerDex) * rangeMult); //Used floor to make the result a more negative value.
+            attackTable.dodge = difficulty + Math.floor((targetDex - attackerHitBonus) * rangeMult); //Used floor to make the result a more negative value.
         } else {
-            attackTable.dodge = difficulty + Math.ceil((targetDex - attackerDex) * rangeMult);
+            attackTable.dodge = difficulty + Math.ceil((targetDex - attackerHitBonus) * rangeMult);
         }
         //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult); //9
         attackTable.glancing = attackTable.dodge + Math.floor(((targetDex * 2) - attackerDex) * rangeMult);
@@ -1445,6 +1445,11 @@ fighter.prototype = {
         //Deal all the actual damage/effects here.
 
         attacker.hitStamina(requiredStam);
+        
+        if (inGrabRange) {
+            inGrabRange = false;
+            windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+        }
 
         damage += baseDamage;
         damage = Math.max(damage, 1);
@@ -1519,6 +1524,11 @@ fighter.prototype = {
         //Deal all the actual damage/effects here.
 
         attacker.hitStamina(requiredStam);
+        
+        if (inGrabRange) {
+            inGrabRange = false;
+            windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+        }
 
         damage += baseDamage;
         damage = Math.max(damage, 1);
@@ -1612,7 +1622,7 @@ fighter.prototype = {
         }
 
         //Deal all the actual damage/effects here.
-        attacker.hitStamina(requiredStam - 15); //Successful grab attacks have the cost reduced
+        attacker.hitStamina(requiredStam); //Successful grab attacks have the cost reduced
 
         damage += baseDamage;
         damage = Math.max(damage, 1);
@@ -1710,6 +1720,7 @@ fighter.prototype = {
 
         if (attacker.isGrappling(target)) {
             target.removeGrappler(attacker);
+            inGrabRange = false;
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
                 windowController.addHit(attacker.name + " gained the upper hand and THREW " + target.name + "! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
@@ -1719,9 +1730,11 @@ fighter.prototype = {
             windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else if (target.isGrappling(attacker)) {
             attacker.removeGrappler(target);
+            inGrabRange = false;
             windowController.addHit(attacker.name + " found a hold and THREW " + target.name + " off! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
             windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else {
+            inGrabRange = true;
             windowController.addHit(attacker.name + " TACKLED " + target.name + ". " + attacker.name + " can take another action while their opponent is stunned!");
             windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
         }
@@ -1796,6 +1809,12 @@ fighter.prototype = {
         //Deal all the actual damage/effects here.
 
         attacker.hitStamina(requiredStam);
+        
+        if (inGrabRange) {
+            inGrabRange = false;
+            windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+        }
+        
         damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
@@ -1862,6 +1881,11 @@ fighter.prototype = {
         //Deal all the actual damage/effects here.
 
         attacker.hitMana(requiredMana);
+        
+        if (inGrabRange) {
+            inGrabRange = false;
+            windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+        }
 
         damage += baseDamage;
         damage = Math.max(damage, 1);
