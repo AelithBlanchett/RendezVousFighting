@@ -975,6 +975,7 @@ function arena() {
     this._fighters = [];
     this._currentFighter;
     this.stage = this.pickStage();
+    var inGrabRange = false; //We define the variable that controls distance and set the fighters outside grab range to beging with.
 
     //Set default values for global settings
     this._globalFighterSettings = {
@@ -1142,8 +1143,8 @@ function fighter(settings, globalSettings) {
     this.isDisoriented = 0;
     this.isGrappledBy = [];
     this.isFocused = 0;
-    //this.isInMelee = true;
-    this.isEvading = false;
+    this.isEscaping = 0;
+    //this.isEvading = false;
 };
 
 fighter.prototype = {
@@ -1278,10 +1279,8 @@ fighter.prototype = {
         if (this._manaCap == this._maxMana) this.manaBurn = 0;
 
         if (this.isUnconscious == false) {
-            if (this.isEvading == false) {
-                var stamBonus = 2 + this.endurance();
-                this.addStamina(stamBonus);
-            }
+            var stamBonus = 2 + this.endurance();
+            this.addStamina(stamBonus);
             var manaBonus = 2 + this.willpower();
             this.addMana(manaBonus);
             // windowController.addHint( "At the end of her turn, " + this.name + " recovered " + stamBonus + " stamina and " + manaBonus + " mana."  );
@@ -1326,7 +1325,7 @@ fighter.prototype = {
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
         if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused.");
-        if (this.isEvading) windowController.addHint(this.name + " is keeping their distance.");
+        //if (this.isEvading) windowController.addHint(this.name + " is keeping their distance.");
         return message;
     },
 
@@ -1407,13 +1406,13 @@ fighter.prototype = {
         }
         // attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
-        if (attacker.isEvading || target.isEvading) {
-            difficulty += 6; //Up the difficulty if the target is evading melee.
-            damage /= 2;
-            stamDamage /= 2;
-            windowController.addHint(attacker.name + " was forced to pursue " + target.name + " and took penalties to the attack.");
-        }
-
+        //if (attacker.isEvading || target.isEvading) {
+        //    difficulty += 6; //Up the difficulty if the target is evading melee.
+        //    damage /= 2;
+        //    stamDamage /= 2;
+        //    windowController.addHint(attacker.name + " was forced to pursue " + target.name + " and took penalties to the attack.");
+        //}
+        
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
         windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
 
@@ -1483,11 +1482,11 @@ fighter.prototype = {
         }
         //attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
-        if (attacker.isEvading || target.isEvading) {
-            damage /= 2;
-            difficulty += 6; //Up the difficulty if the target is evading melee.
-            windowController.addHint(attacker.name + " was forced to pursue " + target.name + " and took penalties to the attack.");
-        }
+        //if (attacker.isEvading || target.isEvading) {
+        //    damage /= 2;
+        //    difficulty += 6; //Up the difficulty if the target is evading melee.
+        //    windowController.addHint(attacker.name + " was forced to pursue " + target.name + " and took penalties to the attack.");
+        //}
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
         windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
@@ -1533,7 +1532,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll / 4;
         var damage = attacker.strength() / 2;
-        var requiredStam = 35;
+        var requiredStam = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         //if (attacker.isRestrained) difficulty += 2; //Up the difficulty slightly if the attacker is restrained.
@@ -1556,9 +1555,15 @@ fighter.prototype = {
         }
         //attacker.hitStamina (20); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
 
-        if (attacker.isEvading || target.isEvading) {
-            windowController.addHit(target.name + " IS TOO FAR AWAY! ");
-            return 0; //Failed attack, if we ever need to check that.
+       // if (attacker.isEvading || target.isEvading) {
+       //     windowController.addHit(target.name + " IS TOO FAR AWAY! ");
+       //     return 0; //Failed attack, if we ever need to check that.
+       // }
+       
+        if (!inGrabRange) {
+            inGrabRange = true;
+            windowController.addHit(attacker.name + " moved into grappling range! " + target.name + " can try to push them away with an attack.");
+            return 1; //Successful attack, if we ever need to check that.
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
@@ -1620,10 +1625,10 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
 
-        if (attacker.isEvading || target.isEvading) {
-            windowController.addHit(target.name + " IS TOO FAR AWAY! ");
-            return 0; //Failed attack, if we ever need to check that.
-        }
+        //if (attacker.isEvading || target.isEvading) {
+        //    windowController.addHit(target.name + " IS TOO FAR AWAY! ");
+        //    return 0; //Failed attack, if we ever need to check that.
+        //}
 
         if (attacker.isGrappling(target)) {
             target.hitCloth(roll * 2);
@@ -1649,7 +1654,7 @@ fighter.prototype = {
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isEvading) difficulty += 4; //Increase the difficulty if the target is not in melee, but don't make it impossible.
+        //if (target.isEvading) difficulty += 4; //Increase the difficulty if the target is not in melee, but don't make it impossible.
         if (target.isFocused) difficulty += 2;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 2; //Lower the difficulty if the attacker is focused
@@ -1667,7 +1672,7 @@ fighter.prototype = {
         }
         // attacker.hitStamina (requiredStam - 20); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
 
-        if (target.isEvading) attacker.hitStamina(10);
+        //if (target.isEvading) attacker.hitStamina(10);
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
         windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
@@ -1696,12 +1701,12 @@ fighter.prototype = {
             //stamDamage *= 1.5;
         }
 
-        if (target.isEvading || attacker.isEvading) {
-            windowController.addHit(attacker.name + " CHARGED " + target.name + ". ");
-            target.isEvading = false;
-            attacker.isEvading = false;
-            if (target.isEvading) attacker.hitStamina(20);
-        }
+        //if (target.isEvading || attacker.isEvading) {
+        //    windowController.addHit(attacker.name + " CHARGED " + target.name + ". ");
+        //    target.isEvading = false;
+        //    attacker.isEvading = false;
+        //    if (target.isEvading) attacker.hitStamina(20);
+        //}
 
         if (attacker.isGrappling(target)) {
             target.removeGrappler(attacker);
@@ -1873,9 +1878,9 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 6; //Up the difficulty considerably if you are restrained.
-        if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
+       // if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
 
-        if (attacker.isEvading) attacker.isEvading = false; //If you stop to rest, you stop evading melee.
+        //if (attacker.isEvading) attacker.isEvading = false; //If you stop to rest, you stop evading melee.
 
         difficulty -= attacker.willpower();
 
@@ -1904,7 +1909,7 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty considerably if you are restrained.
-        if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
+        //if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
 
         difficulty -= attacker.willpower();
 
@@ -1927,7 +1932,7 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if you are restrained.
-        if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
+        //if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
 
         difficulty -= attacker.willpower();
 
@@ -1955,11 +1960,11 @@ fighter.prototype = {
         var requiredStam = 20;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
-        if (attacker.isEvading) {
-            windowController.addHint(attacker.name + " stopped trying to avoid melee.");
-            attacker.isEvading = false; //If you are already evading melee, this will let you stop it without stamina cost or a roll for success.
-            return 1;
-        }
+        //if (attacker.isEvading) {
+        //    windowController.addHint(attacker.name + " stopped trying to avoid melee.");
+        //    attacker.isEvading = false; //If you are already evading melee, this will let you stop it without stamina cost or a roll for success.
+        //    return 1;
+        //}
 
         if (attacker.isRestrained) difficulty += Math.max(0, 2 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +6.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
@@ -2004,12 +2009,12 @@ fighter.prototype = {
             attacker.addStamina(10);
         }
 
-        if (target.isEvading) { //If the target is evading melee, this becomes pursue.
-            target.isEvading = false;
-            attacker.isEvading = false;
-            windowController.addHint(attacker.name + " closed the distance between them and " + target.name + ", and is now in melee with them.");
-            return 1; //Successful attack, if we ever need to check that.
-        }
+        //if (target.isEvading) { //If the target is evading melee, this becomes pursue.
+        //    target.isEvading = false;
+        //    attacker.isEvading = false;
+        //    windowController.addHint(attacker.name + " closed the distance between them and " + target.name + ", and is now in melee with them.");
+        //    return 1; //Successful attack, if we ever need to check that.
+        //}
 
         if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
@@ -2017,20 +2022,20 @@ fighter.prototype = {
             tempGrappleFlag = false;
         }
 
-        if (tempGrappleFlag) { //If you weren't grappling or being grappled, try to evade.
-            windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + ". " + attacker.name + " is now actively evading melee, at the cost of their normal stamina regen.");
-            attacker.isEvading = true;
-        }
+        //if (tempGrappleFlag) { //If you weren't grappling or being grappled, try to evade.
+        //    windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + ". " + attacker.name + " is now actively evading melee, at the cost of their normal stamina regen.");
+        //    attacker.isEvading = true;
+        //}
         return 1; //Successful attack, if we ever need to check that.
     },
 
     actionFumble: function (action) {
         var attacker = this;
 
-        if (attacker.isEvading && action == "Escape") {
-            attacker.isEvading = false; //If you are already evading melee, this will let you stop it without stamina cost or a roll for success.
-            return 1;
-        }
+        //if (attacker.isEvading && action == "Escape") {
+        //    attacker.isEvading = false; //If you are already evading melee, this will let you stop it without stamina cost or a roll for success.
+        //    return 1;
+        //}
 
         switch (action) {
             case "Light":
