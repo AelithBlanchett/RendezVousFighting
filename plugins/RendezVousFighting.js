@@ -1332,6 +1332,8 @@ fighter.prototype = {
     updateCondition: function () {
         if (this.isGrappledBy.length != 0 && this.isRestrained == false) this.isRestrained = true;
         if (this.isGrappledBy.length == 0 && this.isRestrained == true) this.isRestrained = false;
+        
+        if (this.isEscaping > 0 && !this.isRestrained || this.isEscaping < 0) this.isEscaping = 0;//If you have ane scape bonus, but you're not grappled it should get cancled. And the escape bonus can't be negative either.
 
         if (this.stamina < rollDice([20]) && this.isFocused > 0) {
             windowController.addHint(this.name + " lost their focus/aim because of fatigue!");
@@ -1446,7 +1448,7 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (inGrabRange) {
+        if (inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you.
             inGrabRange = false;
             windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
         }
@@ -1525,7 +1527,7 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (inGrabRange) {
+        if (inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you.
             inGrabRange = false;
             windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
         }
@@ -1570,7 +1572,7 @@ fighter.prototype = {
        //     return 0; //Failed attack, if we ever need to check that.
        // }
        
-        if (!inGrabRange) {
+        if (!inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
             inGrabRange = true;
             windowController.addHit(attacker.name + " moved into grappling range! " + target.name + " can try to push them away with an attack.");
             return 1; //Successful attack, if we ever need to check that.
@@ -1609,6 +1611,7 @@ fighter.prototype = {
             windowController.addHit(" SUBMISSION ");
             damage += attacker.strength() * 2;
             target.isDisoriented += 2; //Submission moves disorient the target.
+            target.isEscaping -= 2; //Submission moves make it harder to escape.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
                 windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and suffering disorientation from the pain. " + attacker.name + " is also no longer at a penalty from being grappled!");
@@ -1689,7 +1692,7 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-
+            if (attacker.isRestrained) attacker.isEscaping += 4;//If we fail to escape, it'll be easier next time.
             attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1697,7 +1700,7 @@ fighter.prototype = {
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-
+            if (attacker.isRestrained) attacker.isEscaping += 4;//If we fail to escape, it'll be easier next time.
             attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1720,7 +1723,7 @@ fighter.prototype = {
 
         if (attacker.isGrappling(target)) {
             target.removeGrappler(attacker);
-            inGrabRange = false;
+            inGrabRange = false;//A throw will put the fighters out of grappling range.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
                 windowController.addHit(attacker.name + " gained the upper hand and THREW " + target.name + "! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
@@ -1730,11 +1733,11 @@ fighter.prototype = {
             windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else if (target.isGrappling(attacker)) {
             attacker.removeGrappler(target);
-            inGrabRange = false;
+            inGrabRange = false;//A throw will put the fighters out of grappling range.
             windowController.addHit(attacker.name + " found a hold and THREW " + target.name + " off! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
             windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else {
-            inGrabRange = true;
+            inGrabRange = true;//A regular tackle will put you close enough to your opponent to initiate a grab.
             windowController.addHit(attacker.name + " TACKLED " + target.name + ". " + attacker.name + " can take another action while their opponent is stunned!");
             windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
         }
@@ -1810,7 +1813,7 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (inGrabRange) {
+        if (inGrabRange) {//A counter-attack will push a grappler back.
             inGrabRange = false;
             windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
         }
@@ -1882,7 +1885,7 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana);
         
-        if (inGrabRange) {
+        if (inGrabRange) {//A counter-attack will push a grappler back.
             inGrabRange = false;
             windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
         }
@@ -2019,14 +2022,14 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit("FAILED! ");
-            attacker.isEscaping += 4;
+            if (attacker.isRestrained) attacker.isEscaping += 4;//If we fail to escape, it'll be easier next time.
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(target.name + " WAS TOO QUICK! ");
             windowController.addHint(attacker.name + " failed. " + target.name + " was just too quick for them.");
-            attacker.isEscaping += 4;
+            if (attacker.isRestrained) attacker.isEscaping += 4;//If we fail to escape, it'll be easier next time.
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2051,7 +2054,6 @@ fighter.prototype = {
         if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
-            attacker.isEscaping = 0;
             tempGrappleFlag = false;
         }
 
