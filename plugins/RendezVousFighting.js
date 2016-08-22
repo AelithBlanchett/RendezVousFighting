@@ -1448,9 +1448,11 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you.
-            inGrabRange = false;
-            windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+        if (inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
+            if (!attacker.isRestrained && !target.isRestrained) {
+                inGrabRange = false;
+                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+            }
         }
 
         damage += baseDamage;
@@ -1527,9 +1529,11 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you.
-            inGrabRange = false;
-            windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+        if (inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
+            if (!attacker.isRestrained && !target.isRestrained) {
+                inGrabRange = false;
+                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+            }
         }
 
         damage += baseDamage;
@@ -1545,12 +1549,12 @@ fighter.prototype = {
         var baseDamage = roll / 4;
         var damage = attacker.strength() / 2;
         var requiredStam = 20;
-        var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 4; //Base difficulty, rolls greater than this amount will hit.
 
         //if (attacker.isRestrained) difficulty += 2; //Up the difficulty slightly if the attacker is restrained.
         //if (target.isRestrained) difficulty += 2; //Submission moves are more difficult
 
-        if (target.isRestrained) difficulty += Math.max(0, 2 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
+        if (target.isRestrained) difficulty += Math.max(4, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
@@ -1813,9 +1817,11 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (inGrabRange) {//A counter-attack will push a grappler back.
-            inGrabRange = false;
-            windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+        if (inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
+            if (!attacker.isRestrained && !target.isRestrained) {
+                inGrabRange = false;
+                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+            }
         }
         
         damage += baseDamage;
@@ -1885,9 +1891,11 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana);
         
-        if (inGrabRange) {//A counter-attack will push a grappler back.
-            inGrabRange = false;
-            windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+        if (inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
+            if (!attacker.isRestrained && !target.isRestrained) {
+                inGrabRange = false;
+                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+            }
         }
 
         damage += baseDamage;
