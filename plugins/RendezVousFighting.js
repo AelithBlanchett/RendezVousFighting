@@ -1278,7 +1278,7 @@ fighter.prototype = {
 
         if (this._manaCap == this._maxMana) this.manaBurn = 0;
 
-        if (this.isUnconscious == false) {
+        if (this.isUnconscious == false) {//We removed evading attacks status, so we no longer have to check for it.
             var stamBonus = 2 + this.endurance();
             this.addStamina(stamBonus);
             var manaBonus = 2 + this.willpower();
