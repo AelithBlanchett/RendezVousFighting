@@ -1396,10 +1396,10 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        if (target.isFocused) difficulty += 2;
+        //if (target.isFocused) difficulty += 2;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
-        if (attacker.isFocused) difficulty -= 2; //Lower the difficulty if the attacker is focused.
+        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused.
 
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             damage *= attacker.stamina / requiredStam;
@@ -1476,10 +1476,10 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        if (target.isFocused) difficulty += 2;
+        //if (target.isFocused) difficulty += 2;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
-        if (attacker.isFocused) difficulty -= 2; //Lower the difficulty if the attacker is focused
+        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
@@ -1549,17 +1549,17 @@ fighter.prototype = {
         var baseDamage = roll / 4;
         var damage = attacker.strength() / 2;
         var requiredStam = 20;
-        var difficulty = 4; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
         //if (attacker.isRestrained) difficulty += 2; //Up the difficulty slightly if the attacker is restrained.
         //if (target.isRestrained) difficulty += 2; //Submission moves are more difficult
 
-        if (target.isRestrained) difficulty += Math.max(4, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
+        if (target.isRestrained) difficulty += Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
-        if (target.isFocused) difficulty += 2; // Up the difficulty if the target is focused
-        if (attacker.isFocused) difficulty -= 2; //Lower the difficulty if the attacker is focused
+        //if (target.isFocused) difficulty += 2; // Up the difficulty if the target is focused
+        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
@@ -1607,15 +1607,16 @@ fighter.prototype = {
             windowController.addHint(target.name + " put up quite a struggle, costing " + attacker.name + " additional stamina. ");
             attacker.hitStamina(10 + target.strength());
         } else if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
-            windowController.addHint("Critical! " + attacker.name + " found a particularly damaging hold!");
-            damage *= 2;
+            windowController.addHint("Critical! " + attacker.name + " found a particularly good hold and " + target.name + " lost stamina!");
+            //damage *= 2;
+            target.hitStamina(10 + attacker.strength()); //Half STR extra damage is too low for a crit. Better to damage opponent's stamina.
         }
 
         if (attacker.isGrappling(target)) {
             windowController.addHit(" SUBMISSION ");
             damage += attacker.strength() * 2;
             target.isDisoriented += 2; //Submission moves disorient the target.
-            target.isEscaping -= 2; //Submission moves make it harder to escape.
+            target.isEscaping -= 3; //Submission moves make it harder to escape.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
                 windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and suffering disorientation from the pain. " + attacker.name + " is also no longer at a penalty from being grappled!");
@@ -1672,9 +1673,9 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         //if (target.isEvading) difficulty += 4; //Increase the difficulty if the target is not in melee, but don't make it impossible.
-        if (target.isFocused) difficulty += 2;
+        //if (target.isFocused) difficulty += 2;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
-        if (attacker.isFocused) difficulty -= 2; //Lower the difficulty if the attacker is focused
+        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
 
         // if (target.isEvading) requiredStam += 20; //Increase the stamina cost if the target is not in melee
 
@@ -1696,7 +1697,7 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            if (attacker.isRestrained) attacker.isEscaping += 4;//If we fail to escape, it'll be easier next time.
+            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1704,7 +1705,7 @@ fighter.prototype = {
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            if (attacker.isRestrained) attacker.isEscaping += 4;//If we fail to escape, it'll be easier next time.
+            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1770,7 +1771,7 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
-        if (target.isFocused) difficulty += 4;
+        //if (target.isFocused) difficulty += 4;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
@@ -1834,7 +1835,7 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll - 2 * target.spellpower();
+        var baseDamage = roll - target.spellpower();
         var damage = 2 * attacker.spellpower();
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
@@ -1843,7 +1844,7 @@ fighter.prototype = {
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isFocused) difficulty += 4;
+        //if (target.isFocused) difficulty += 4;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
 
@@ -1857,7 +1858,7 @@ fighter.prototype = {
         }
         // attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.willpower());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
         windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
@@ -2030,14 +2031,14 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit("FAILED! ");
-            if (attacker.isRestrained) attacker.isEscaping += 4;//If we fail to escape, it'll be easier next time.
+            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(target.name + " WAS TOO QUICK! ");
             windowController.addHint(attacker.name + " failed. " + target.name + " was just too quick for them.");
-            if (attacker.isRestrained) attacker.isEscaping += 4;//If we fail to escape, it'll be easier next time.
+            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             return 0; //Failed attack, if we ever need to check that.
         }
 
