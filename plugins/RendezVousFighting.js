@@ -1325,6 +1325,7 @@ fighter.prototype = {
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
         if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused.");
+        if (inGrabRange) windowController.addHint("The fighters are in grappling range");//Added notification about fighters ebing in grappling range.
         //if (this.isEvading) windowController.addHint(this.name + " is keeping their distance.");
         return message;
     },
