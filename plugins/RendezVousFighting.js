@@ -973,6 +973,7 @@ function arena() {
     this._currentFighter;
     this.stage = this.pickStage();
     this.inGrabRange = false; //We define the variable that controls distance and set the fighters outside grab range to beging with.
+    this.displayGrabbed= true;
 
     //Set default values for global settings
     this._globalFighterSettings = {
@@ -1322,7 +1323,10 @@ fighter.prototype = {
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
         if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused.");
-        if (this.inGrabRange) windowController.addHint("The fighters are in grappling range");//Added notification about fighters ebing in grappling range.
+        if (battlefield.inGrabRange && battlefield.displayGrabbed){
+            windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
+        }
+        battlefield.displayGrabbed = !battlefield.displayGrabbed; //only output it on every two turns
         //if (this.isEvading) windowController.addHint(this.name + " is keeping their distance.");
         return message;
     },
@@ -1446,9 +1450,9 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (this.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
+        if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
-                this.inGrabRange = false;
+                battlefield.inGrabRange = false;
                 windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
             }
         }
@@ -1527,9 +1531,9 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (this.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
+        if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
-                this.inGrabRange = false;
+                battlefield.inGrabRange = false;
                 windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
             }
         }
@@ -1574,8 +1578,8 @@ fighter.prototype = {
        //     return 0; //Failed attack, if we ever need to check that.
        // }
        
-        if (!this.inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
-            this.inGrabRange = true;
+        if (!battlefield.inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
+            battlefield.inGrabRange = true;
             windowController.addHit(attacker.name + " moved into grappling range! " + target.name + " can try to push them away with an attack.");
             return 1; //Successful attack, if we ever need to check that.
         }
@@ -1726,7 +1730,7 @@ fighter.prototype = {
 
         if (attacker.isGrappling(target)) {
             target.removeGrappler(attacker);
-            this.inGrabRange = false;//A throw will put the fighters out of grappling range.
+            battlefield.inGrabRange = false;//A throw will put the fighters out of grappling range.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
                 windowController.addHit(attacker.name + " gained the upper hand and THREW " + target.name + "! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
@@ -1736,11 +1740,11 @@ fighter.prototype = {
             windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else if (target.isGrappling(attacker)) {
             attacker.removeGrappler(target);
-            this.inGrabRange = false;//A throw will put the fighters out of grappling range.
+            battlefield.inGrabRange = false;//A throw will put the fighters out of grappling range.
             windowController.addHit(attacker.name + " found a hold and THREW " + target.name + " off! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
             windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else {
-            this.inGrabRange = true;//A regular tackle will put you close enough to your opponent to initiate a grab.
+            battlefield.inGrabRange = true;//A regular tackle will put you close enough to your opponent to initiate a grab.
             windowController.addHit(attacker.name + " TACKLED " + target.name + ". " + attacker.name + " can take another action while their opponent is stunned!");
             windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
         }
@@ -1816,9 +1820,9 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
         
-        if (this.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
+        if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
-                this.inGrabRange = false;
+                battlefield.inGrabRange = false;
                 windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
             }
         }
@@ -1890,9 +1894,9 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana);
         
-        if (this.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
+        if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
-                this.inGrabRange = false;
+                battlefield.inGrabRange = false;
                 windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
             }
         }
@@ -2000,7 +2004,7 @@ fighter.prototype = {
         //    return 1;
         //}
 
-        if (!this.inGrabRange && !attacker.isRestrained) { //If you were neither grappled nor in grab range, you didn't need to do this.
+        if (!battlefield.inGrabRange && !attacker.isRestrained) { //If you were neither grappled nor in grab range, you didn't need to do this.
             windowController.addHint(attacker.name + " was neither grappled nor in grapple range and just wasted a turn.");
             return 1; //Successful attack, if we ever need to check that.
         }
@@ -2065,8 +2069,8 @@ fighter.prototype = {
         }
 
         if (tempGrappleFlag) { //If you weren't grappling or being grappled but you were in grapple range, move out of grapple range.
-            if (this.inGrabRange) {
-                this.inGrabRange = false;
+            if (battlefield.inGrabRange) {
+                battlefield.inGrabRange = false;
                 windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
             }
         //    windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + ". " + attacker.name + " is now actively evading melee, at the cost of their normal stamina regen.");
