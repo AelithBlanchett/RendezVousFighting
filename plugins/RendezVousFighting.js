@@ -2069,7 +2069,7 @@ fighter.prototype = {
         }
 
         if (battlefield.inGrabRange) {
-            windowController.addHint(attacker.name + " moved away!");
+            windowController.addHit(attacker.name + " moved away!");
             battlefield.inGrabRange = false;
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
