@@ -2068,14 +2068,16 @@ fighter.prototype = {
             tempGrappleFlag = false;
         }
 
-        if (tempGrappleFlag) { //If you weren't grappling or being grappled but you were in grapple range, move out of grapple range.
-            if (battlefield.inGrabRange) {
-                battlefield.inGrabRange = false;
-                windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
-            }
-        //    windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + ". " + attacker.name + " is now actively evading melee, at the cost of their normal stamina regen.");
-        //    attacker.isEvading = true;
+        if (battlefield.inGrabRange) {
+            battlefield.inGrabRange = false;
+            windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
+
+        //if (tempGrappleFlag) { //If you weren't grappling or being grappled but you were in grapple range, move out of grapple range.
+        //
+        ////    windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + ". " + attacker.name + " is now actively evading melee, at the cost of their normal stamina regen.");
+        ////    attacker.isEvading = true;
+        //}
         return 1; //Successful attack, if we ever need to check that.
     },
 
