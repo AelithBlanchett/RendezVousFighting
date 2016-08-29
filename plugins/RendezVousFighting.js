@@ -1131,6 +1131,9 @@ function fighter(settings, globalSettings) {
 
     this.cloth = 0;
     this.addCloth(settings.Cloth);
+    
+    this.rollTotal = 0; // Two values that we track in order to calculate average roll, which we will call Luck on the output screen.
+    this.rollsMade = 0; // Luck = rollTotal / rollsMade
 
     this._statDelta = {hp: this.hp, mana: this.mana, stamina: this.stamina, cloth: this.cloth};
 
@@ -2237,9 +2240,16 @@ function combatInput(actionMade) {
     if (typeof action === 'undefined') return;
     var actor = battlefield.getActor();
     var roll = rollDice([20]);
-
+    var luck = 0; //Actor's average roll of the fight.
+    
     windowController.addAction(action);
-
+    
+    // Update tracked sum of all rolls and number of rolls the actor has made. Then calculate average value of actor's rolls in this fight.
+    actor.rollTotal += roll;
+    actor.rollsMade += 1;
+    if (actor.rollsMade > 0) { luck = Math.round(actor.rollTotal / actor.rollsMade) };// Safety feature so we don't divide by zero. We shouldn't really need it, but just in case.
+        
+    
     // Fumble on a bad roll, act on a good roll. Each attack deteremines its own method of resolving hits vs. misses.
     if (roll > 1) {
         actor["action" + action](roll);
@@ -2248,6 +2258,7 @@ function combatInput(actionMade) {
     }
 
     windowController.addInfo("Raw Dice Roll: " + roll);
+    windowController.addInfo(actor + "'s Average Dice Roll: " + luck);
 
     battlefield.turnUpkeep(); //End of turn upkeep (Stamina regen, check for being stunned/knocked out, etc.)
     battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina/Cloth)
