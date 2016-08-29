@@ -1394,9 +1394,9 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll / 2; //Not directly affected by crits
-        var damage = Math.max( (attacker.strength() + attacker.dexterity()) / 2, attacker.strength());	//Affected by crits and the like
+        var damage = attacker.strength(); //Math.max( (attacker.strength() + attacker.dexterity()) / 2, attacker.strength());	//Affected by crits and the like
         var stamDamage = attacker.spellpower(); //This value + damage is drained from the targets stamina if the attack is successful
-        var requiredStam = 15;
+        var requiredStam = 20;
         var difficulty = 4;
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
@@ -1476,7 +1476,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll;
         var damage = 2 * attacker.strength();
-        var requiredStam = 35;
+        var requiredStam = 40;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
@@ -1508,6 +1508,8 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
             attacker.hitStamina(requiredStam);
+            attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1515,6 +1517,8 @@ fighter.prototype = {
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
             attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
+            attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1704,6 +1708,8 @@ fighter.prototype = {
             windowController.addHit(" MISS! ");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             attacker.hitStamina(requiredStam);
+            attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1712,6 +1718,8 @@ fighter.prototype = {
             windowController.addHint(target.name + " dodged the attack. ");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             attacker.hitStamina(requiredStam);
+            attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1771,7 +1779,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll;
         var damage = Math.max( (attacker.dexterity() + attacker.strength()) / 2, (attacker.dexterity() + attacker.spellpower()) / 2);
-        var requiredStam = 25;
+        var requiredStam = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
@@ -2095,19 +2103,23 @@ fighter.prototype = {
 
         switch (action) {
             case "Light":
-                attacker.hitStamina(15);
+                attacker.hitStamina(20);
                 break;
             case "Heavy":
-                attacker.hitStamina(35);
+                attacker.hitStamina(40);
+                attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
+                windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
                 break;
             case "Grab":
                 attacker.hitStamina(20);
                 break;
             case "Tackle":
-                attacker.hitStamina(35);
+                attacker.hitStamina(40);
+                attacker.isStunned = true; //If the fighter misses a big attack, it it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
+                windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
                 break;
             case "Ranged":
-                attacker.hitStamina(25);
+                attacker.hitStamina(30);
                 break;
             case "Magic":
                 attacker.hitMana(20);
@@ -2258,7 +2270,7 @@ function combatInput(actionMade) {
     }
 
     windowController.addInfo("Raw Dice Roll: " + roll);
-    windowController.addInfo(actor + "'s Average Dice Roll: " + luck);
+    windowController.addInfo(actor.name + "'s Average Dice Roll: " + luck);
 
     battlefield.turnUpkeep(); //End of turn upkeep (Stamina regen, check for being stunned/knocked out, etc.)
     battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina/Cloth)
