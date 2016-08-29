@@ -1385,8 +1385,8 @@ fighter.prototype = {
             attackTable.dodge = difficulty + Math.ceil((targetDex - attackerHitBonus) * rangeMult);
         }
         //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult); //9
-        attackTable.glancing = attackTable.dodge + Math.floor(((targetDex * 2) - attackerDex) * rangeMult);
-        attackTable.crit = 21 - Math.ceil(attackerDex * rangeMult);
+        attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either atatcker's dex or an alternative attribute.
+        attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either atatcker's dex or an alternative attribute.
         return attackTable;
     },
 
@@ -1396,7 +1396,7 @@ fighter.prototype = {
         var baseDamage = roll / 2; //Not directly affected by crits
         var damage = attacker.strength(); //Math.max( (attacker.strength() + attacker.dexterity()) / 2, attacker.strength());	//Affected by crits and the like
         var stamDamage = attacker.spellpower(); //This value + damage is drained from the targets stamina if the attack is successful
-        var requiredStam = 20;
+        var requiredStam = 15;
         var difficulty = 4;
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
@@ -1476,7 +1476,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll;
         var damage = 2 * attacker.strength();
-        var requiredStam = 40;
+        var requiredStam = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
@@ -1674,7 +1674,7 @@ fighter.prototype = {
         var baseDamage = roll / 2; //Not directly affected by crits
         var damage = attacker.strength();	//Affected by crits and the like
         var stamDamage = 30;
-        var requiredStam = 40;
+        var requiredStam = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isRestrained) difficulty += Math.max(0, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
@@ -1708,8 +1708,7 @@ fighter.prototype = {
             windowController.addHit(" MISS! ");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             attacker.hitStamina(requiredStam);
-            attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
+            battlefield.inGrabRange = true; //Even a failed tackle still brings the fighters together.
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1718,8 +1717,7 @@ fighter.prototype = {
             windowController.addHint(target.name + " dodged the attack. ");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             attacker.hitStamina(requiredStam);
-            attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
+            battlefield.inGrabRange = true; //Even a failed tackle still brings the fighters together.
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1779,7 +1777,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll;
         var damage = Math.max( (attacker.dexterity() + attacker.strength()) / 2, (attacker.dexterity() + attacker.spellpower()) / 2);
-        var requiredStam = 30;
+        var requiredStam = 25;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
@@ -1848,7 +1846,7 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll - target.spellpower();
+        var baseDamage = roll + 1 - target.spellpower();
         var damage = 2 * attacker.spellpower();
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
@@ -1923,10 +1921,10 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
 
-        var difficulty = 4; //Base difficulty, rolls greater than this amount will succeed.
+        var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
-        if (attacker.isRestrained) difficulty += 6; //Up the difficulty considerably if you are restrained.
+        if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
        // if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
 
         //if (attacker.isEvading) attacker.isEvading = false; //If you stop to rest, you stop evading melee.
@@ -1991,7 +1989,7 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + (difficulty+1));
-        var manaShift = 18 + roll + (attacker.willpower() * 2);
+        var manaShift = 20 + roll + (attacker.willpower() * 2);
         manaShift = Math.min(manaShift, attacker.stamina);
         // manaShift = Math.min( manaShift, attacker._maxMana - attacker.mana);
 
@@ -2103,10 +2101,10 @@ fighter.prototype = {
 
         switch (action) {
             case "Light":
-                attacker.hitStamina(20);
+                attacker.hitStamina(15);
                 break;
             case "Heavy":
-                attacker.hitStamina(40);
+                attacker.hitStamina(30);
                 attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
                 windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
                 break;
@@ -2114,12 +2112,11 @@ fighter.prototype = {
                 attacker.hitStamina(20);
                 break;
             case "Tackle":
-                attacker.hitStamina(40);
-                attacker.isStunned = true; //If the fighter misses a big attack, it it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
-                windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
+                attacker.hitStamina(30);
+                battlefield.inGrabRange = true; //Even a failed tackle still brings the fighters together.
                 break;
             case "Ranged":
-                attacker.hitStamina(30);
+                attacker.hitStamina(25);
                 break;
             case "Magic":
                 attacker.hitMana(20);
