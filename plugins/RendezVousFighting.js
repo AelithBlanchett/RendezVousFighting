@@ -1146,6 +1146,7 @@ function fighter(settings, globalSettings) {
     this.isFocused = 0;
     this.isEscaping = 0;//A bonus to escape attempts that increases whenever you fail one.
     //this.isEvading = false;
+    this.isExposed = 0;
 };
 
 fighter.prototype = {
@@ -1354,6 +1355,11 @@ fighter.prototype = {
             this.isDisoriented = 1;
             windowController.addHit(this.name + " is dizzy! Stats penalty!");
         }
+        
+        if (this.isExposed > 0) {
+            this.isExposed -= 1;
+            if (this.isExposed == 0) windowController.addHint(this.name + " has recovered from the missed attack and can no longer be easily grabbed!");
+        }
 
         if (this.hp <= this._koValue && this.isUnconscious == false) {
             this.isUnconscious = true;
@@ -1380,9 +1386,9 @@ fighter.prototype = {
         }
         // Basing hit chance on difference multiplied by rangeMulti so that we have ideal DEX difference rather than ideal absolute DEX value.
         if (attackerDex > targetDex) {
-            attackTable.dodge = difficulty + Math.floor((targetDex - attackerHitBonus) * rangeMult); //Used floor to make the result a more negative value.
-        } else {
-            attackTable.dodge = difficulty + Math.ceil((targetDex - attackerHitBonus) * rangeMult);
+            attackTable.dodge = difficulty + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult); //Used floor to make the result a more negative value.
+        } else { // Attacker uses either dexterity or a potential alternative attribute to make the attack.
+            attackTable.dodge = difficulty + Math.ceil((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult);
         }
         //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult); //9
         attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either atatcker's dex or an alternative attribute.
@@ -1508,8 +1514,8 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
             attacker.hitStamina(requiredStam);
-            attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
+            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1585,7 +1591,7 @@ fighter.prototype = {
        //     return 0; //Failed attack, if we ever need to check that.
        // }
        
-        if (!battlefield.inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
+        if (target.isExposed < 1 && !battlefield.inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
             battlefield.inGrabRange = true;
             windowController.addHit(attacker.name + " moved into grappling range! " + target.name + " can try to push them away with an attack.");
             return 1; //Successful attack, if we ever need to check that.
@@ -1677,7 +1683,8 @@ fighter.prototype = {
         var requiredStam = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
-        if (attacker.isRestrained) difficulty += Math.max(0, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
+        if (attacker.isRestrained) difficulty += Math.max(0, 8 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
+        if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
@@ -2105,8 +2112,8 @@ fighter.prototype = {
                 break;
             case "Heavy":
                 attacker.hitStamina(30);
-                attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
-                windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
+                attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
+                windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
                 break;
             case "Grab":
                 attacker.hitStamina(20);
