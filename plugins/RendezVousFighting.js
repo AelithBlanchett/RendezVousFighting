@@ -1344,6 +1344,7 @@ fighter.prototype = {
         }
         battlefield.displayGrabbed = !battlefield.displayGrabbed; //only output it on every two turns
         if (this.isEvading) windowController.addHint(this.name + " is focused on defense, causing both fighters to suffer an attack penalty.");
+        if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hashasAttackBonus + " heavy attack bonus.");
         if (this.hasMagicWeakness > 0) windowController.addHint(this.name + " would take " + this.hasMagicWeakness + " extra damage from a magical attack.");
         return message;
     },
@@ -1742,7 +1743,7 @@ fighter.prototype = {
         //if (target.isEvading) attacker.hitStamina(10);
         
         if (attacker.isEvading) { // If you try to tackle someone, you're not evading anymore.
-            windowController.addHit(attacker.name + " stopped focusing on defense and CHARGED " + target.name + ".");
+            windowController.addHint(attacker.name + " had to stop focusing on defense in order to charge " + target.name + ".");
             attacker.isEvading = false;
         }
 
@@ -1776,7 +1777,7 @@ fighter.prototype = {
         }
 
         if (target.isEvading) { // You are not evading my atatcks after I tackle you.
-            windowController.addHit(attacker.name + " CHARGED " + target.name + ". ");
+            windowController.addHint(target.name + " is no longer focusin on defense " + target.name + ". ");
             target.isEvading = false;
         }
 
