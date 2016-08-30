@@ -371,6 +371,10 @@ module.exports = function (parent, chanName) {
     };
     cmdHandler.ripclothes = cmdHandler.rip;
 
+    cmdHandler.evasion = function (args, data) {
+        attackFunc("Evasion", data.character);
+    };
+
 
     return cmdHandler;
 };
@@ -385,7 +389,7 @@ function endFight(winner, loser){
             //fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", channel);
         }
         else {
-            fChatLibInstance.sendMessage("There was an error while adding the fight record to the database. Contact Lustful Aelith. " + err, channel);
+            fChatLibInstance.sendMessage("There was an error while adding the fight record to the database. Contact Aelith Blanchette. " + err, channel);
         }
     });
     resetFight();
@@ -1145,7 +1149,7 @@ function fighter(settings, globalSettings) {
     this.isGrappledBy = [];
     this.isFocused = 0;
     this.isEscaping = 0;//A bonus to escape attempts that increases whenever you fail one.
-    //this.isEvading = false;
+    this.isEvading = false;
     this.isExposed = 0;
 };
 
@@ -1331,7 +1335,7 @@ fighter.prototype = {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
         battlefield.displayGrabbed = !battlefield.displayGrabbed; //only output it on every two turns
-        //if (this.isEvading) windowController.addHint(this.name + " is keeping their distance.");
+        if (this.isEvading) windowController.addHint(this.name + " is focused on defense, causing both fighters to suffer an attack penalty.");
         return message;
     },
 
@@ -1391,8 +1395,8 @@ fighter.prototype = {
             attackTable.dodge = difficulty + Math.ceil((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult);
         }
         //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult); //9
-        attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either atatcker's dex or an alternative attribute.
-        attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either atatcker's dex or an alternative attribute.
+        attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
+        attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
         return attackTable;
     },
 
@@ -1411,6 +1415,8 @@ fighter.prototype = {
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused.
+        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
+        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
 
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             damage *= attacker.stamina / requiredStam;
@@ -1491,6 +1497,8 @@ fighter.prototype = {
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
+        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
@@ -1575,6 +1583,8 @@ fighter.prototype = {
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         //if (target.isFocused) difficulty += 2; // Up the difficulty if the target is focused
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
+        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
@@ -1642,6 +1652,10 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " GRABBED " + target.name + "! ");
             windowController.addHint(target.name + " is being grappled! " + attacker.name + " can use Grab to try for a submission hold or Tackle to throw them - dealing damage, but setting them free.");
             target.isGrappledBy.push(attacker.name);
+            if (target.isEvading || attacker.isEvading) { //A successful grab puts an end to evasion.
+                target.isEvading = false;
+                attacker.isEvading = false;
+            }
         }
 
         //Deal all the actual damage/effects here.
@@ -1688,10 +1702,10 @@ fighter.prototype = {
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isEvading) difficulty += 4; //Increase the difficulty if the target is not in melee, but don't make it impossible.
-        //if (target.isFocused) difficulty += 2;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
+        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
 
         // if (target.isEvading) requiredStam += 20; //Increase the stamina cost if the target is not in melee
 
@@ -1707,6 +1721,11 @@ fighter.prototype = {
         // attacker.hitStamina (requiredStam - 20); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
 
         //if (target.isEvading) attacker.hitStamina(10);
+        
+        if (attacker.isEvading) { // If you try to tackle someone, you're not evading anymore.
+            windowController.addHit(attacker.name + " stopped focusing on defense and CHARGED " + target.name + ".");
+            attacker.isEvading = false;
+        }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
         windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
@@ -1737,12 +1756,10 @@ fighter.prototype = {
             //stamDamage *= 1.5;
         }
 
-        //if (target.isEvading || attacker.isEvading) {
-        //    windowController.addHit(attacker.name + " CHARGED " + target.name + ". ");
-        //    target.isEvading = false;
-        //    attacker.isEvading = false;
-        //    if (target.isEvading) attacker.hitStamina(20);
-        //}
+        if (target.isEvading) { // You are not evading my atatcks after I tackle you.
+            windowController.addHit(attacker.name + " CHARGED " + target.name + ". ");
+            target.isEvading = false;
+        }
 
         if (attacker.isGrappling(target)) {
             target.removeGrappler(attacker);
@@ -1793,6 +1810,8 @@ fighter.prototype = {
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
+        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
+        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
@@ -1865,6 +1884,8 @@ fighter.prototype = {
         //if (target.isFocused) difficulty += 4;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
+        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
 
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
@@ -1934,7 +1955,7 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
        // if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
 
-        //if (attacker.isEvading) attacker.isEvading = false; //If you stop to rest, you stop evading melee.
+        if (attacker.isEvading) attacker.isEvading = false; //If you stop to rest, you stop evading melee.
 
         difficulty -= attacker.willpower();
 
@@ -2098,6 +2119,34 @@ fighter.prototype = {
         return 1; //Successful attack, if we ever need to check that.
     },
 
+    actionEvasion: function (roll) {
+        var attacker = this;
+        var target = battlefield.getTarget();
+        //var requiredStam = 20;
+        //var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
+        
+        
+        if (attacker.isRestrained || target.isRestrained) {
+            windowController.addHint("You can't fight defensively while grappling!");
+            return 0
+        }
+        
+        if (attacker.isEvading) {
+            attacker.isEvading = false;
+            windowController.addHint(attacker.name + " stopped focusing on defense.");
+        } else {
+            attacker.isEvading = true;
+            windowController.addHint(attacker.name + " started focusing on defense.");
+        }
+        
+        if (!target.isStunned) {
+            target.isStunned = true;//The action activates the stance, but you can still use an action.
+            windowController.addHint(attacker.name + " can perform another action.");
+        }
+        
+        return 1; //Successful attack, if we ever need to check that.
+    },
+
     actionFumble: function (action) {
         var attacker = this;
 
@@ -2133,6 +2182,9 @@ fighter.prototype = {
                 break;
             case "Skip/Rest":
                 windowController.addHint(attacker.name + " could not calm their nerves.");
+                break;
+            case "Evasion":
+                windowController.addHint(attacker.name + " could not focus on defense.");
                 break;
         }
 
