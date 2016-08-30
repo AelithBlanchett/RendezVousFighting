@@ -1614,13 +1614,9 @@ fighter.prototype = {
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
-        //attacker.hitStamina (20); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
+        
+        attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
 
-       // if (attacker.isEvading || target.isEvading) {
-       //     windowController.addHit(target.name + " IS TOO FAR AWAY! ");
-       //     return 0; //Failed attack, if we ever need to check that.
-       // }
-       
         if (target.isExposed < 1 && !battlefield.inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
             battlefield.inGrabRange = true;
             windowController.addHit(attacker.name + " moved into grappling range! " + target.name + " can try to push them away with an attack.");
@@ -1677,10 +1673,10 @@ fighter.prototype = {
                 attacker.isEvading = false;
             }
         }
-
-        //Deal all the actual damage/effects here.
-        attacker.hitStamina(requiredStam); //Successful grab attacks have the cost reduced
-
+        
+        //If we managed to grab without being in grab range, we are certainly in grabe range afterwards.
+        if (!battlefield.inGrabRange) battlefield.inGrabRange = true;
+        
         damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
