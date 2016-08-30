@@ -1523,8 +1523,8 @@ fighter.prototype = {
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
             attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
-            attacker.isStunned = true; //If the fighter misses a big attack, it leaves them open and they have to recover his balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " gets a bonus action!");
+            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             return 0; //Failed attack, if we ever need to check that.
         }
 
