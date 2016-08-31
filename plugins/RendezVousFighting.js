@@ -1427,6 +1427,7 @@ fighter.prototype = {
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused.
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
         if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
+        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             damage *= attacker.stamina / requiredStam;
@@ -1519,7 +1520,8 @@ fighter.prototype = {
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
         if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
-
+        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
+        
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
@@ -1722,6 +1724,7 @@ fighter.prototype = {
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
         if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
+        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         // if (target.isEvading) requiredStam += 20; //Increase the stamina cost if the target is not in melee
 
@@ -1828,6 +1831,7 @@ fighter.prototype = {
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
         if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
+        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
@@ -1902,6 +1906,7 @@ fighter.prototype = {
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
         if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
+        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
@@ -1968,7 +1973,7 @@ fighter.prototype = {
         var damage = attacker.spellpower();
         var requiredMana = 10;
         var hexDamage = 1; //How much the hex will make the target vulerable to future magic damage.
-        var difficulty = 4; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
@@ -1979,6 +1984,7 @@ fighter.prototype = {
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
         if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
+        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
