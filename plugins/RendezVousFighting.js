@@ -1343,7 +1343,7 @@ fighter.prototype = {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
         battlefield.displayGrabbed = !battlefield.displayGrabbed; //only output it on every two turns
-        if (this.isEvading) windowController.addHint(this.name + " is focused on defense, causing both fighters to suffer an attack penalty.");
+        if (this.isEvading) windowController.addHint(this.name + " is fighting defensively.");
         if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hashasAttackBonus + " heavy attack bonus.");
         if (this.hasMagicWeakness > 0) windowController.addHint(this.name + " would take " + this.hasMagicWeakness + " extra damage from a magical attack.");
         return message;
@@ -1737,9 +1737,8 @@ fighter.prototype = {
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
-        // attacker.hitStamina (requiredStam - 20); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
-
-        //if (target.isEvading) attacker.hitStamina(10);
+        
+        attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
         
         if (attacker.isEvading) { // If you try to tackle someone, you're not evading anymore.
             windowController.addHint(attacker.name + " had to stop focusing on defense in order to charge " + target.name + ".");
@@ -1802,8 +1801,6 @@ fighter.prototype = {
         }
 
         //Deal all the actual damage/effects here.
-
-        attacker.hitStamina(requiredStam); //Successful or not, the cost is the same.
 
         damage += baseDamage;
         damage = Math.max(damage, 1);
@@ -2236,10 +2233,10 @@ fighter.prototype = {
         
         if (attacker.isEvading) {
             attacker.isEvading = false;
-            windowController.addHint(attacker.name + " stopped focusing on defense.");
+            windowController.addHint(attacker.name + " stopped fighting defensively.");
         } else {
             attacker.isEvading = true;
-            windowController.addHint(attacker.name + " started focusing on defense.");
+            windowController.addHint(attacker.name + " started fighting defensively (+2 defense, -2 attack).");
         }
         
         if (!target.isStunned) {
