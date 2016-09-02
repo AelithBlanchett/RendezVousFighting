@@ -1067,7 +1067,10 @@ arena.prototype = {
             "Hangar",
             "Swamp",
             "RF:Glass Box",
-            "RF:Free Space"];
+            "RF:Free Space",
+            "Magic Shop",
+            "Public Restroom"
+            ];
 
         return stages[Math.floor(Math.random() * stages.length)];
     },
@@ -1889,7 +1892,7 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll + 1 - target.spellpower() + target.hasMagicWeakness;
+        var baseDamage = roll - target.spellpower() + target.hasMagicWeakness;
         var damage = 2 * attacker.spellpower();
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
@@ -1966,7 +1969,7 @@ fighter.prototype = {
     actionHex: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll/2 + 1 - target.spellpower() + target.hasMagicWeakness;
+        var baseDamage = roll/2 - target.spellpower() + target.hasMagicWeakness;
         var damage = attacker.spellpower();
         var requiredMana = 10;
         var hexDamage = 1; //How much the hex will make the target vulerable to future magic damage.
