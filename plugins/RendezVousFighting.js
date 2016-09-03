@@ -771,8 +771,8 @@ var windowController = {
         "Channel": "Channel (Free) <br />Restores mana at the cost of stamina. <br /> Willpower affects the amount of stamina converted into mana, and affects the likelihood of successfully channeling in stressful conditions.",
         "Focus": "Focus/Aim (Free) <br />Increases concentration. Makes you slightly harder to hit, and considerably improves your accuracy. <br /> Willpower affects how much damage you may take before your focus/aim is lost, and affects the likelihood of successfully focusing/aiming in stressful conditions.",
         "Move": "Escape/Pursue (20 stamina) <br />If you are being grappled, Escape/Pursue will let you attempt to break free. When you are not grappling, escape will open up some distance between you and your opponent, forcing them to pursue you or try to tackle you if they want to use melee attacks. When your opponent is at a distance, Escape/Pursue will let you pursue them, trying to force them back into melee..",
-        "Defense": "Makes it ahrder to hit for everyone",
-        "Hex": "magical attack that reduces resistance against magic."
+        "Defense": "Makes it harder to hit for everyone",
+        "Hex": "Magical attack that reduces resistance against magic."
     },
     getRolloverKeys: function () {
         var keys = [];
@@ -1347,7 +1347,7 @@ fighter.prototype = {
         }
         battlefield.displayGrabbed = !battlefield.displayGrabbed; //only output it on every two turns
         if (this.isEvading) windowController.addHint(this.name + " is fighting defensively.");
-        if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hashasAttackBonus + " heavy attack bonus.");
+        if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hasAttackBonus + " heavy attack bonus.");
         if (this.hasMagicWeakness > 0) windowController.addHint(this.name + " would take " + this.hasMagicWeakness + " extra damage from a magical attack.");
         return message;
     },
@@ -1777,7 +1777,7 @@ fighter.prototype = {
             //stamDamage *= 1.5;
         }
 
-        if (target.isEvading) { // You are not evading my atatcks after I tackle you.
+        if (target.isEvading) { // You are not evading my attacks after I tackle you.
             windowController.addHint(target.name + " is no longer focusin on defense " + target.name + ". ");
             target.isEvading = false;
         }
