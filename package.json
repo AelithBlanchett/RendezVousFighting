@@ -8,6 +8,7 @@
   "dependencies": {
     "fchatlib": "*",
     "redis": "*",
-    "mysql": "*"
+    "mysql": "*",
+    "jasmine": "2.2"
   }
 }

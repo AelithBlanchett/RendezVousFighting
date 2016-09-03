@@ -40,7 +40,6 @@ var CommandHandler = (function () {
     };
 
     CommandHandler.prototype.getStats = function (args, data) {
-        var _this = this;
 		if (fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
             statsGetter(this, args, data, args);
         }
@@ -50,7 +49,6 @@ var CommandHandler = (function () {
     };
 
     CommandHandler.prototype.register = function (args, data) {
-        var _this = this;
 		db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
             if(err){
                 _this.fChatLibInstance.throwError(data, err, _this.channel);
@@ -79,7 +77,6 @@ var CommandHandler = (function () {
     };
 
     function checkIfValidStats(_this, arrParam){
-        var _this = this;
         if(arrParam.length != 6){
             _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,3,5,1,6,30", _this.channel);
         }
@@ -120,8 +117,7 @@ var CommandHandler = (function () {
     }
 
     CommandHandler.prototype.restat = function (args, data) {
-        var _this = this;
-		db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
+        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
             if(err){
                 _this.fChatLibInstance.throwError(data, err, _this.channel);
             }
@@ -135,7 +131,7 @@ var CommandHandler = (function () {
                                 _this.fChatLibInstance.sendMessage("Your stats have successfully been changed.", _this.channel);
                             }
                             else {
-                                _this.fChatLibInstance.sendMessage("There was an error during the restat. Contact Lustful Aelith. " + err, _this.channel);
+                                _this.fChatLibInstance.sendMessage("There was an error during the restat. Contact Aelith Blanchette. " + err, _this.channel);
                             }
                         });
                     }
@@ -186,7 +182,6 @@ var CommandHandler = (function () {
     };
 
     CommandHandler.prototype.ready = function (args, data) {
-        var _this = this;
         if (currentFighters.length == 0) {
             db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) =>{
                 if (rows != undefined && rows.length == 1) {
@@ -240,8 +235,7 @@ var CommandHandler = (function () {
     };
 
     CommandHandler.prototype.exit = function (args, data) {
-        var _this = this;
-		if (currentFighters.length > 0) {
+        if (currentFighters.length > 0) {
             if ((currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character) || (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].name == data.character)) {
                 var isFirst = (currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character);
                 if(isFirst){
@@ -270,8 +264,7 @@ var CommandHandler = (function () {
     CommandHandler.prototype.leaveFight = CommandHandler.prototype.exit;
 
     CommandHandler.prototype.forfeit = function (args, data) {
-        var _this = this;
-		if (currentFighters.length > 0) {
+        if (currentFighters.length > 0) {
             var isFirst = (currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character);
             var isSecond = (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].name == data.character);
             if (isFirst || isSecond) {
@@ -297,7 +290,6 @@ var CommandHandler = (function () {
     };
 
     var attackFunc = function(attack, character){
-        var _this = this;
         if(checkIfFightIsGoingOn()) {
             if (character.toLowerCase() == battlefield.getActor().name.toLowerCase()) {
                 combatInput(attack);
@@ -307,76 +299,63 @@ var CommandHandler = (function () {
             }
         }
         else{
-            _this.fChatLibInstance.sendMessage("There isn't any fights going on right now.", _this.channel);
+            _this.fChatLibInstance.sendMessage("There isn't any fight going on right now.", _this.channel);
         }
     };
 
     CommandHandler.prototype.light = function (args, data) {
-        var _this = this;
-		attackFunc("Light", data.character);
+        attackFunc("Light", data.character);
     };
 
     CommandHandler.prototype.heavy = function (args, data) {
-        var _this = this;
-		attackFunc("Heavy", data.character);
+        attackFunc("Heavy", data.character);
     };
 
     CommandHandler.prototype.grab = function (args, data) {
-        var _this = this;
-		attackFunc("Grab", data.character);
+        attackFunc("Grab", data.character);
     };
 
     CommandHandler.prototype.tackle = function (args, data) {
-        var _this = this;
-		attackFunc("Tackle", data.character);
+        attackFunc("Tackle", data.character);
     };
 
     CommandHandler.prototype.ranged = function (args, data) {
-        var _this = this;
-		attackFunc("Ranged", data.character);
+        attackFunc("Ranged", data.character);
     };
 
     CommandHandler.prototype.focus = function (args, data) {
-        var _this = this;
-		attackFunc("Focus", data.character);
+        attackFunc("Focus", data.character);
     };
 
     CommandHandler.prototype.move = function (args, data) {
-        var _this = this;
-		attackFunc("Move", data.character);
+        attackFunc("Move", data.character);
     };
     CommandHandler.prototype.escape = CommandHandler.prototype.move;
     CommandHandler.prototype.pursue = CommandHandler.prototype.move;
 
     CommandHandler.prototype.magic = function (args, data) {
-        var _this = this;
-		attackFunc("Magic", data.character);
+        attackFunc("Magic", data.character);
     };
 
     CommandHandler.prototype.hex = function (args, data) {
-        var _this = this;
-		attackFunc("Hex", data.character);
+        attackFunc("Hex", data.character);
     };
 
     CommandHandler.prototype.channelAttack = function (args, data) {
-        var _this = this;
-		attackFunc("Channel", data.character);
+        attackFunc("Channel", data.character);
     };
 
     CommandHandler.prototype.rest = function (args, data) {
-        var _this = this;
-		attackFunc("Rest", data.character);
+        attackFunc("Rest", data.character);
     };
 
     CommandHandler.prototype.rip = function (args, data) {
-        var _this = this;
-		attackFunc("Rip", data.character);
+        attackFunc("Rip", data.character);
     };
     CommandHandler.prototype.ripclothes = CommandHandler.prototype.rip;
 
     CommandHandler.prototype.defensive = function (args, data) {
-        var _this = this;
-		attackFunc("Defensive", data.character);
+        attackFunc("Defensive", data.character);
     };
 
     return CommandHandler;
@@ -773,7 +752,7 @@ var windowController = {
         "Magic": "Magic attack (24 Mana) <br /> Blasts, bombs, and magical might. Attack your opponents from range, if you have the reservesIntelligence greatly affects damage.",
         "Ranged": "Ranged attack (20 Stamina) <br /> Small arms, bows and throwing knives, and minor innate magical powers (eye beams, frost breath and such). Ranged attacks are stamina efficient, and deal moderate damage based on either Dexterity or Intelligence (whichever is higher), but are only so-so in terms of accuracy unless you take the time to Aim/Focus first.",
         "Rest": "Rest (Free) <br />Restores stamina. <br /> Endurance affects stamina regained. <br />Wisdom affects the likelihood of successfully resting in stressful conditions.",
-        "Channel": "Channel (Free) <br />Restores mana at the cost of stamina. <br /> Willpower affects the amount of stamina converted into mana, and affects the likelihood of successfully _this.channeling in stressful conditions.",
+        "Channel": "Channel (Free) <br />Restores mana at the cost of stamina. <br /> Willpower affects the amount of stamina converted into mana, and affects the likelihood of successfully channeling in stressful conditions.",
         "Focus": "Focus/Aim (Free) <br />Increases concentration. Makes you slightly harder to hit, and considerably improves your accuracy. <br /> Willpower affects how much damage you may take before your focus/aim is lost, and affects the likelihood of successfully focusing/aiming in stressful conditions.",
         "Move": "Escape/Pursue (20 stamina) <br />If you are being grappled, Escape/Pursue will let you attempt to break free. When you are not grappling, escape will open up some distance between you and your opponent, forcing them to pursue you or try to tackle you if they want to use melee attacks. When your opponent is at a distance, Escape/Pursue will let you pursue them, trying to force them back into melee..",
         "Defense": "Makes it harder to hit for everyone",
@@ -922,24 +901,13 @@ var windowController = {
         if (this.messages.special.length) lines.push(this._formatMessage.special(this.messages.special.join("\n")));
         if (this.messages.info.length) lines.push("\n" + this.messages.info.join("\n"));
 
-        //$( "#CombatResult" ).empty();
-        //$( "#CombatResult" ).html( lines.join("\n") );
-        //$( "#CombatResult" ).val( lines.join("\n") );
-        //display message in chat instead
         _this.fChatLibInstance.sendMessage(lines.join("\n"), _this.channel);
-        //$( "#ParsedOutput" ).html( this._tagParser.parseContent( lines.join("\n").replace(/\n/g, '<br />') ));
-        //$( "#ErrorMessage" ).empty();
         if (this.messages.error.length) {
-            //$( "#ErrorMessage" ).append( this.messages.error.join("<br />") );
             _this.fChatLibInstance.sendMessage(this.messages.error.join("\n"), _this.channel);
         }
 
         //clear messages from the queue once they have been displayed
         this.messages = {action: [], hit: [], damage: 0, status: [], hint: [], special: [], info: [], error: []};
-    },
-
-    setActionButton: function (name) {
-        //$("#Take_Action").val("Take action as " + name);
     },
 
     addAction: function (line) {
@@ -1046,14 +1014,11 @@ arena.prototype = {
         if (this._fighters[this._currentFighter].isStunned) {
             this._fighters[this._currentFighter].isStunned = false;
             this.nextFighter();
-        } else {
-            windowController.setActionButton(this._fighters[this._currentFighter].name);
         }
     },
 
     pickInitialActor: function () {
         this._currentFighter = Math.floor(Math.random() * this._fighters.length);
-        windowController.setActionButton(this._fighters[this._currentFighter].name);
     },
 
     pickStage: function () {
@@ -2120,7 +2085,7 @@ fighter.prototype = {
         difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
-            windowController.addHint(attacker.name + " was too disoriented or distracted to _this.channel.");
+            windowController.addHint(attacker.name + " was too disoriented or distracted to channel.");
             return 0; //Failed action, if we ever need to check that.
         }
 
@@ -2132,7 +2097,7 @@ fighter.prototype = {
         attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
         attacker.hitStamina(manaShift);
         attacker.addMana(manaShift);
-        windowController.addHit(attacker.name + " _this.channelS STAMINA INTO MANA!");
+        windowController.addHit(attacker.name + " CHANNELS STAMINA INTO MANA!");
         windowController.addHint(attacker.name + " recovered " + manaShift + " mana, and will briefly be able to hold on to more mana than usual!");
         return 1;
     },
