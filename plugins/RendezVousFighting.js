@@ -1,9 +1,7 @@
-var fChatLibInstance;
-var channel;
-
 var mysql = require('mysql');
 var mySqlConfig = require('../config/config.mysql.js');
 var db;
+var _this;
 
 function dbConnect() {
     db = mysql.createConnection(mySqlConfig); // Recreate the connection, since
@@ -28,44 +26,49 @@ function dbConnect() {
 
 dbConnect();
 
-module.exports = function (parent, chanName) {
-    fChatLibInstance = parent;
+var CommandHandler = (function () {
+    function CommandHandler(fChatLib, chan) {
+        this.fChatLibInstance = fChatLib;
+        this.channel = chan;
+        _this = this;
+    }
 
-    var cmdHandler = {};
-    channel = chanName;
+    //Public
 
-    cmdHandler.stats = function (args, data) {
+    CommandHandler.prototype.stats = function (args, data) {
         statsGetter(args, data, data.character);
     };
 
-    cmdHandler.getStats = function (args, data) {
-        if (fChatLibInstance.isUserChatOP(data.character, channel)) {
-            statsGetter(args, data, args);
+    CommandHandler.prototype.getStats = function (args, data) {
+        var _this = this;
+		if (fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
+            statsGetter(this, args, data, args);
         }
         else{
-            fChatLibInstance.sendMessage("You don't have sufficient rights.", channel);
+            _this.fChatLibInstance.sendMessage("You don't have sufficient rights.", _this.channel);
         }
     };
 
-    cmdHandler.register = function (args, data) {
-        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
+    CommandHandler.prototype.register = function (args, data) {
+        var _this = this;
+		db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
             if(err){
-                fChatLibInstance.throwError(data, err, channel);
+                _this.fChatLibInstance.throwError(data, err, _this.channel);
             }
             else{
                 if(rows.length > 0){
-                    fChatLibInstance.sendMessage("You're already registered.", channel);
+                    _this.fChatLibInstance.sendMessage("You're already registered.", _this.channel);
                 }
                 else{
                     var arrParam = args.split(",");
                     if(checkIfValidStats(arrParam)){
-                        var finalArgs = [data.character, channel].concat(arrParam);
+                        var finalArgs = [data.character, _this.channel].concat(arrParam);
                         db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
                             if (!err) {
-                                fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", channel);
+                                _this.fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", _this.channel);
                             }
                             else {
-                                fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. " + err, channel);
+                                _this.fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. " + err, _this.channel);
                             }
                         });
                     }
@@ -75,12 +78,13 @@ module.exports = function (parent, chanName) {
         });
     };
 
-    function checkIfValidStats(arrParam){
+    function checkIfValidStats(_this, arrParam){
+        var _this = this;
         if(arrParam.length != 6){
-            fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,3,5,1,6,30", channel);
+            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,3,5,1,6,30", _this.channel);
         }
         else if(!arrParam.every(arg => isInt(arg))){
-            fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 4,3,5,1,6,30", channel);
+            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 4,3,5,1,6,30", _this.channel);
         }
         else{
             //register
@@ -88,25 +92,25 @@ module.exports = function (parent, chanName) {
             var statsOnly = arrParam.slice(0,5);
             total = statsOnly.reduce(function(a, b) { return parseInt(a) + parseInt(b); }, 0);
             if(total != 20){
-                fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 20. ("+total+"). Example: !register 4,3,5,1,7,30", channel);
+                _this.fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 20. ("+total+"). Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if(parseInt(arrParam[0]) > 10 || (parseInt(arrParam[0]) < 1)){
-                fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                _this.fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if(parseInt(arrParam[1]) > 10 || (parseInt(arrParam[1]) < 1)){
-                fChatLibInstance.sendMessage("The Dexterity stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                _this.fChatLibInstance.sendMessage("The Dexterity stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if(parseInt(arrParam[2]) > 10 || (parseInt(arrParam[2]) < 1)){
-                fChatLibInstance.sendMessage("The Endurance stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                _this.fChatLibInstance.sendMessage("The Endurance stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if(parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 1)){
-                fChatLibInstance.sendMessage("The Spellpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                _this.fChatLibInstance.sendMessage("The Spellpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if(parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 1)){
-                fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", channel);
+                _this.fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if(parseInt(arrParam[5]) < 0 || parseInt(arrParam[5]) > 100){
-                fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 4,3,5,1,7,30", channel);
+                _this.fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else {
                 return true;
@@ -115,10 +119,11 @@ module.exports = function (parent, chanName) {
         return false;
     }
 
-    cmdHandler.restat = function (args, data) {
-        db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
+    CommandHandler.prototype.restat = function (args, data) {
+        var _this = this;
+		db.query("SELECT 1 FROM flistplugins.RDVF_stats WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields){
             if(err){
-                fChatLibInstance.throwError(data, err, channel);
+                _this.fChatLibInstance.throwError(data, err, _this.channel);
             }
             else{
                 if(rows.length > 0){
@@ -127,16 +132,16 @@ module.exports = function (parent, chanName) {
                         var finalArgs = arrParam.concat([data.character]);
                         db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ?, `cloth` = ? WHERE `name` = ?;", finalArgs, function (err) {
                             if (!err) {
-                                fChatLibInstance.sendMessage("Your stats have successfully been changed.", channel);
+                                _this.fChatLibInstance.sendMessage("Your stats have successfully been changed.", _this.channel);
                             }
                             else {
-                                fChatLibInstance.sendMessage("There was an error during the restat. Contact Lustful Aelith. " + err, channel);
+                                _this.fChatLibInstance.sendMessage("There was an error during the restat. Contact Lustful Aelith. " + err, _this.channel);
                             }
                         });
                     }
                 }
                 else{
-                    fChatLibInstance.sendMessage("You are not registered.", channel);
+                    _this.fChatLibInstance.sendMessage("You are not registered.", _this.channel);
                 }
             }
 
@@ -152,7 +157,7 @@ module.exports = function (parent, chanName) {
                     hp += (stats.endurance - 4)*10;
                 }
                 var mana = stats.willpower + "0";
-                fChatLibInstance.sendPrivMessage(data.character, "[b]" + data.character + "[/b]'s stats" + "\n" +
+                _this.fChatLibInstance.sendPrivMessage(data.character, "[b]" + data.character + "[/b]'s stats" + "\n" +
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
                     "[b][color=green]Endurance[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + 100 + "\n" +
@@ -160,51 +165,30 @@ module.exports = function (parent, chanName) {
                     "[b][color=purple]Willpower[/color][/b]: " + stats.willpower);
             }
             else {
-                fChatLibInstance.sendPrivMessage(data.character, "You aren't registered yet.");
+                _this.fChatLibInstance.sendPrivMessage(data.character, "You aren't registered yet.");
             }
         });
     };
 
-    //cmdHandler.deleteProfile = function (args, data) {
-    //    if (fChatLibInstance.isUserChatOP(channel, data.character)) {
-    //        if (checkIfFightIsGoingOn()) {
-    //            if (currentFighters[0].character == data.character || currentFighters[1].character == data.character) {
-    //                fChatLibInstance.sendMessage("You can't add remove this profile if it's in a fight.", channel);
-    //                return;
-    //            }
-    //        }
-    //        client.del(args, function (err, result) {
-    //            if (result == 1) {
-    //                fChatLibInstance.sendMessage(args + "'s stats have been deleted. Thank you for playing!", channel);
-    //            }
-    //            else {
-    //                fChatLibInstance.sendMessage("This profile hasn't been found in the database.", channel);
-    //            }
-    //        });
-    //    }
-    //    else {
-    //        fChatLibInstance.sendMessage("You don't have sufficient rights.", channel);
-    //    }
-    //};
-
-    cmdHandler.reset = function (args, data) {
-        if (fChatLibInstance.isUserChatOP(data.character, channel)) {
+    CommandHandler.prototype.reset = function (args, data) {
+		if (_this.fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
             if (checkIfFightIsGoingOn()) {
                 resetFight();
-                fChatLibInstance.sendMessage("The ring has been cleared.", channel);
+                _this.fChatLibInstance.sendMessage("The ring has been cleared.", _this.channel);
             }
             else {
-                fChatLibInstance.sendMessage("The ring isn't occupied.", channel);
+                _this.fChatLibInstance.sendMessage("The ring isn't occupied.", _this.channel);
             }
         }
         else {
-            fChatLibInstance.sendMessage("You don't have sufficient rights.", channel);
+            _this.fChatLibInstance.sendMessage("You don't have sufficient rights.", _this.channel);
         }
     };
 
-    cmdHandler.ready = function (args, data) {
+    CommandHandler.prototype.ready = function (args, data) {
+        var _this = this;
         if (currentFighters.length == 0) {
-            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function(err, rows, fields) {
+            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) =>{
                 if (rows != undefined && rows.length == 1) {
                     currentFighters[0] = rows[0];
                     var hp = 100;
@@ -214,10 +198,10 @@ module.exports = function (parent, chanName) {
                     currentFighters[0].hp = hp;
                     currentFighters[0].mana = parseInt(currentFighters[0].willpower)*10;
                     currentFighters[0].stamina = 100;
-                    fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", channel);
+                    _this.fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", _this.channel);
                 }
                 else{
-                    fChatLibInstance.sendMessage("You aren't registered yet.", channel);
+                    _this.fChatLibInstance.sendMessage("You aren't registered yet.", _this.channel);
                 }
             });
         }
@@ -233,10 +217,10 @@ module.exports = function (parent, chanName) {
                         currentFighters[1].hp = hp;
                         currentFighters[1].mana = parseInt(currentFighters[1].willpower)*10;
                         currentFighters[1].stamina = 100;
-                        fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", channel);
+                        _this.fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", _this.channel);
                     }
                     else{
-                        fChatLibInstance.sendMessage("You aren't registered yet.", channel);
+                        _this.fChatLibInstance.sendMessage("You aren't registered yet.", _this.channel);
                     }
                 });
                 setTimeout(function(){
@@ -247,16 +231,17 @@ module.exports = function (parent, chanName) {
                 }, 2500);
             }
             else {
-                fChatLibInstance.sendMessage("You can't set yourself ready twice!", channel);
+                _this.fChatLibInstance.sendMessage("You can't set yourself ready twice!", _this.channel);
             }
         }
         else {
-            fChatLibInstance.sendMessage("Sorry, our two wrestlers are still in the fight!", channel);
+            _this.fChatLibInstance.sendMessage("Sorry, our two wrestlers are still in the fight!", _this.channel);
         }
     };
 
-    cmdHandler.exit = function (args, data) {
-        if (currentFighters.length > 0) {
+    CommandHandler.prototype.exit = function (args, data) {
+        var _this = this;
+		if (currentFighters.length > 0) {
             if ((currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character) || (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].name == data.character)) {
                 var isFirst = (currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character);
                 if(isFirst){
@@ -266,26 +251,27 @@ module.exports = function (parent, chanName) {
                     currentFighters[1].exit = true;
                 }
                 if((currentFighters.length == 1 && isFirst) || (currentFighters[0].exit == true && currentFighters[1].exit == true)){
-                    fChatLibInstance.sendMessage("The fight has been ended.", channel);
+                    _this.fChatLibInstance.sendMessage("The fight has been ended.", _this.channel);
                     setTimeout(resetFight(),2500);
                 }
                 else{
-                    fChatLibInstance.sendMessage("The fight will end if your opponent types !exit too.", channel);
+                    _this.fChatLibInstance.sendMessage("The fight will end if your opponent types !exit too.", _this.channel);
                 }
             }
             else {
-                fChatLibInstance.sendMessage("You are not in a fight.", channel);
+                _this.fChatLibInstance.sendMessage("You are not in a fight.", _this.channel);
             }
         }
         else {
-            fChatLibInstance.sendMessage("There isn't any fight going on at the moment.", channel);
+            _this.fChatLibInstance.sendMessage("There isn't any fight going on at the moment.", _this.channel);
         }
     };
-    cmdHandler.leave = cmdHandler.exit;
-    cmdHandler.leaveFight = cmdHandler.exit;
+    CommandHandler.prototype.leave = CommandHandler.prototype.exit;
+    CommandHandler.prototype.leaveFight = CommandHandler.prototype.exit;
 
-    cmdHandler.forfeit = function (args, data) {
-        if (currentFighters.length > 0) {
+    CommandHandler.prototype.forfeit = function (args, data) {
+        var _this = this;
+		if (currentFighters.length > 0) {
             var isFirst = (currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == data.character);
             var isSecond = (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].name == data.character);
             if (isFirst || isSecond) {
@@ -298,90 +284,109 @@ module.exports = function (parent, chanName) {
                     loser = currentFighters[1].name;
                     winner = currentFighters[0].name;
                 }
-                fChatLibInstance.sendMessage(""+ loser + " has forfeited the match.", channel);
+                _this.fChatLibInstance.sendMessage(""+ loser + " has forfeited the match.", _this.channel);
                 endFight(winner, loser);
             }
             else {
-                fChatLibInstance.sendMessage("You are not in a fight.", channel);
+                _this.fChatLibInstance.sendMessage("You are not in a fight.", _this.channel);
             }
         }
         else {
-            fChatLibInstance.sendMessage("There isn't any fight going on at the moment.", channel);
+            _this.fChatLibInstance.sendMessage("There isn't any fight going on at the moment.", _this.channel);
         }
     };
 
     var attackFunc = function(attack, character){
+        var _this = this;
         if(checkIfFightIsGoingOn()) {
             if (character.toLowerCase() == battlefield.getActor().name.toLowerCase()) {
                 combatInput(attack);
             }
             else {
-                fChatLibInstance.sendMessage("It's not your turn.", channel);
+                _this.fChatLibInstance.sendMessage("It's not your turn.", _this.channel);
             }
         }
         else{
-            fChatLibInstance.sendMessage("There isn't any fights going on right now.", channel);
+            _this.fChatLibInstance.sendMessage("There isn't any fights going on right now.", _this.channel);
         }
     };
 
-    cmdHandler.light = function (args, data) {
-        attackFunc("Light", data.character);
+    CommandHandler.prototype.light = function (args, data) {
+        var _this = this;
+		attackFunc("Light", data.character);
     };
 
-    cmdHandler.heavy = function (args, data) {
-        attackFunc("Heavy", data.character);
+    CommandHandler.prototype.heavy = function (args, data) {
+        var _this = this;
+		attackFunc("Heavy", data.character);
     };
 
-    cmdHandler.grab = function (args, data) {
-        attackFunc("Grab", data.character);
+    CommandHandler.prototype.grab = function (args, data) {
+        var _this = this;
+		attackFunc("Grab", data.character);
     };
 
-    cmdHandler.tackle = function (args, data) {
-        attackFunc("Tackle", data.character);
+    CommandHandler.prototype.tackle = function (args, data) {
+        var _this = this;
+		attackFunc("Tackle", data.character);
     };
 
-    cmdHandler.ranged = function (args, data) {
-        attackFunc("Ranged", data.character);
+    CommandHandler.prototype.ranged = function (args, data) {
+        var _this = this;
+		attackFunc("Ranged", data.character);
     };
 
-    cmdHandler.focus = function (args, data) {
-        attackFunc("Focus", data.character);
+    CommandHandler.prototype.focus = function (args, data) {
+        var _this = this;
+		attackFunc("Focus", data.character);
     };
 
-    cmdHandler.move = function (args, data) {
-        attackFunc("Move", data.character);
+    CommandHandler.prototype.move = function (args, data) {
+        var _this = this;
+		attackFunc("Move", data.character);
     };
-    cmdHandler.escape = cmdHandler.move;
-    cmdHandler.pursue = cmdHandler.move;
+    CommandHandler.prototype.escape = CommandHandler.prototype.move;
+    CommandHandler.prototype.pursue = CommandHandler.prototype.move;
 
-    cmdHandler.magic = function (args, data) {
-        attackFunc("Magic", data.character);
-    };
-
-    cmdHandler.hex = function (args, data) {
-        attackFunc("Hex", data.character);
+    CommandHandler.prototype.magic = function (args, data) {
+        var _this = this;
+		attackFunc("Magic", data.character);
     };
 
-    cmdHandler.channel = function (args, data) {
-        attackFunc("Channel", data.character);
+    CommandHandler.prototype.hex = function (args, data) {
+        var _this = this;
+		attackFunc("Hex", data.character);
     };
 
-    cmdHandler.rest = function (args, data) {
-        attackFunc("Rest", data.character);
+    CommandHandler.prototype.channelAttack = function (args, data) {
+        var _this = this;
+		attackFunc("Channel", data.character);
     };
 
-    cmdHandler.rip = function (args, data) {
-        attackFunc("Rip", data.character);
-    };
-    cmdHandler.ripclothes = cmdHandler.rip;
-
-    cmdHandler.defensive = function (args, data) {
-        attackFunc("Defensive", data.character);
+    CommandHandler.prototype.rest = function (args, data) {
+        var _this = this;
+		attackFunc("Rest", data.character);
     };
 
+    CommandHandler.prototype.rip = function (args, data) {
+        var _this = this;
+		attackFunc("Rip", data.character);
+    };
+    CommandHandler.prototype.ripclothes = CommandHandler.prototype.rip;
 
+    CommandHandler.prototype.defensive = function (args, data) {
+        var _this = this;
+		attackFunc("Defensive", data.character);
+    };
+
+    return CommandHandler;
+}());
+
+module.exports = function (parent, channel) {
+    var cmdHandler = new CommandHandler(parent, channel);
     return cmdHandler;
 };
+
 
 var currentFighters = [];
 var currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, orgasms: 0, winner: -1, currentHold: {}, actionTier: "", actionType: "", dmgHp: 0, dmgLust: 0, actionIsHold: false, diceResult: 0, intMovesCount: [0,0]};
@@ -390,10 +395,10 @@ function endFight(winner, loser){
     //record stats etc
     db.query("INSERT INTO `flistplugins`.`RDVF_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [channel, winner, loser], function (err) {
         if (!err) {
-            //fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", channel);
+            //fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", _this.channel);
         }
         else {
-            fChatLibInstance.sendMessage("There was an error while adding the fight record to the database. Contact Aelith Blanchette. " + err, channel);
+            _this.fChatLibInstance.sendMessage("There was an error while adding the fight record to the database. Contact Aelith Blanchette. " + err, _this.channel);
         }
     });
     resetFight();
@@ -768,7 +773,7 @@ var windowController = {
         "Magic": "Magic attack (24 Mana) <br /> Blasts, bombs, and magical might. Attack your opponents from range, if you have the reservesIntelligence greatly affects damage.",
         "Ranged": "Ranged attack (20 Stamina) <br /> Small arms, bows and throwing knives, and minor innate magical powers (eye beams, frost breath and such). Ranged attacks are stamina efficient, and deal moderate damage based on either Dexterity or Intelligence (whichever is higher), but are only so-so in terms of accuracy unless you take the time to Aim/Focus first.",
         "Rest": "Rest (Free) <br />Restores stamina. <br /> Endurance affects stamina regained. <br />Wisdom affects the likelihood of successfully resting in stressful conditions.",
-        "Channel": "Channel (Free) <br />Restores mana at the cost of stamina. <br /> Willpower affects the amount of stamina converted into mana, and affects the likelihood of successfully channeling in stressful conditions.",
+        "Channel": "Channel (Free) <br />Restores mana at the cost of stamina. <br /> Willpower affects the amount of stamina converted into mana, and affects the likelihood of successfully _this.channeling in stressful conditions.",
         "Focus": "Focus/Aim (Free) <br />Increases concentration. Makes you slightly harder to hit, and considerably improves your accuracy. <br /> Willpower affects how much damage you may take before your focus/aim is lost, and affects the likelihood of successfully focusing/aiming in stressful conditions.",
         "Move": "Escape/Pursue (20 stamina) <br />If you are being grappled, Escape/Pursue will let you attempt to break free. When you are not grappling, escape will open up some distance between you and your opponent, forcing them to pursue you or try to tackle you if they want to use melee attacks. When your opponent is at a distance, Escape/Pursue will let you pursue them, trying to force them back into melee..",
         "Defense": "Makes it harder to hit for everyone",
@@ -921,12 +926,12 @@ var windowController = {
         //$( "#CombatResult" ).html( lines.join("\n") );
         //$( "#CombatResult" ).val( lines.join("\n") );
         //display message in chat instead
-        fChatLibInstance.sendMessage(lines.join("\n"), channel);
+        _this.fChatLibInstance.sendMessage(lines.join("\n"), _this.channel);
         //$( "#ParsedOutput" ).html( this._tagParser.parseContent( lines.join("\n").replace(/\n/g, '<br />') ));
         //$( "#ErrorMessage" ).empty();
         if (this.messages.error.length) {
             //$( "#ErrorMessage" ).append( this.messages.error.join("<br />") );
-            fChatLibInstance.sendMessage(this.messages.error.join("\n"), channel);
+            _this.fChatLibInstance.sendMessage(this.messages.error.join("\n"), _this.channel);
         }
 
         //clear messages from the queue once they have been displayed
@@ -2115,7 +2120,7 @@ fighter.prototype = {
         difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
-            windowController.addHint(attacker.name + " was too disoriented or distracted to channel.");
+            windowController.addHint(attacker.name + " was too disoriented or distracted to _this.channel.");
             return 0; //Failed action, if we ever need to check that.
         }
 
@@ -2127,7 +2132,7 @@ fighter.prototype = {
         attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
         attacker.hitStamina(manaShift);
         attacker.addMana(manaShift);
-        windowController.addHit(attacker.name + " CHANNELS STAMINA INTO MANA!");
+        windowController.addHit(attacker.name + " _this.channelS STAMINA INTO MANA!");
         windowController.addHint(attacker.name + " recovered " + manaShift + " mana, and will briefly be able to hold on to more mana than usual!");
         return 1;
     },
