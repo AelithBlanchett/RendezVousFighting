@@ -76,7 +76,7 @@ var CommandHandler = (function () {
         });
     };
 
-    function checkIfValidStats(_this, arrParam){
+    function checkIfValidStats(arrParam){
         if(arrParam.length != 6){
             _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,3,5,1,6,30", _this.channel);
         }
