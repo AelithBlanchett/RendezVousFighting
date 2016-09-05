@@ -1120,6 +1120,7 @@ function fighter(settings, globalSettings) {
     
     this.rollTotal = 0; // Two values that we track in order to calculate average roll, which we will call Luck on the output screen.
     this.rollsMade = 0; // Luck = rollTotal / rollsMade
+    this.lastRolls = [];
 
     this._statDelta = {hp: this.hp, mana: this.mana, stamina: this.stamina, cloth: this.cloth};
 
@@ -2387,6 +2388,13 @@ function combatInput(actionMade) {
     if (typeof action === 'undefined') return;
     var actor = battlefield.getActor();
     var roll = rollDice([20]);
+    while(actor.lastRolls.indexOf(roll) != -1){
+        roll = rollDice([20]);
+    }
+    actor.lastRolls.push(roll);
+    if(actor.lastRolls.length > 3){
+        actor.lastRolls.pop();
+    }
     var luck = 0; //Actor's average roll of the fight.
     
     windowController.addAction(action);

@@ -131,10 +131,10 @@ describe("Fighter testing", () => {
             }, 1000);
 
             setTimeout(function () {
-                CommandHandler.channelAttack("", {character: "Aelith Blanchette", channel: "here"});
+                CommandHandler.mana("", {character: "Aelith Blanchette", channel: "here"});
             }, 1000);
             setTimeout(function () {
-                CommandHandler.channelAttack("", {character: "Britta Blixt", channel: "here"});
+                CommandHandler.mana("", {character: "Britta Blixt", channel: "here"});
             }, 1000);
 
         },4000);
