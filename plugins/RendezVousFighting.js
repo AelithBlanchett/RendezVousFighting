@@ -1,5 +1,5 @@
 var mysql = require('mysql');
-var mySqlConfig = require('../config/config.mysql.js');
+var mySqlConfig = require('../../config/config.mysql.js');
 var db;
 var _this;
 
