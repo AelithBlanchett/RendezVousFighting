@@ -137,6 +137,133 @@ describe("Fighter testing", () => {
                 CommandHandler.mana("", {character: "Britta Blixt", channel: "here"});
             }, 1000);
 
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
+                CommandHandler.rest("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.rest("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.rest("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.rest("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.rest("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.rest("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.rest("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.rest("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
         },4000);
         setTimeout(done, 100000);
     },1000000);

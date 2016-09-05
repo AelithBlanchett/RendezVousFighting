@@ -2239,7 +2239,7 @@ fighter.prototype = {
             case "Heavy":
                 attacker.hitStamina(30);
                 attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
-                windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
+                windowController.addHint(attacker.name + " was left wide open by the failed attack and " + battlefield.getTarget().name + " has the opportunity to grab them!");
                 break;
             case "Grab":
                 attacker.hitStamina(20);
