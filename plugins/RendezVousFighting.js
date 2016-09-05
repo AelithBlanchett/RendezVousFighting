@@ -341,9 +341,12 @@ var CommandHandler = (function () {
         attackFunc("Hex", data.character);
     };
 
-    CommandHandler.prototype.channelAttack = function (args, data) {
+    CommandHandler.prototype.manaSurge = function (args, data) {
         attackFunc("Channel", data.character);
     };
+
+    CommandHandler.prototype.surge = CommandHandler.prototype.manaSurge;
+    CommandHandler.prototype.mana = CommandHandler.prototype.manaSurge;
 
     CommandHandler.prototype.rest = function (args, data) {
         attackFunc("Rest", data.character);
@@ -372,7 +375,7 @@ var currentFight = {bypassTurn: false, turn: -1, whoseturn: -1, isInit: false, o
 
 function endFight(winner, loser){
     //record stats etc
-    db.query("INSERT INTO `flistplugins`.`RDVF_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [channel, winner, loser], function (err) {
+    db.query("INSERT INTO `flistplugins`.`RDVF_fights` (`room`, `winner`, `loser`) VALUES (?, ?, ?)", [_this.channel, winner, loser], function (err) {
         if (!err) {
             //fChatLibInstance.sendMessage(battlefield.getActor().name + " won the match!", _this.channel);
         }
