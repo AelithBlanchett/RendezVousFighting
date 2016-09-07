@@ -1043,7 +1043,7 @@ arena.prototype = {
             "RF:Free Space",
             "Magic Shop",
             "Public Restroom",
-            "School",
+            "Library",
             "Pirate Ship",
             "Baazar",
             "Supermarket",
@@ -1463,7 +1463,7 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
                 battlefield.inGrabRange = false;
-                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+                windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
 
@@ -1553,7 +1553,7 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
                 battlefield.inGrabRange = false;
-                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+                windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
 
@@ -1837,7 +1837,7 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
                 battlefield.inGrabRange = false;
-                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+                windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
         
@@ -1914,7 +1914,7 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
                 battlefield.inGrabRange = false;
-                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+                windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
 
@@ -1994,7 +1994,7 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
                 battlefield.inGrabRange = false;
-                windowController.addHit(attacker.name + " knocked " + target.name + " back with the attack and they are no longer in grappling range!");
+                windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
 
