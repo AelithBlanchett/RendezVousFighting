@@ -1042,7 +1042,20 @@ arena.prototype = {
             "RF:Glass Box",
             "RF:Free Space",
             "Magic Shop",
-            "Public Restroom"
+            "Public Restroom",
+            "School",
+            "Pirate Ship",
+            "Baazar",
+            "Supermarket",
+            "Night Club",
+            "Docks",
+            "Hospital",
+            "Dark Temple",
+            "Restaurant Kitchen",
+            "Graveyard",
+            "Zoo",
+            "Slaughterhouse",
+            "Junkyard"
             ];
 
         return stages[Math.floor(Math.random() * stages.length)];
@@ -1370,10 +1383,10 @@ fighter.prototype = {
         var rangeMult = (20 - difficulty) / 40; //0.225
         var attackTable = {miss: 0, dodge: 0, glancing: 0, crit: 0}
 
-        attackTable.miss = difficulty; //11
+        attackTable.miss = difficulty;
         if (typeof attackerHitBonus !== 'undefined') {
-            attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult); //8
-            attackTable.miss = Math.max(0, attackTable.miss); //8
+            attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult);
+            attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use the miss value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
         }
         // Basing hit chance on difference multiplied by rangeMulti so that we have ideal DEX difference rather than ideal absolute DEX value.
         if (attackerDex > targetDex) {
@@ -1381,7 +1394,8 @@ fighter.prototype = {
         } else { // Attacker uses either dexterity or a potential alternative attribute to make the attack.
             attackTable.dodge = difficulty + Math.ceil((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult);
         }
-        //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult); //9
+        attackTable.dodge = Math.max(1, attackTable.dodge);//We do this becuase we use the dodge value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
+        //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult);
         attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
         attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
         return attackTable;
@@ -1392,13 +1406,11 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll / 2; //Not directly affected by crits
         var damage = Math.max( (attacker.strength() + attacker.dexterity()) / 2, attacker.strength());	//Affected by crits and the like
-        var stamDamage = attacker.spellpower(); //This value + damage is drained from the targets stamina if the attack is successful
         var requiredStam = 15;
         var difficulty = 4;
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        //if (target.isFocused) difficulty += 2;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused.
@@ -1411,28 +1423,25 @@ fighter.prototype = {
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You might miss more often.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
-        // attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
-
-        //if (attacker.isEvading || target.isEvading) {
-        //    difficulty += 6; //Up the difficulty if the target is evading melee.
-        //    damage /= 2;
-        //    stamDamage /= 2;
-        //    windowController.addHint(attacker.name + " was forced to pursue " + target.name + " and took penalties to the attack.");
-        //}
+        
+        attacker.hitStamina(requiredStam);
         
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        } else {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
+        }
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1450,8 +1459,6 @@ fighter.prototype = {
         }
 
         //Deal all the actual damage/effects here.
-
-        attacker.hitStamina(requiredStam);
         
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
@@ -1464,9 +1471,6 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         stamDamage += damage;
-        //windowController.addHint(attacker.name + " dealt " + Math.floor(stamDamage) + " stamina damage to " + target.name + ".");
-        //disabled for now
-        //target.hitStamina(stamDamage);
         target.hitCloth(3);
         attacker.hasAttackBonus += 1; // Hitting with light attacks sets you up to hit with a heavy.
         windowController.addHit(attacker.name + " gained +1 heavy attack bonus!");
@@ -1491,7 +1495,6 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        //if (target.isFocused) difficulty += 2;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
@@ -1507,20 +1510,19 @@ fighter.prototype = {
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
-        //attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
-
-        //if (attacker.isEvading || target.isEvading) {
-        //    damage /= 2;
-        //    difficulty += 6; //Up the difficulty if the target is evading melee.
-        //    windowController.addHint(attacker.name + " was forced to pursue " + target.name + " and took penalties to the attack.");
-        //}
+        
+        attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
-
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        } else {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
+        }
+        
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            attacker.hitStamina(requiredStam);
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             return 0; //Failed attack, if we ever need to check that.
@@ -1529,7 +1531,6 @@ fighter.prototype = {
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             return 0; //Failed attack, if we ever need to check that.
@@ -1548,8 +1549,6 @@ fighter.prototype = {
         }
 
         //Deal all the actual damage/effects here.
-
-        attacker.hitStamina(requiredStam);
         
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
@@ -1573,14 +1572,9 @@ fighter.prototype = {
         var requiredStam = 20;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
-        //if (attacker.isRestrained) difficulty += 2; //Up the difficulty slightly if the attacker is restrained.
-        //if (target.isRestrained) difficulty += 2; //Submission moves are more difficult
-
         if (target.isRestrained) difficulty += Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
-
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
-        //if (target.isFocused) difficulty += 2; // Up the difficulty if the target is focused
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
         if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
@@ -1603,23 +1597,22 @@ fighter.prototype = {
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
-
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        } else {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
+        }
+        
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
             windowController.addHint(attacker.name + " failed to establish a hold!");
-            attacker.hitStamina(requiredStam);
-
-            //attacker.hitStamina (15);
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " was too fast, and escaped before " + attacker.name + " could establish a hold.");
-            attacker.hitStamina(requiredStam - (attacker.spellpower() * 2));
-
-            //attacker.hitStamina (15);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1667,11 +1660,6 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
 
-        //if (attacker.isEvading || target.isEvading) {
-        //    windowController.addHit(target.name + " IS TOO FAR AWAY! ");
-        //    return 0; //Failed attack, if we ever need to check that.
-        //}
-
         if (attacker.isGrappling(target)) {
             target.hitCloth(roll * 2);
             windowController.addHit(attacker.name + " rips " + target.name + "'s clothes in a grab!");
@@ -1695,15 +1683,12 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += Math.max(0, 8 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
-
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
         if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-
-        // if (target.isEvading) requiredStam += 20; //Increase the stamina cost if the target is not in melee
 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
@@ -1723,12 +1708,16 @@ fighter.prototype = {
         }
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
-
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        } else {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
+        }
+        
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            attacker.hitStamina(requiredStam);
             battlefield.inGrabRange = true; //Even a failed tackle still brings the fighters together.
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1737,18 +1726,15 @@ fighter.prototype = {
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            attacker.hitStamina(requiredStam);
             battlefield.inGrabRange = true; //Even a failed tackle still brings the fighters together.
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
             windowController.addHint(target.name + " rolled with the blow. They are still stunned, but lost less stamina. ");
-            //stamDamage -= 10;
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHint("Critical Hit! " + attacker.name + " really drove that one home!");
             damage *= 2;
-            //stamDamage *= 1.5;
         }
 
         if (target.isEvading) { // You are not evading my attacks after I tackle you.
@@ -1783,8 +1769,6 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         stamDamage = Math.max(stamDamage, 1);
         target.hitHp(damage);
-        //windowController.addHint(attacker.name + " dealt " + Math.floor(stamDamage) + " stamina damage to " + target.name + ".");
-        //target.hitStamina(stamDamage);
         target.isStunned = true;
         return 1; //Successful attack, if we ever need to check that.
     },
@@ -1799,7 +1783,6 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
-        //if (target.isFocused) difficulty += 4;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
@@ -1815,21 +1798,25 @@ fighter.prototype = {
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
-        // attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
+        
+        attacker.hitStamina (requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
-
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        } else {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
+        }
+        
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
-            attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitStamina(requiredStam);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1846,8 +1833,6 @@ fighter.prototype = {
         }
 
         //Deal all the actual damage/effects here.
-
-        attacker.hitStamina(requiredStam);
         
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
@@ -1873,9 +1858,7 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
-
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isFocused) difficulty += 4;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
@@ -1890,21 +1873,25 @@ fighter.prototype = {
             difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana)*(20 - difficulty)); // Too tired? You're likely to have your spell fizzle.
             windowController.addHint(attacker.name + " did not have enough mana, and took penalties to the attack.");
         }
-        // attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
+        
+        attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.willpower());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
-        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
-
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        } else {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
+        }
+        
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
-            attacker.hitMana(requiredMana);
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitMana(requiredMana);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1923,8 +1910,6 @@ fighter.prototype = {
         }
 
         //Deal all the actual damage/effects here.
-
-        attacker.hitMana(requiredMana);
         
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
@@ -1951,9 +1936,7 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
-
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isFocused) difficulty += 4;
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
@@ -1968,21 +1951,25 @@ fighter.prototype = {
             difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana)*(20 - difficulty)); // Too tired? You're likely to have your spell fizzle.
             windowController.addHint(attacker.name + " did not have enough mana, and took penalties to the attack.");
         }
-        // attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
+        
+        attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.willpower());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
-        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
-
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        } else {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
+        }
+        
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
-            attacker.hitMana(requiredMana);
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
-            attacker.hitMana(requiredMana);
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2003,8 +1990,6 @@ fighter.prototype = {
         }
 
         //Deal all the actual damage/effects here.
-
-        attacker.hitMana(requiredMana);
         
         if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
             if (!attacker.isRestrained && !target.isRestrained) {
@@ -2061,8 +2046,7 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty considerably if you are restrained.
-        //if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
-
+        
         difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
@@ -2084,8 +2068,7 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if you are restrained.
-        //if (attacker.isEvading || target.isEvading) difficulty -= 4; //Lower the difficulty if you are not in melee.
-
+        
         difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
@@ -2096,7 +2079,6 @@ fighter.prototype = {
         windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         var manaShift = 20 + roll + (attacker.willpower() * 2);
         manaShift = Math.min(manaShift, attacker.stamina);
-        // manaShift = Math.min( manaShift, attacker._maxMana - attacker.mana);
 
         attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
         attacker.hitStamina(manaShift);
@@ -2111,12 +2093,6 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var requiredStam = 20;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
-
-        //if (attacker.isEvading) {
-        //    windowController.addHint(attacker.name + " stopped trying to avoid melee.");
-        //    attacker.isEvading = false; //If you are already evading melee, this will let you stop it without stamina cost or a roll for success.
-        //    return 1;
-        //}
 
         if (!battlefield.inGrabRange && !attacker.isRestrained) { //If you were neither grappled nor in grab range, you didn't need to do this.
             windowController.addHint(attacker.name + " was neither grappled nor in grapple range and just wasted a turn.");
@@ -2134,10 +2110,17 @@ fighter.prototype = {
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're going to fail.
             windowController.addHint(attacker.name + " was just too tired.");
         }
+        
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
         var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
-        windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
+        } else {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
+        }
+        
         var tempGrappleFlag = true;
         if (attacker.isGrappling(target)) { //If you're grappling someone they are freed, regardless of the outcome.
             windowController.addHint(attacker.name + " used ESCAPE. " + target.name + " is no longer being grappled. ");
@@ -2169,13 +2152,6 @@ fighter.prototype = {
             attacker.addStamina(10);
         }
 
-        //if (target.isEvading) { //If the target is evading melee, this becomes pursue.
-        //    target.isEvading = false;
-        //    attacker.isEvading = false;
-        //    windowController.addHint(attacker.name + " closed the distance between them and " + target.name + ", and is now in melee with them.");
-        //    return 1; //Successful attack, if we ever need to check that.
-        //}
-
         if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
@@ -2187,21 +2163,12 @@ fighter.prototype = {
             battlefield.inGrabRange = false;
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
-
-        //if (tempGrappleFlag) { //If you weren't grappling or being grappled but you were in grapple range, move out of grapple range.
-        //
-        ////    windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + ". " + attacker.name + " is now actively evading melee, at the cost of their normal stamina regen.");
-        ////    attacker.isEvading = true;
-        //}
         return 1; //Successful attack, if we ever need to check that.
     },
 
     actionDefensive: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        //var requiredStam = 20;
-        //var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
-        
         
         if (attacker.isRestrained || target.isRestrained) {
             windowController.addHint("You can't fight defensively while grappling!");
@@ -2210,10 +2177,10 @@ fighter.prototype = {
         
         if (attacker.isEvading) {
             attacker.isEvading = false;
-            windowController.addHint(attacker.name + " stopped fighting defensively.");
+            windowController.addHit(attacker.name + " stopped fighting defensively.");
         } else {
             attacker.isEvading = true;
-            windowController.addHint(attacker.name + " started fighting defensively (+2 defense, -2 attack).");
+            windowController.addHit(attacker.name + " started fighting defensively (+2 defense, -2 attack).");
         }
         
         if (!target.isStunned) {
@@ -2226,11 +2193,6 @@ fighter.prototype = {
 
     actionFumble: function (action) {
         var attacker = this;
-
-        //if (attacker.isEvading && action == "Escape") {
-        //    attacker.isEvading = false; //If you are already evading melee, this will let you stop it without stamina cost or a roll for success.
-        //    return 1;
-        //}
 
         switch (action) {
             case "Light":
