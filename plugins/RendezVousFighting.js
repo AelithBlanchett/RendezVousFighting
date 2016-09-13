@@ -289,6 +289,37 @@ var CommandHandler = (function () {
         }
     };
 
+    CommandHandler.prototype.setwinner = function (args, data) {
+        if (_this.fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
+            if (currentFighters.length > 0) {
+                var isFirst = (currentFighters.length > 0 && currentFighters[0] != undefined && currentFighters[0].name == args && args != data.character);
+                var isSecond = (currentFighters.length > 1 && currentFighters[1] != undefined && currentFighters[1].name == args && args != data.character);
+                if (isFirst || isSecond) {
+                    var winner, loser;
+                    if (isFirst) {
+                        loser = currentFighters[0].name;
+                        winner = currentFighters[1].name;
+                    }
+                    else {
+                        loser = currentFighters[1].name;
+                        winner = currentFighters[0].name;
+                    }
+                    _this.fChatLibInstance.sendMessage("" + winner + " has won the match.", _this.channel);
+                    endFight(winner, loser);
+                }
+                else {
+                    _this.fChatLibInstance.sendMessage("This user is either not in a fight, or you can't do that.", _this.channel);
+                }
+            }
+            else {
+                _this.fChatLibInstance.sendMessage("There isn't any fight going on at the moment.", _this.channel);
+            }
+        }
+        else {
+            _this.fChatLibInstance.sendMessage("You don't have sufficient rights.", _this.channel);
+        }
+    };
+
     var attackFunc = function(attack, character){
         if(checkIfFightIsGoingOn()) {
             if (character.toLowerCase() == battlefield.getActor().name.toLowerCase()) {
