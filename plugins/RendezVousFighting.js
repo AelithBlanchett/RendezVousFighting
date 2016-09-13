@@ -1,5 +1,5 @@
 var mysql = require('mysql');
-var mySqlConfig = require('../../config/config.mysql.js');
+var mySqlConfig = require('../config/config.mysql.js');
 var db;
 var _this;
 
@@ -1449,7 +1449,6 @@ fighter.prototype = {
             windowController.addHit(" GLANCING HIT! ");
             windowController.addHint(target.name + " avoided taking full damage. ");
             damage /= 2;
-            stamDamage /= 2;
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
@@ -1470,7 +1469,6 @@ fighter.prototype = {
         damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        stamDamage += damage;
         target.hitCloth(3);
         attacker.hasAttackBonus += 1; // Hitting with light attacks sets you up to hit with a heavy.
         windowController.addHit(attacker.name + " gained +1 heavy attack bonus!");
@@ -2355,8 +2353,9 @@ function combatInput(actionMade) {
     }
     actor.lastRolls.push(roll);
     if(actor.lastRolls.length > 3){
-        actor.lastRolls.pop();
+        actor.lastRolls.shift();
     }
+    console.log(actor.lastRolls);
     var luck = 0; //Actor's average roll of the fight.
     
     windowController.addAction(action);
