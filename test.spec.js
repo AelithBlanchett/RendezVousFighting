@@ -26,6 +26,13 @@ describe("Fighter testing", () => {
 
         setTimeout(function() {
             setTimeout(function () {
+                CommandHandler.aggressive("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.aggressive("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
                 CommandHandler.light("", {character: "Aelith Blanchette", channel: "here"});
             }, 1000);
             setTimeout(function () {

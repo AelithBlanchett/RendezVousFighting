@@ -2079,7 +2079,7 @@ fighter.prototype = {
         target.hitHp(damage);
         target.hitCloth(3);
         target.hasMagicWeakness += 1;//The hex reduces resistance against further magical attacks.
-        windowController.addHit(attacker.name + " reduced " + target.name + "'s magic resistance by " + hexDamage + "!");
+        windowController.addHit(attacker.name + " reduced " + target.name + "'s magic resistance by " + 1 + "!");
         return 1; //Successful attack, if we ever need to check that.
     },
 
