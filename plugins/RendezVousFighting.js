@@ -153,15 +153,15 @@ var CommandHandler = (function () {
                     hp += (stats.endurance - 4)*10;
                 }
                 var mana = stats.willpower + "0";
-                _this.fChatLibInstance.sendPrivMessage(data.character, "[b]" + data.character + "[/b]'s stats" + "\n" +
+                _this.fChatLibInstance.sendPrivMessage("[b]" + data.character + "[/b]'s stats" + "\n" +
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
                     "[b][color=green]Endurance[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + 100 + "\n" +
                     "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower  + "      " + "[b][color=pink]Cloth[/color][/b]: " + stats.cloth + "\n" +
-                    "[b][color=purple]Willpower[/color][/b]: " + stats.willpower);
+                    "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, data.character);
             }
             else {
-                _this.fChatLibInstance.sendPrivMessage(data.character, "You aren't registered yet.");
+                _this.fChatLibInstance.sendPrivMessage("You aren't registered yet.", data.character);
             }
         });
     };
