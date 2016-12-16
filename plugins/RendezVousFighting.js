@@ -1914,7 +1914,7 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll - target.spellpower() + target.hasMagicWeakness;
+        var baseDamage = roll - target.spellpower() + 2 * target.hasMagicWeakness;
         var damage = 2 * attacker.spellpower();
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
@@ -1999,7 +1999,7 @@ fighter.prototype = {
     actionHex: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll/2 - target.spellpower() + target.hasMagicWeakness;
+        var baseDamage = roll/2 - target.spellpower()/2 + target.hasMagicWeakness;
         var damage = attacker.spellpower();
         var requiredMana = 10;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
@@ -2273,6 +2273,7 @@ fighter.prototype = {
             attacker.isEvading = false;
             windowController.addHit(attacker.name + " stopped fighting very defensively.");
         } else {
+            attacker.isAggressive = false;
             attacker.isEvading = true;
             windowController.addHit(attacker.name + " started fighting very defensively.");
             windowController.addHit("As long as it lasts both fighters have to roll 2 higher than otherwise to hit.");
@@ -2281,8 +2282,8 @@ fighter.prototype = {
         if (!target.isStunned) {
             target.isStunned = true;//The action activates the stance, but you can still use an action.
             windowController.addHint(attacker.name + " can perform another action.");
-	    target.isDisoriented += 2;
-	    target.isExposed += 2;
+	    if (target.isDisoriented) target.isDisoriented += 2;
+	    if (target.isExposed) target.isExposed += 2;
         }
         
         return 1; //Successful attack, if we ever need to check that.
@@ -2301,6 +2302,7 @@ fighter.prototype = {
             attacker.isAggressive = false;
             windowController.addHit(attacker.name + " stopped fighting very aggressively.");
         } else {
+            attacker.isEvading = false;
             attacker.isAggressive = true;
             windowController.addHit(attacker.name + " started fighting very aggressively.");
             windowController.addHit("As long as it lasts both fighters have to roll 2 lower than otherwise to hit.");
@@ -2309,8 +2311,8 @@ fighter.prototype = {
         if (!target.isStunned) {
             target.isStunned = true;//The action activates the stance, but you can still use an action.
             windowController.addHint(attacker.name + " can perform another action.");
-	    target.isDisoriented += 2;
-	    target.isExposed += 2;
+	    if (target.isDisoriented) target.isDisoriented += 2;
+	    if (target.isExposed) target.isExposed += 2;
         }
         
         return 1; //Successful attack, if we ever need to check that.
