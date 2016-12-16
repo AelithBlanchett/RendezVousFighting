@@ -1914,7 +1914,7 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll - target.spellpower() + target.hasMagicWeakness;
+        var baseDamage = roll - target.spellpower() + 2 * target.hasMagicWeakness;
         var damage = 2 * attacker.spellpower();
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
@@ -1999,7 +1999,7 @@ fighter.prototype = {
     actionHex: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll/2 - target.spellpower() + target.hasMagicWeakness;
+        var baseDamage = roll/2 - target.spellpower()/2 + target.hasMagicWeakness;
         var damage = attacker.spellpower();
         var requiredMana = 10;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
