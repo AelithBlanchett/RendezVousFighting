@@ -297,12 +297,12 @@ var CommandHandler = (function () {
                 if (isFirst || isSecond) {
                     var winner, loser;
                     if (isFirst) {
-                        loser = currentFighters[0].name;
-                        winner = currentFighters[1].name;
-                    }
-                    else {
                         loser = currentFighters[1].name;
                         winner = currentFighters[0].name;
+                    }
+                    else {
+                        loser = currentFighters[0].name;
+                        winner = currentFighters[1].name;
                     }
                     _this.fChatLibInstance.sendMessage("" + winner + " has won the match.", _this.channel);
                     endFight(winner, loser);
