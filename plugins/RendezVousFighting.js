@@ -2117,8 +2117,6 @@ fighter.prototype = {
         windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         var stamBonus =  10+(2 * parseInt(roll))+ (attacker.willpower() * 3);  //(3 * parseInt(roll)) + (attacker.endurance() * 2);
         attacker.addStamina(stamBonus);
-        attacker.addHp(hpBonus);
-        attacker.addMana(manaBonus);
         windowController.addHit(attacker.name + " SKIPS MOVE, RESTING!");
         windowController.addHint(attacker.name + " recovered " + stamBonus + " stamina from resting, and a moderate amount of mana and health.");
         return 1;
