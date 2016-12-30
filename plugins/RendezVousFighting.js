@@ -1148,7 +1148,7 @@ function fighter(settings, globalSettings) {
     this._maxHP = 60 + this._endurance * 10;
     this._maxMana = this._willpower * 10;
     this._manaCap = this._maxMana;
-    this._maxStamina = 100;
+    this._maxStamina = 60 + this._willpower * 10;
 
     this.manaBurn = 0;
 
@@ -1442,7 +1442,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll / 2; //Not directly affected by crits
-        var damage = Math.max( (attacker.strength() + attacker.dexterity()) / 2, attacker.strength());	//Affected by crits and the like
+        var damage = attacker.strength();
         var requiredStam = 15;
         var difficulty = 4;
 
@@ -1834,7 +1834,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var baseDamage = roll;
-        var damage = Math.max( (attacker.dexterity() + attacker.strength()) / 2, (attacker.dexterity() + attacker.spellpower()) / 2);
+        var damage = attacker.strength();
         var requiredStam = 25;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2116,8 +2116,6 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         var stamBonus =  10+(2 * parseInt(roll))+ (attacker.willpower() * 3);  //(3 * parseInt(roll)) + (attacker.endurance() * 2);
-        var hpBonus = Math.floor(3 + attacker.willpower());
-        var manaBonus = hpBonus;
         attacker.addStamina(stamBonus);
         attacker.addHp(hpBonus);
         attacker.addMana(manaBonus);
