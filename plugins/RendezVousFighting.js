@@ -1491,7 +1491,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage *= 2; //Only x2 in this case because this bonus will also factor into the stamina damage.
+            damage += 10; //Only x2 in this case because this bonus will also factor into the stamina damage.
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -1582,7 +1582,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage *= 2; //Even at just x2 damage, a critical heavy is a game changer.
+            damage += 10; //Even at just x2 damage, a critical heavy is a game changer.
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -1608,6 +1608,10 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll / 4;
         var damage = attacker.strength() / 2;
+	if (attacker.isGrappling(target)) {
+        	baseDamage = roll;
+        	damage = attacker.strength() * 2;
+	}
         var requiredStam = 20;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
@@ -1667,14 +1671,12 @@ fighter.prototype = {
             windowController.addHint(target.name + " put up quite a struggle, costing " + attacker.name + " additional stamina. ");
             attacker.hitStamina(10 + target.strength());
         } else if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
-            windowController.addHint("Critical! " + attacker.name + " found a particularly good hold and " + target.name + " lost stamina!");
-            //damage *= 2;
-            target.hitStamina(10 + attacker.strength()); //Half STR extra damage is too low for a crit. Better to damage opponent's stamina.
+            windowController.addHint("Critical! " + attacker.name + " found a particularly good hold!");
+            damage += 10;
         }
 
         if (attacker.isGrappling(target)) {
             windowController.addHit(" SUBMISSION ");
-            damage += attacker.strength() * 2;
             target.isDisoriented += 2; //Submission moves disorient the target.
             target.isEscaping -= 3; //Submission moves make it harder to escape.
             if (target.isGrappling(attacker)) {
@@ -1794,7 +1796,7 @@ fighter.prototype = {
             windowController.addHint(target.name + " rolled with the blow. They are still stunned, but lost less stamina. ");
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHint("Critical Hit! " + attacker.name + " really drove that one home!");
-            damage *= 2;
+            damage += 10;
         }
 
         if (attacker.isGrappling(target)) {
@@ -1890,7 +1892,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " hit somewhere that really hurts!");
-            damage *= 2;
+            damage += 10;
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -1914,7 +1916,7 @@ fighter.prototype = {
     actionMagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll - target.spellpower() + 2 * target.hasMagicWeakness;
+        var baseDamage = roll - target.spellpower() + target.hasMagicWeakness;
         var damage = 2 * attacker.spellpower();
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
@@ -1973,7 +1975,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage *= 2; //Magical crits don't deal as much bonus damage, but...
+            damage += 10; //Magical crits don't deal as much bonus damage, but...
             target.isDisoriented = 4; //They tend to leave the target dazed
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
@@ -2058,7 +2060,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage *= 2; //Magical crits don't deal as much bonus damage, but...
+            damage += 10; //Magical crits don't deal as much bonus damage, but...
             target.isDisoriented = 4; //They tend to leave the target dazed
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
@@ -2103,6 +2105,14 @@ fighter.prototype = {
             windowController.addHint(attacker.name + " was too disoriented or distracted to get any benefit from resting.");
             return 0; //Failed action, if we ever need to check that.
         }
+        
+        if (roll = 20) {
+            windowController.addHit("CRITICAL SUCCESS! ");
+            windowController.addHint(attacker.name + " can perform another action!");
+            target.isStunned = true;
+	    if (target.isDisoriented) target.isDisoriented += 2;
+	    if (target.isExposed) target.isExposed += 2;
+        }
 
         windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         var stamBonus =  10+(2 * parseInt(roll))+ (attacker.willpower() * 3);  //(3 * parseInt(roll)) + (attacker.endurance() * 2);
@@ -2136,6 +2146,14 @@ fighter.prototype = {
             windowController.addHint(attacker.name + " was too disoriented or distracted to focus.");
             return 0; //Failed action, if we ever need to check that.
         }
+        
+        if (roll = 20) {
+            windowController.addHit("CRITICAL SUCCESS! ");
+            windowController.addHint(attacker.name + " can perform another action!");
+            target.isStunned = true;
+	    if (target.isDisoriented) target.isDisoriented += 2;
+	    if (target.isExposed) target.isExposed += 2;
+        }
 
         windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         windowController.addHit(attacker.name + " FOCUSES/AIMS!");
@@ -2162,6 +2180,14 @@ fighter.prototype = {
         if (roll <= difficulty) {	//Failed!
             windowController.addHint(attacker.name + " was too disoriented or distracted to channel.");
             return 0; //Failed action, if we ever need to check that.
+        }
+        
+        if (roll = 20) {
+            windowController.addHit("CRITICAL SUCCESS! ");
+            windowController.addHint(attacker.name + " can perform another action!");
+            target.isStunned = true;
+	    if (target.isDisoriented) target.isDisoriented += 2;
+	    if (target.isExposed) target.isExposed += 2;
         }
 
         windowController.addInfo("Dice Roll Required: " + (difficulty+1));
@@ -2241,9 +2267,10 @@ fighter.prototype = {
             attacker.hitStamina(10);
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL SUCCESS! ");
-            windowController.addHint(attacker.name + " succeeded, and they were so quick they even had a moment to rest afterward.");
-            windowController.addHint(attacker.name + " recovered (10) Stamina!");
-            attacker.addStamina(10);
+            windowController.addHint(attacker.name + " can perform another action!");
+            target.isStunned = true;
+	    if (target.isDisoriented) target.isDisoriented += 2;
+	    if (target.isExposed) target.isExposed += 2;
         }
 
         if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
@@ -2279,9 +2306,10 @@ fighter.prototype = {
             windowController.addHit("As long as it lasts both fighters have to roll 2 higher than otherwise to hit.");
         }
         
-        if (!target.isStunned) {
-            target.isStunned = true;//The action activates the stance, but you can still use an action.
-            windowController.addHint(attacker.name + " can perform another action.");
+        if (roll = 20) {
+            windowController.addHit("CRITICAL SUCCESS! ");
+            windowController.addHint(attacker.name + " can perform another action!");
+            target.isStunned = true;
 	    if (target.isDisoriented) target.isDisoriented += 2;
 	    if (target.isExposed) target.isExposed += 2;
         }
@@ -2308,9 +2336,10 @@ fighter.prototype = {
             windowController.addHit("As long as it lasts both fighters have to roll 2 lower than otherwise to hit.");
         }
         
-        if (!target.isStunned) {
-            target.isStunned = true;//The action activates the stance, but you can still use an action.
-            windowController.addHint(attacker.name + " can perform another action.");
+        if (roll = 20) {
+            windowController.addHit("CRITICAL SUCCESS! ");
+            windowController.addHint(attacker.name + " can perform another action!");
+            target.isStunned = true;
 	    if (target.isDisoriented) target.isDisoriented += 2;
 	    if (target.isExposed) target.isExposed += 2;
         }
