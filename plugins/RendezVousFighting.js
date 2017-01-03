@@ -149,7 +149,7 @@ var CommandHandler = (function () {
             if (rows != undefined && rows.length == 1) {
                 var stats = rows[0];
                 var hp = 100;
-                if(stats.endurance > 4){
+                if(stats.endurance != 4){
                     hp += (stats.endurance - 4)*10;
                 }
                 var mana = stats.willpower + "0";
@@ -1073,7 +1073,7 @@ arena.prototype = {
             "RF:Glass Box",
             "RF:Free Space",
             "Magic Shop",
-            "Public Restroom",
+            "Locker Room",
             "Library",
             "Pirate Ship",
             "Baazar",
@@ -1082,11 +1082,16 @@ arena.prototype = {
             "Docks",
             "Hospital",
             "Dark Temple",
-            "Restaurant Kitchen",
+            "Restaurant",
             "Graveyard",
             "Zoo",
             "Slaughterhouse",
-            "Junkyard"
+            "Junkyard",
+	    "Theatre",
+	    "Circus",
+	    "Castle",
+	    "Museum",
+	    "Beach"
             ];
 
         return stages[Math.floor(Math.random() * stages.length)];
@@ -1122,8 +1127,8 @@ function fighter(settings, globalSettings) {
     this._spellpower = (+settings.Spellpower);
     this._willpower = (+settings.Willpower);
 
-    this._dizzyValue = Math.max(globalSettings.DisorientedAt - (this._willpower * 2), 0);
-    this._koValue = Math.max(globalSettings.UnconsciousAt - (this._willpower * 2), 0);
+    this._dizzyValue = Math.max(globalSettings.DisorientedAt, 0);
+    this._koValue = Math.max(globalSettings.UnconsciousAt, 0);
     this._deathValue = globalSettings.DeadAt;
 
     //Check stat points for conformity to rules
@@ -1385,12 +1390,16 @@ fighter.prototype = {
 
         if (this.hp > this._dizzyValue && this.isDisoriented > 0) {
             this.isDisoriented -= 1;
-            if (this.isDisoriented == 0) windowController.addHint(this.name + " has recovered and is no longer disoriented!");
+            if (this.isDisoriented == 0) windowController.addHint(this.name + " has recovered and is no longer dizzy!");
         }
 
         if (this.hp <= this._dizzyValue && this.isDisoriented == 0) {
             this.isDisoriented = 1;
-            windowController.addHit(this.name + " is dizzy! Stats penalty!");
+            windowController.addHit(this.name + " became dizzy! Stats penalty!");
+        }
+
+        if (this.isDisoriented == 0) {
+            windowController.addHint(this.name + " is dizzy! Stats penalty!");
         }
         
         if (this.isExposed > 0) {
@@ -1674,7 +1683,7 @@ fighter.prototype = {
 
         if (attacker.isGrappling(target)) {
             windowController.addHit(" SUBMISSION ");
-            target.isDisoriented += 2; //Submission moves disorient the target.
+            target.hitStamina(10);//target.isDisoriented += 2; //Submission moves disorient the target.
             target.isEscaping -= 3; //Submission moves make it harder to escape.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
@@ -1951,7 +1960,7 @@ fighter.prototype = {
         
         attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.willpower());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         if (target.canDodge(attacker)) {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
@@ -1982,7 +1991,7 @@ fighter.prototype = {
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
             damage += 10; //Magical crits don't deal as much bonus damage, but...
-            target.isDisoriented = 4; //They tend to leave the target dazed
+            //target.isDisoriented = 4; //They tend to leave the target dazed
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
@@ -2041,7 +2050,7 @@ fighter.prototype = {
         
         attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.willpower());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         if (target.canDodge(attacker)) {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
@@ -2068,7 +2077,7 @@ fighter.prototype = {
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
             damage += 10; //Magical crits don't deal as much bonus damage, but...
-            target.isDisoriented = 4; //They tend to leave the target dazed
+            //target.isDisoriented = 4; //They tend to leave the target dazed
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
@@ -2128,7 +2137,7 @@ fighter.prototype = {
         
         attacker.hitMana (requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.willpower());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         if (target.canDodge(attacker)) {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
@@ -2155,7 +2164,7 @@ fighter.prototype = {
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
             damage += 10; //Magical crits don't deal as much bonus damage, but...
-            target.isDisoriented = 4; //They tend to leave the target dazed
+            //target.isDisoriented = 4; //They tend to leave the target dazed
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
@@ -2293,7 +2302,7 @@ fighter.prototype = {
     actionMove: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var requiredStam = 20;
+        var requiredStam = 10;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
         // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
