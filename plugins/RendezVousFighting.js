@@ -383,6 +383,10 @@ var CommandHandler = (function () {
     CommandHandler.prototype.surge = CommandHandler.prototype.manaSurge;
     CommandHandler.prototype.mana = CommandHandler.prototype.manaSurge;
 
+    CommandHandler.prototype.teleport = function (args, data) {
+        attackFunc("Teleport", data.character);
+    };
+
     CommandHandler.prototype.rest = function (args, data) {
         attackFunc("Rest", data.character);
     };
@@ -1709,22 +1713,14 @@ fighter.prototype = {
             target.isEscaping -= 3; //Submission moves make it harder to escape.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
-                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and suffering disorientation from the pain. " + attacker.name + " is also no longer at a penalty from being grappled!");
+                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and losing stamina from the pain. " + attacker.name + " is also no longer at a penalty from being grappled!");
             } else {
-                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and suffering disorientation from the pain.");
+                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and losing stamina from the pain.");
             }
         } else {
             windowController.addHit(attacker.name + " GRABBED " + target.name + "! ");
             windowController.addHint(target.name + " is being grappled! " + attacker.name + " can use Grab to try for a submission hold or Tackle to throw them - dealing damage, but setting them free.");
             target.isGrappledBy.push(attacker.name);
-            if (target.isAggressive || attacker.isAggressive) { //A successful grab puts an end to aggressive attacks.
-                target.isAggressive = false;
-                attacker.isAggressive = false;
-            }
-            if (target.isEvading || attacker.isEvading) { //A successful grab puts an end to evading attacks.
-                target.isEvading = false;
-                attacker.isEvading = false;
-            }
         }
         
         //If we managed to grab without being in grab range, we are certainly in grabe range afterwards.
