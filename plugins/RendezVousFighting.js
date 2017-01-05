@@ -1365,7 +1365,7 @@ fighter.prototype = {
         this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana, cloth: this.cloth};
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
-        if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused.");
+        if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused (" + this.isFocused + " points).");
         if (battlefield.inGrabRange && battlefield.displayGrabbed){
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
