@@ -383,6 +383,10 @@ var CommandHandler = (function () {
     CommandHandler.prototype.surge = CommandHandler.prototype.manaSurge;
     CommandHandler.prototype.mana = CommandHandler.prototype.manaSurge;
 
+    CommandHandler.prototype.teleport = function (args, data) {
+        attackFunc("Teleport", data.character);
+    };
+
     CommandHandler.prototype.rest = function (args, data) {
         attackFunc("Rest", data.character);
     };
@@ -1398,8 +1402,16 @@ fighter.prototype = {
             windowController.addHit(this.name + " became dizzy! Stats penalty!");
         }
 
-        if (this.isDisoriented == 0) {
+        if (this.isDisoriented > 0) {
             windowController.addHint(this.name + " is dizzy! Stats penalty!");
+        }
+
+        if (this.isEvading > 0) {
+            windowController.addHint(this.name + " has a +" + this.isEvading + " evasion bonus.");
+        }
+
+        if (this.isAggressive > 0) {
+            windowController.addHint(this.name + " has a +" + this.isAggressive + " action bonus.");
         }
         
         if (this.isExposed > 0) {
@@ -1456,12 +1468,17 @@ fighter.prototype = {
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused.
-        if (attacker.isAggressive) difficulty -= 2; //If you go berzerk you hit more often.
-        if (target.isAggressive) difficulty -= 2; //If you go berzerk you also get hit more often.
-        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
-        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-
+    
+	if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += target.isEvading;
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	    
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             damage *= attacker.stamina / requiredStam;
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You might miss more often.
@@ -1539,12 +1556,16 @@ fighter.prototype = {
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        if (attacker.isAggressive) difficulty -= 2; //If you go berzerk you hit more often.
-        if (target.isAggressive) difficulty -= 2; //If you go berzerk you also get hit more often.
-        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
-        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-        
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += target.isEvading;
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
@@ -1631,11 +1652,16 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        if (attacker.isAggressive) difficulty -= 2; //If you go berzerk you hit more often.
-        if (target.isAggressive) difficulty -= 2; //If you go berzerk you also get hit more often.
-        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
-        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
-
+	    
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += target.isEvading;
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
@@ -1687,22 +1713,14 @@ fighter.prototype = {
             target.isEscaping -= 3; //Submission moves make it harder to escape.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
-                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and suffering disorientation from the pain. " + attacker.name + " is also no longer at a penalty from being grappled!");
+                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and losing stamina from the pain. " + attacker.name + " is also no longer at a penalty from being grappled!");
             } else {
-                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and suffering disorientation from the pain.");
+                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and losing stamina from the pain.");
             }
         } else {
             windowController.addHit(attacker.name + " GRABBED " + target.name + "! ");
             windowController.addHint(target.name + " is being grappled! " + attacker.name + " can use Grab to try for a submission hold or Tackle to throw them - dealing damage, but setting them free.");
             target.isGrappledBy.push(attacker.name);
-            if (target.isAggressive || attacker.isAggressive) { //A successful grab puts an end to aggressive attacks.
-                target.isAggressive = false;
-                attacker.isAggressive = false;
-            }
-            if (target.isEvading || attacker.isEvading) { //A successful grab puts an end to evading attacks.
-                target.isEvading = false;
-                attacker.isEvading = false;
-            }
         }
         
         //If we managed to grab without being in grab range, we are certainly in grabe range afterwards.
@@ -1718,6 +1736,16 @@ fighter.prototype = {
     actionRip: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
+	    
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		roll -= target.isEvading;
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		roll += attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	 
 
         if (attacker.isGrappling(target)) {
             target.hitCloth(roll * 2);
@@ -1759,12 +1787,17 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        if (attacker.isAggressive) difficulty -= 2; //If you go berzerk you hit more often.
-        if (target.isAggressive) difficulty -= 2; //If you go berzerk you also get hit more often.
-        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
-        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += target.isEvading;
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
@@ -1856,15 +1889,21 @@ fighter.prototype = {
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
+	if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
-        if (attacker.isAggressive) difficulty -= 2; //If you go berzerk you hit more often.
-        if (target.isAggressive) difficulty -= 2; //If you go berzerk you also get hit more often.
-        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
-        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	 
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
@@ -1943,12 +1982,17 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        if (attacker.isAggressive) difficulty -= 2; //If you go berzerk you hit more often.
-        if (target.isAggressive) difficulty -= 2; //If you go berzerk you also get hit more often.
-        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
-        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += target.isEvading;
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	 
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
             critCheck = false;
@@ -2022,23 +2066,28 @@ fighter.prototype = {
         var requiredMana = 10;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
-        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        // Melee attack bonus generated by light attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
             windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
         }
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
-        if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
+        if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        if (attacker.isAggressive) difficulty -= 2; //If you go berzerk you hit more often.
-        if (target.isAggressive) difficulty -= 2; //If you go berzerk you also get hit more often.
-        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
-        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	 
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
             critCheck = false;
@@ -2116,16 +2165,21 @@ fighter.prototype = {
         }
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
-        if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
+        if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        if (attacker.isAggressive) difficulty -= 2; //If you go berzerk you hit more often.
-        if (target.isAggressive) difficulty -= 2; //If you go berzerk you also get hit more often.
-        if (attacker.isEvading) difficulty += 2; //It's harder to make an attack if you're fighting defensively.
-        if (target.isEvading) difficulty += 2; //It's harder to hit somone who is fighting defesnively, but being ranged helps.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+	 
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
             critCheck = false;
@@ -2200,6 +2254,14 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
 
+        if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply bonus to our action from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;.
+		attacker.isAggressive = 0;
+	}
+	 
         difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
@@ -2237,6 +2299,14 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty considerably if you are restrained.
         
+        if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply bonus to our action from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;.
+		attacker.isAggressive = 0;
+	}
+	 
         difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
@@ -2272,6 +2342,14 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if you are restrained.
         
+        if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply bonus to our action from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;.
+		attacker.isAggressive = 0;
+	}
+	 
         difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
@@ -2311,17 +2389,21 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
         }
 
-        if (!battlefield.inGrabRange && !attacker.isRestrained) { //If you were neither grappled nor in grab range, you didn't need to do this.
-            windowController.addHint(attacker.name + " was neither grappled nor in grapple range and just wasted a turn.");
-            return 1; //Successful attack, if we ever need to check that.
-        }
-
         if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
+	    
+	if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += target.isEvading;
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
 
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam)*(20 - difficulty)); // Too tired? You're going to fail.
@@ -2381,66 +2463,104 @@ fighter.prototype = {
             battlefield.inGrabRange = false;
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
+	
+	attacker.isEvading = Math.floor(roll/2);
+	attacker.isAggressive =  Math.floor(roll/2);
+	windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
         return 1; //Successful attack, if we ever need to check that.
     },
+	
+	//new move
 
-    actionDefensive: function (roll) {
+    actionTeleport: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
+        var requiredMana = 10;
+        var difficulty = 10 - attacker.spellpower(); //Base difficulty, rolls greater than this amount will hit.
         
-        if (attacker.isRestrained || target.isRestrained) {
-            windowController.addHint("You can't fight defensively while grappling!");
-            return 0
+        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        if (attacker.hasAttackBonus > 0) {
+            attacker.hasAttackBonus = 0;
+            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+        }
+
+        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
+        if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
+        if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
+        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
+	    
+	if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+		difficulty += target.isEvading;
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+		difficulty -= attacker.isAggressive;
+		attacker.isAggressive = 0;
+	}
+		
+        if (attacker.mana < requiredMana) {	//Not enough stamina-- reduced effect
+            difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana)*(20 - difficulty)); // Too tired? You're going to fail.
+            windowController.addHint(attacker.name + " didn't have enough Mana and took a penalty to the attempt.");
         }
         
-        if (attacker.isEvading) {
-            attacker.isEvading = false;
-            windowController.addHit(attacker.name + " stopped fighting very defensively.");
+        attacker.hitMana(requiredMana); //Now that mana has been checked, reduce the attacker's mana by the appopriate amount.
+
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        if (target.canDodge(attacker)) {
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
         } else {
-            attacker.isAggressive = false;
-            attacker.isEvading = true;
-            windowController.addHit(attacker.name + " started fighting very defensively.");
-            windowController.addHit("As long as it lasts both fighters have to roll 2 higher than otherwise to hit.");
+        	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
         
-        if (roll = 20) {
-            windowController.addHit("CRITICAL SUCCESS! ");
+        var tempGrappleFlag = true;
+        if (attacker.isGrappling(target)) { //If you're grappling someone they are freed, regardless of the outcome.
+            windowController.addHint(attacker.name + " used ESCAPE. " + target.name + " is no longer being grappled. ");
+            target.removeGrappler(attacker);
+            tempGrappleFlag = false;
+        }
+
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
+            windowController.addHit("FAILED! ");
+            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
+            return 0; //Failed attack, if we ever need to check that.
+        }
+
+        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
+            windowController.addHit(target.name + " WAS TOO QUICK! ");
+            windowController.addHint(attacker.name + " failed. " + target.name + " was just too quick for them.");
+            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
+            return 0; //Failed attack, if we ever need to check that.
+        }
+
+        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
+            windowController.addHit(" CLOSE CALL! ");
+            windowController.addHint(attacker.name + " succeeded, but it was a close call, and cost them more stamina than usual. ");
+            attacker.hitStamina(10);
+        } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+            windowController.addHit(" CRITICAL SUCCESS! ");
             windowController.addHint(attacker.name + " can perform another action!");
             target.isStunned = true;
 	    if (target.isDisoriented) target.isDisoriented += 2;
 	    if (target.isExposed) target.isExposed += 2;
         }
-        
-        return 1; //Successful attack, if we ever need to check that.
-    },
 
-    actionAggressive: function (roll) {
-        var attacker = this;
-        var target = battlefield.getTarget();
-        
-        if (attacker.isRestrained || target.isRestrained) {
-            windowController.addHint("You can't fight aggressively while grappling!");
-            return 0
+        if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
+            windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
+            attacker.removeGrappler(target);
+            tempGrappleFlag = false;
         }
-        
-        if (attacker.isAggressive) {
-            attacker.isAggressive = false;
-            windowController.addHit(attacker.name + " stopped fighting very aggressively.");
-        } else {
-            attacker.isEvading = false;
-            attacker.isAggressive = true;
-            windowController.addHit(attacker.name + " started fighting very aggressively.");
-            windowController.addHit("As long as it lasts both fighters have to roll 2 lower than otherwise to hit.");
+
+        if (battlefield.inGrabRange) {
+            windowController.addHit(attacker.name + " moved away!");
+            battlefield.inGrabRange = false;
+            windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
-        
-        if (roll = 20) {
-            windowController.addHit("CRITICAL SUCCESS! ");
-            windowController.addHint(attacker.name + " can perform another action!");
-            target.isStunned = true;
-	    if (target.isDisoriented) target.isDisoriented += 2;
-	    if (target.isExposed) target.isExposed += 2;
-        }
-        
+	
+	attacker.isEvading = Math.floor(roll/2);
+	attacker.isAggressive =  Math.floor(roll/2);
+	windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2453,6 +2573,13 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " lost the melee attack bonus!");
         }
 
+        if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
+		target.isEvading = 0;
+	}
+	if (attacker.isAggressive) {//Only applies to 1 action, so we reset it now.
+		attacker.isAggressive = 0;
+	}
+	 
         switch (action) {
             case "Light":
                 attacker.hitStamina(15);
@@ -2471,7 +2598,7 @@ fighter.prototype = {
                 windowController.addHint(attacker.name + " was left wide open by the failed attack and " + battlefield.getTarget().name + " has the opportunity to grab them!");
                 break;
             case "Ranged":
-                attacker.hitStamina(25);
+                attacker.hitStamina(30);
                 break;
             case "Magic":
                 attacker.hitMana(20);
@@ -2483,16 +2610,13 @@ fighter.prototype = {
                 attacker.hitMana(20);
                 break;
             case "Escape":
-                attacker.hitStamina(20);
+                attacker.hitStamina(10);
                 break;
             case "Skip/Rest":
                 windowController.addHint(attacker.name + " could not calm their nerves.");
                 break;
-            case "Defensive":
-                windowController.addHint(attacker.name + " could not focus on defense.");
-                break;
-            case "Aggressive":
-                windowController.addHint(attacker.name + " could not focus on offense.");
+            case "Teleport":
+                attacker.hitMana(10);
                 break;
         }
 
