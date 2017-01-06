@@ -2658,7 +2658,7 @@ fighter.prototype = {
 	}
 	    
 	attacker.isStunned = true;//Fumbles make you lose a turn.
-	windowController.addHit(attacker.name + " has to recover and will lose the next action!");
+	windowController.addHint(attacker.name + " has to recover and will lose the next action!");
 	 
         switch (action) {
             case "Light":
