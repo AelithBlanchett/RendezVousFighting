@@ -1679,7 +1679,16 @@ fighter.prototype = {
 
         if (target.isExposed < 1 && !battlefield.inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
             battlefield.inGrabRange = true;
+	    attacker.hasAttackBonus += Math.ceil(roll/4);//Every action needs to have a benefit that scales with the roll in order not to feel wasted.
             windowController.addHit(attacker.name + " moved into grappling range! " + target.name + " can try to push them away with an attack.");
+	    if (roll = 20) {//If we're just moving into range grab counts as a buff so a crit gives a bonus action.
+         	windowController.addHit("CRITICAL SUCCESS! ");
+            	windowController.addHint(attacker.name + " can perform another action!");
+            	target.isStunned = true;
+	    	if (target.isDisoriented) target.isDisoriented += 2;
+	    	if (target.isExposed) target.isExposed += 2;
+            }
+	    windowController.addInfo("Dice Roll Required: 2");
             return 1; //Successful attack, if we ever need to check that.
         }
 
@@ -2573,6 +2582,64 @@ fighter.prototype = {
 	windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
         return 1; //Successful attack, if we ever need to check that.
     },
+//Leaving aggressive and defensive actions in for now because if I don't that makes it harder to read the code for Teleport when making a comparing files. They can safely be deleted though.
+    actionDefensive: function (roll) {
+        var attacker = this;
+        var target = battlefield.getTarget();
+        
+        if (attacker.isRestrained || target.isRestrained) {
+            windowController.addHint("You can't fight defensively while grappling!");
+            return 0
+        }
+        
+        if (attacker.isEvading) {
+            attacker.isEvading = false;
+            windowController.addHit(attacker.name + " stopped fighting very defensively.");
+        } else {
+            attacker.isAggressive = false;
+            attacker.isEvading = true;
+            windowController.addHit(attacker.name + " started fighting very defensively.");
+            windowController.addHit("As long as it lasts both fighters have to roll 2 higher than otherwise to hit.");
+        }
+        
+        if (!target.isStunned) {
+            target.isStunned = true;//The action activates the stance, but you can still use an action.
+            windowController.addHint(attacker.name + " can perform another action.");
+	    if (target.isDisoriented) target.isDisoriented += 2;
+	    if (target.isExposed) target.isExposed += 2;
+        }
+        
+        return 1; //Successful attack, if we ever need to check that.
+    },
+
+    actionAggressive: function (roll) {
+        var attacker = this;
+        var target = battlefield.getTarget();
+        
+        if (attacker.isRestrained || target.isRestrained) {
+            windowController.addHint("You can't fight aggressively while grappling!");
+            return 0
+        }
+        
+        if (attacker.isAggressive) {
+            attacker.isAggressive = false;
+            windowController.addHit(attacker.name + " stopped fighting very aggressively.");
+        } else {
+            attacker.isEvading = false;
+            attacker.isAggressive = true;
+            windowController.addHit(attacker.name + " started fighting very aggressively.");
+            windowController.addHit("As long as it lasts both fighters have to roll 2 lower than otherwise to hit.");
+        }
+        
+        if (!target.isStunned) {
+            target.isStunned = true;//The action activates the stance, but you can still use an action.
+            windowController.addHint(attacker.name + " can perform another action.");
+	    if (target.isDisoriented) target.isDisoriented += 2;
+	    if (target.isExposed) target.isExposed += 2;
+        }
+        
+        return 1; //Successful attack, if we ever need to check that.
+    },
 
     actionFumble: function (action) {
         var attacker = this;
@@ -2589,6 +2656,9 @@ fighter.prototype = {
 	if (attacker.isAggressive) {//Only applies to 1 action, so we reset it now.
 		attacker.isAggressive = 0;
 	}
+	    
+	attacker.isStunned = true;//Fumbles make you lose a turn.
+	windowController.addHit(attacker.name + " has to recover and will lose the next action!");
 	 
         switch (action) {
             case "Light":
@@ -2612,6 +2682,8 @@ fighter.prototype = {
                 break;
             case "Magic":
                 attacker.hitMana(20);
+                attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
+                windowController.addHint(attacker.name + " was left wide open by the failed attack and " + battlefield.getTarget().name + " has the opportunity to grab them!");
                 break;
             case "Hex":
                 attacker.hitMana(10);
