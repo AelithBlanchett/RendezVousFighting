@@ -1451,7 +1451,7 @@ fighter.prototype = {
         attackTable.dodge = Math.max(1, attackTable.dodge);//We do this becuase we use the dodge value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
         //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult);
         attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
-        attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
+        attackTable.crit = 20 //attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
         return attackTable;
     },
 
@@ -1497,6 +1497,10 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" MISS! ");
+	    if (attacker.hasAttackBonus > 0) {
+		    attacker.hasAttackBonus = 0;
+            	    windowController.addHint(target.name + " lost the melee attack bonus because of the miss!");
+	    }
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2324,7 +2328,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + (difficulty+1));
         windowController.addHit(attacker.name + " FOCUSES/AIMS!");
-        attacker.isFocused = (roll + attacker.willpower()) * 2;
+        attacker.isFocused = 10 + (roll + attacker.willpower()) * 2;
         return 1;
     },
 
