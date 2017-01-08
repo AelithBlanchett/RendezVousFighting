@@ -1348,10 +1348,12 @@ fighter.prototype = {
         message += "[/color][color=yellow] hit points: " + this.hp;
         if (hpDelta > 0) message += "[color=cyan] (+" + hpDelta + ")[/color]";
         if (hpDelta < 0) message += "[color=red] (" + hpDelta + ")[/color]";
+	message += "|" + this._maxHP;    
 
         message += "[/color][color=green] stamina: " + this.stamina;
         if (staminaDelta > 0) message += "[color=cyan] (+" + staminaDelta + ")[/color]";
         if (staminaDelta < 0) message += "[color=red] (" + staminaDelta + ")[/color]";
+	message += "|" + this._maxStamina;    
 
         message += "[/color] mana: " + this.mana;
         if (manaDelta > 0) message += "[color=cyan] (+" + manaDelta + ")[/color]";
@@ -2385,7 +2387,7 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty+1)));
-        var manaShift = 20 + roll + (attacker.willpower() * 2);
+        var manaShift = 10 + (roll * 2) + (attacker.willpower() * 3);
         manaShift = Math.min(manaShift, attacker.stamina);
 
         attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
@@ -2658,7 +2660,7 @@ fighter.prototype = {
 	}
 	    
 	attacker.isStunned = true;//Fumbles make you lose a turn.
-	windowController.addHint(attacker.name + " has to recover and will lose the next action!");
+	windowController.addHint(attacker.name + " is Stunned and will lose the next action!");
 	 
         switch (action) {
             case "Light":
