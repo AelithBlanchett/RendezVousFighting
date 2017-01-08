@@ -1912,7 +1912,7 @@ fighter.prototype = {
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
-        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
+        //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
 		difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
@@ -2096,7 +2096,7 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
+        //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
 		difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
@@ -2188,7 +2188,7 @@ fighter.prototype = {
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
+        //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
 		difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
