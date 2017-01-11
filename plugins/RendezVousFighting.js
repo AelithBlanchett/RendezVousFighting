@@ -1440,10 +1440,10 @@ fighter.prototype = {
         var attackTable = {miss: 0, dodge: 0, glancing: 0, crit: 0}
 
         attackTable.miss = difficulty;
-        if (typeof attackerHitBonus !== 'undefined') {
-            attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult);
-            attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use the miss value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
-        }
+        //if (typeof attackerHitBonus !== 'undefined') {
+        //    attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult);
+        //    attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use the miss value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
+        //}
         // Basing hit chance on difference multiplied by rangeMulti so that we have ideal DEX difference rather than ideal absolute DEX value.
         if (attackerDex > targetDex) {
             attackTable.dodge = difficulty + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult); //Used floor to make the result a more negative value.
@@ -1497,8 +1497,8 @@ fighter.prototype = {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
 
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit(" MISS! ");
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+            windowController.addHit(" FAILED! ");
 	    if (attacker.hasAttackBonus > 0) {
 		    attacker.hasAttackBonus = 0;
             	    windowController.addHint(target.name + " lost the melee attack bonus because of the miss!");
@@ -1591,8 +1591,8 @@ fighter.prototype = {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
         
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit(" MISS! ");
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+            windowController.addHit(" FAILED! ");
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             return 0; //Failed attack, if we ever need to check that.
@@ -1702,7 +1702,7 @@ fighter.prototype = {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
         
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
             windowController.addHit(" FAILED! ");
             windowController.addHint(attacker.name + " failed to establish a hold!");
             return 0; //Failed attack, if we ever need to check that.
@@ -1838,8 +1838,8 @@ fighter.prototype = {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
         
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit(" MISS! ");
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+            windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
@@ -1943,8 +1943,8 @@ fighter.prototype = {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
         
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit(" MISS! ");
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+            windowController.addHit(" FAILED!");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2032,8 +2032,8 @@ fighter.prototype = {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
         
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit(" FAILED! ");
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+            windowController.addHit(" FAILED!");
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             return 0; //Failed attack, if we ever need to check that.
@@ -2082,8 +2082,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll/2 + target.hasMagicWeakness;
         var damage = attacker.spellpower();
-	var hexDamage = Math.floor((attacker.spellpower() - target.spellpower())/3); //Magic weakness will be increased by a third of the difference in spellpower, rounded down.
-        var requiredMana = 15;
+	var requiredMana = 15;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
         // Melee attack bonus generated by light attacks is wasted if you make any other move.
@@ -2127,7 +2126,7 @@ fighter.prototype = {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
         
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
             windowController.addHit(" FAILED! ");
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -2165,7 +2164,7 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(3);
-        target.hasMagicWeakness += Math.max(1, hexDamage);//The hex reduces resistance against further magical attacks by at least 1 point.
+        if (target.hasMagicWeakness < attacker.spellpower()) target.hasMagicWeakness += 1;//The hex reduces resistance against further magical attacks by at least 1 point.
         windowController.addHit(attacker.name + " increased " + target.name + "'s weakness to magic by " + Math.max(1, hexDamage) + "!");
         return 1; //Successful attack, if we ever need to check that.
     },//test 
@@ -2219,7 +2218,7 @@ fighter.prototype = {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.miss +1));
         }
         
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
             windowController.addHit(" FAILED! ");
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -2447,8 +2446,8 @@ fighter.prototype = {
             tempGrappleFlag = false;
         }
 
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit("FAILED! ");
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+            windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -2504,7 +2503,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
         }
 
-        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.spellpower() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
+        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.spellpower() + target.strength() - attacker.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
@@ -2526,7 +2525,7 @@ fighter.prototype = {
         
         attacker.hitMana(requiredMana); //Now that mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, 1, 1, 1);// Teleport is not affected by DEX.
+        var attackTable = attacker.buildActionTable(difficulty, 0, 0, 0);// Teleport is not affected by DEX.
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         if (target.canDodge(attacker)) {
         	windowController.addInfo("Dice Roll Required: " + (attackTable.dodge +1));
@@ -2541,8 +2540,8 @@ fighter.prototype = {
             tempGrappleFlag = false;
         }
 
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit("FAILED! ");
+        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+            windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             return 0; //Failed attack, if we ever need to check that.
         }
