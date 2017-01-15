@@ -2801,7 +2801,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
 
     // Get the global settings from the fieldset Arena
     var defaultArenaSettings = {};
-    defaultArenaSettings["StatPoints"] = 20;
+    defaultArenaSettings["StatPoints"] = 23;
     defaultArenaSettings["GameSpeed"] = 1;
     defaultArenaSettings["DisorientedAt"] = 40;
     defaultArenaSettings["UnconsciousAt"] = 0;
