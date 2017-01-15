@@ -26,10 +26,17 @@ describe("Fighter testing", () => {
 
         setTimeout(function() {
             setTimeout(function () {
-                CommandHandler.aggressive("", {character: "Aelith Blanchette", channel: "here"});
+                CommandHandler.spell("", {character: "Aelith Blanchette", channel: "here"});
             }, 1000);
             setTimeout(function () {
-                CommandHandler.aggressive("", {character: "Britta Blixt", channel: "here"});
+                CommandHandler.spell("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
+                CommandHandler.teleport("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.teleport("", {character: "Britta Blixt", channel: "here"});
             }, 1000);
 
             setTimeout(function () {
@@ -51,13 +58,6 @@ describe("Fighter testing", () => {
             }, 1000);
             setTimeout(function () {
                 CommandHandler.hex("", {character: "Britta Blixt", channel: "here"});
-            }, 1000);
-
-            setTimeout(function () {
-                CommandHandler.defensive("", {character: "Aelith Blanchette", channel: "here"});
-            }, 1000);
-            setTimeout(function () {
-                CommandHandler.defensive("", {character: "Britta Blixt", channel: "here"});
             }, 1000);
 
             setTimeout(function () {
