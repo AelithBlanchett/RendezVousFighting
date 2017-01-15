@@ -151,16 +151,17 @@ var CommandHandler = (function () {
     var statsGetter = function (args, data, character) {
         db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function (err, rows, fields) {
             if (rows != undefined && rows.length == 1) {
-                var stats = rows[0];
                 var hp = 100;
-                if (stats.endurance != 4) {
-                    hp += (stats.endurance - 4) * 10;
+                if (rows[0].endurance > 4) {
+                    hp += (parseInt(rows[0].endurance) - 4) * 10;
                 }
-                var mana = ((stats.willpower * 4) + 60);
+                var stats = rows[0];
+                var mana = (parseInt(rows[0].willpower) * 10 + 60);
+                var staminaMax = (parseInt(rows[0].willpower) * 10 + 60);
                 _this.fChatLibInstance.sendPrivMessage("[b]" + data.character + "[/b]'s stats" + "\n" +
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
-                    "[b][color=green]Endurance[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + 100 + "\n" +
+                    "[b][color=green]Endurance[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + staminaMax + "\n" +
                     "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "[b][color=pink]Cloth[/color][/b]: " + stats.cloth + "\n" +
                     "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, data.character);
             }
