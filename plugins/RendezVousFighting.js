@@ -212,8 +212,8 @@ var CommandHandler = (function () {
                             hp += (currentFighters[1].endurance - 4) * 10;
                         }
                         currentFighters[1].hp = hp;
-                        currentFighters[1].mana = parseInt(currentFighters[1].willpower) * 10;
-                        currentFighters[1].stamina = 100;
+                        currentFighters[1].mana = (parseInt(currentFighters[0].willpower) * 10 + 60);
+                        currentFighters[1].stamina = (parseInt(currentFighters[0].willpower) * 10 + 60);
                         _this.fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", _this.channel);
                     }
                     else {
