@@ -90,23 +90,23 @@ var CommandHandler = (function () {
             total = statsOnly.reduce(function (a, b) {
                 return parseInt(a) + parseInt(b);
             }, 0);
-            if (total != 20) {
-                _this.fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 20. (" + total + "). Example: !register 4,3,5,1,7,30", _this.channel);
+            if (total != 23) {
+                _this.fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 23. (" + total + "). Example: !register 4,7,5,1,6,30", _this.channel);
             }
             else if (parseInt(arrParam[0]) > 10 || (parseInt(arrParam[0]) < 1)) {
-                _this.fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 11. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if (parseInt(arrParam[1]) > 10 || (parseInt(arrParam[1]) < 1)) {
-                _this.fChatLibInstance.sendMessage("The Dexterity stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Dexterity stat must be higher than 0 and lower than 11. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if (parseInt(arrParam[2]) > 10 || (parseInt(arrParam[2]) < 1)) {
-                _this.fChatLibInstance.sendMessage("The Endurance stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Endurance stat must be higher than 0 and lower than 11. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if (parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 1)) {
-                _this.fChatLibInstance.sendMessage("The Spellpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Spellpower stat must be higher than 0 and lower than 11. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if (parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 1)) {
-                _this.fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 10. Example: !register 4,3,5,1,7,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 11. Example: !register 4,3,5,1,7,30", _this.channel);
             }
             else if (parseInt(arrParam[5]) < 0 || parseInt(arrParam[5]) > 100) {
                 _this.fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 4,3,5,1,7,30", _this.channel);
@@ -154,7 +154,7 @@ var CommandHandler = (function () {
                 if (stats.endurance != 4) {
                     hp += (stats.endurance - 4) * 10;
                 }
-                var mana = stats.willpower + "0";
+                var mana = ((stats.willpower * 4) + 60);
                 _this.fChatLibInstance.sendPrivMessage("[b]" + data.character + "[/b]'s stats" + "\n" +
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
@@ -193,8 +193,8 @@ var CommandHandler = (function () {
                         hp += (currentFighters[0].endurance - 4) * 10;
                     }
                     currentFighters[0].hp = hp;
-                    currentFighters[0].mana = parseInt(currentFighters[0].willpower) * 10;
-                    currentFighters[0].stamina = 100;
+                    currentFighters[0].mana = (parseInt(currentFighters[0].willpower) * 10 + 60);
+                    currentFighters[0].stamina = (parseInt(currentFighters[0].willpower) * 10 + 60);
                     _this.fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", _this.channel);
                 }
                 else {
@@ -1410,9 +1410,7 @@ fighter.prototype = {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
         battlefield.displayGrabbed = !battlefield.displayGrabbed; //only output it on every two turns
-        if (this.isEvading) windowController.addHint(this.name + " is fighting very defensively.");
-        if (this.isAggressive) windowController.addHint(this.name + " is fighting very aggressively.");
-        if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hasAttackBonus + " heavy attack bonus.");
+        if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hasAttackBonus + " melee attack bonus.");
         if (this.hasMagicWeakness > 0) windowController.addHint(this.name + " would take " + this.hasMagicWeakness + " extra damage from a magical attack.");
         return message;
     },
@@ -2201,7 +2199,7 @@ fighter.prototype = {
         if (target.hasMagicWeakness < attacker.spellpower()) target.hasMagicWeakness += 1;//The hex reduces resistance against further magical attacks by at least 1 point.
         windowController.addHit(attacker.name + " increased " + target.name + "'s weakness to magic by " + Math.max(1, hexDamage) + "!");
         return 1; //Successful attack, if we ever need to check that.
-    },//test 
+    },
 
     actionSpell: function (roll) {
         var attacker = this;
@@ -2322,7 +2320,7 @@ fighter.prototype = {
             return 0; //Failed action, if we ever need to check that.
         }
 
-        if (roll = 20) {
+        if (roll == 20) {
             windowController.addHit("CRITICAL SUCCESS! ");
             windowController.addHint(attacker.name + " can perform another action!");
             target.isStunned = true;
@@ -2334,7 +2332,7 @@ fighter.prototype = {
         var stamBonus = 10 + (2 * parseInt(roll)) + (attacker.willpower() * 3);  //(3 * parseInt(roll)) + (attacker.endurance() * 2);
         attacker.addStamina(stamBonus);
         windowController.addHit(attacker.name + " SKIPS MOVE, RESTING!");
-        windowController.addHint(attacker.name + " recovered " + stamBonus + " stamina from resting, and a moderate amount of mana and health.");
+        windowController.addHint(attacker.name + " recovered " + stamBonus + " stamina from resting.");
         return 1;
     },
 
@@ -2367,7 +2365,7 @@ fighter.prototype = {
             return 0; //Failed action, if we ever need to check that.
         }
 
-        if (roll = 20) {
+        if (roll == 20) {
             windowController.addHit("CRITICAL SUCCESS! ");
             windowController.addHint(attacker.name + " can perform another action!");
             target.isStunned = true;
@@ -2410,7 +2408,7 @@ fighter.prototype = {
             return 0; //Failed action, if we ever need to check that.
         }
 
-        if (roll = 20) {
+        if (roll == 20) {
             windowController.addHit("CRITICAL SUCCESS! ");
             windowController.addHint(attacker.name + " can perform another action!");
             target.isStunned = true;
@@ -2514,6 +2512,10 @@ fighter.prototype = {
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
+        } else {
+            attacker.isEvading = Math.floor(roll / 3);
+            attacker.isAggressive = Math.floor(roll / 3);
+            windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
         }
 
         if (battlefield.inGrabRange) {
@@ -2521,10 +2523,6 @@ fighter.prototype = {
             battlefield.inGrabRange = false;
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
-
-        attacker.isEvading = Math.floor(roll / 3);
-        attacker.isAggressive = Math.floor(roll / 3);
-        windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2618,6 +2616,10 @@ fighter.prototype = {
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
+        } else {
+            attacker.isEvading = Math.floor(roll / 3);
+            attacker.isAggressive = Math.floor(roll / 3);
+            windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
         }
 
         if (battlefield.inGrabRange) {
@@ -2625,10 +2627,7 @@ fighter.prototype = {
             battlefield.inGrabRange = false;
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
-
-        attacker.isEvading = Math.floor(roll / 3);
-        attacker.isAggressive = Math.floor(roll / 3);
-        windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
+        
         return 1; //Successful attack, if we ever need to check that.
     },
 //Leaving aggressive and defensive actions in for now because if I don't that makes it harder to read the code for Teleport when making a comparing files. They can safely be deleted though.
