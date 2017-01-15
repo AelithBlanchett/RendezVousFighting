@@ -1715,7 +1715,7 @@ fighter.prototype = {
             battlefield.inGrabRange = true;
             attacker.hasAttackBonus += Math.ceil(roll / 4);//Every action needs to have a benefit that scales with the roll in order not to feel wasted.
             windowController.addHit(attacker.name + " moved into grappling range! " + target.name + " can try to push them away with an attack.");
-            if (roll = 20) {//If we're just moving into range grab counts as a buff so a crit gives a bonus action.
+            if (roll == 20) {//If we're just moving into range grab counts as a buff so a crit gives a bonus action.
                 windowController.addHit("CRITICAL SUCCESS! ");
                 windowController.addHint(attacker.name + " can perform another action!");
                 target.isStunned = true;
