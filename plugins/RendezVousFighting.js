@@ -3,6 +3,8 @@ var mySqlConfig = require('../config/config.mysql.js');
 var db;
 var _this;
 
+var defaultStatPoints = 23;
+
 function dbConnect() {
     db = mysql.createConnection(mySqlConfig); // Recreate the connection, since
     // the old one cannot be reused.
@@ -90,8 +92,8 @@ var CommandHandler = (function () {
             total = statsOnly.reduce(function (a, b) {
                 return parseInt(a) + parseInt(b);
             }, 0);
-            if (total != 23) {
-                _this.fChatLibInstance.sendMessage("The total of points you've spent isn't equal to 23. (" + total + "). Example: !register 4,7,5,1,6,30", _this.channel);
+            if (total != defaultStatPoints) {
+                _this.fChatLibInstance.sendMessage("The total of points you've spent isn't equal to "+defaultStatPoints+". (" + total + "). Example: !register 4,7,5,1,6,30", _this.channel);
             }
             else if (parseInt(arrParam[0]) > 10 || (parseInt(arrParam[0]) < 1)) {
                 _this.fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 11. Example: !register 4,3,5,1,7,30", _this.channel);
@@ -183,10 +185,22 @@ var CommandHandler = (function () {
         }
     };
 
+    var checkWrestlersTotalStatsSum = function(args){
+        if(args.strength && args.dexterity && args.endurance && args.spellpower && args.willpower){
+            return((parseInt(args.strength) + parseInt(args.dexterity) + parseInt(args.endurance) + parseInt(args.spellpower) + parseInt(args.willpower)) == defaultStatPoints);
+        }
+        return false;
+    };
+
     CommandHandler.prototype.ready = function (args, data) {
         if (currentFighters.length == 0) {
             db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) => {
                 if (rows != undefined && rows.length == 1) {
+                    var statPointsUsed = checkWrestlersTotalStatsSum(rows[0]);
+                    if(statPointsUsed != defaultStatPoints){
+                        _this.fChatLibInstance.sendMessage("You are currently using " + statPointsUsed + " points in stats and not the required " + defaultStatPoints + ". Please re-stat before starting the match", _this.channel);
+                        return;
+                    }
                     currentFighters[0] = rows[0];
                     var hp = 100;
                     if (currentFighters[0].endurance > 4) {
@@ -206,6 +220,11 @@ var CommandHandler = (function () {
             if (currentFighters[0].name != data.character) {
                 db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function (err, rows, fields) {
                     if (rows != undefined && rows.length == 1) {
+                        var statPointsUsed = checkWrestlersTotalStatsSum(rows[0]);
+                        if(statPointsUsed != defaultStatPoints){
+                            _this.fChatLibInstance.sendMessage("You are currently using " + statPointsUsed + " points in stats and not the required " + defaultStatPoints + ". Please re-stat before starting the match", _this.channel);
+                            return;
+                        }
                         currentFighters[1] = rows[0];
                         var hp = 100;
                         if (currentFighters[1].endurance > 4) {
@@ -1033,7 +1052,7 @@ function arena() {
     //Set default values for global settings
     this._globalFighterSettings = {
         "GameSpeed": 1,
-        "StatPoints": 23,
+        "StatPoints": defaultStatPoints,
         "DeadAt": 0,
         "UnconsciousAt": 25,
         "DisorientedAt": 40
@@ -2801,7 +2820,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
 
     // Get the global settings from the fieldset Arena
     var defaultArenaSettings = {};
-    defaultArenaSettings["StatPoints"] = 23;
+    defaultArenaSettings["StatPoints"] = defaultStatPoints;
     defaultArenaSettings["GameSpeed"] = 1;
     defaultArenaSettings["DisorientedAt"] = 40;
     defaultArenaSettings["UnconsciousAt"] = 0;
