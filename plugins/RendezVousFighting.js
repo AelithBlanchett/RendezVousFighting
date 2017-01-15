@@ -187,9 +187,9 @@ var CommandHandler = (function () {
 
     var checkWrestlersTotalStatsSum = function(args){
         if(args.strength && args.dexterity && args.endurance && args.spellpower && args.willpower){
-            return((parseInt(args.strength) + parseInt(args.dexterity) + parseInt(args.endurance) + parseInt(args.spellpower) + parseInt(args.willpower)) == defaultStatPoints);
+            return(parseInt(args.strength) + parseInt(args.dexterity) + parseInt(args.endurance) + parseInt(args.spellpower) + parseInt(args.willpower));
         }
-        return false;
+        return 0;
     };
 
     CommandHandler.prototype.ready = function (args, data) {
