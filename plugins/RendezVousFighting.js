@@ -2216,8 +2216,10 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(3);
-        if (target.hasMagicWeakness < attacker.spellpower()) target.hasMagicWeakness += 1;//The hex reduces resistance against further magical attacks by at least 1 point.
-        windowController.addHit(attacker.name + " increased " + target.name + "'s weakness to magic by " + Math.max(1, hexDamage) + "!");
+        if (target.hasMagicWeakness < attacker.spellpower()) {
+            target.hasMagicWeakness += 1;//The hex reduces resistance against further magical attacks by 1 point.
+            windowController.addHit(attacker.name + " increased " + target.name + "'s weakness to magic!");
+        }
         return 1; //Successful attack, if we ever need to check that.
     },
 
