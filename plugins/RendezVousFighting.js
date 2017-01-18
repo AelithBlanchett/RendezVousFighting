@@ -2016,7 +2016,7 @@ fighter.prototype = {
         //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
+            difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
@@ -2211,7 +2211,7 @@ fighter.prototype = {
         //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
+            difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
@@ -2311,7 +2311,7 @@ fighter.prototype = {
         //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += (target.isEvading / 2);//Half effect on ranged attacks.
+            difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
@@ -2625,8 +2625,8 @@ fighter.prototype = {
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
         } else {
-            attacker.isEvading = Math.floor(roll / 3);
-            attacker.isAggressive = Math.floor(roll / 3);
+            attacker.isEvading = Math.floor(roll / 2);
+            attacker.isAggressive = Math.floor(roll / 2);
             windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
         }
 
@@ -2735,8 +2735,8 @@ fighter.prototype = {
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
         } else {
-            attacker.isEvading = Math.floor(roll / 3);
-            attacker.isAggressive = Math.floor(roll / 3);
+            attacker.isEvading = Math.floor(roll / 2);
+            attacker.isAggressive = Math.floor(roll / 2);
             windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
         }
 
@@ -2748,19 +2748,6 @@ fighter.prototype = {
         
         return 1; //Successful attack, if we ever need to check that.
     },
-//Leaving aggressive and defensive actions in for now because if I don't that makes it harder to read the code for Teleport when making a comparing files. They can safely be deleted though.
-    actionDefensive: function (roll) {
-        var attacker = this;
-        var target = battlefield.getTarget();
-
-        if (attacker.isRestrained || target.isRestrained) {
-            windowController.addHint("You can't fight defensively while grappling!");
-            return 0
-        }
-
-        if (attacker.isEvading) {
-            attacker.isEvading = false;
-
 
     actionFumble: function (action) {
         var attacker = this;
