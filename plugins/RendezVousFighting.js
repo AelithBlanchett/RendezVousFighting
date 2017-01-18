@@ -1561,6 +1561,10 @@ fighter.prototype = {
         if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
             windowController.addHit(" DODGE! ");
             windowController.addHint(target.name + " dodged the attack. ");
+            if (attacker.hasAttackBonus > 0) {
+                attacker.hasAttackBonus = 0;
+                windowController.addHint(target.name + " lost the melee attack bonus because of the dodge!");
+            }
             return 0; //Failed attack, if we ever need to check that.
         }
 
