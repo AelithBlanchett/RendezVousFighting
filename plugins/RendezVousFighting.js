@@ -1563,14 +1563,14 @@ fighter.prototype = {
             windowController.addHint(target.name + " dodged the attack. ");
             if (attacker.hasAttackBonus > 0) {
                 attacker.hasAttackBonus = 0;
-                windowController.addHint(target.name + " lost the melee attack bonus because of the dodge!");
+                windowController.addHint(attacker.name + " lost the melee attack bonus because of the dodge!");
             }
             return 0; //Failed attack, if we ever need to check that.
         }
 
         if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
             windowController.addHit(" GLANCING HIT! ");
-            windowController.addHint(target.name + " avoided taking full damage. ");
+            windowController.addHint(attacker.name + " avoided taking full damage. ");
             damage /= 2;
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
