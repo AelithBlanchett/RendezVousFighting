@@ -1507,7 +1507,8 @@ fighter.prototype = {
         } else { // Attacker uses either dexterity or a potential alternative attribute to make the attack.
             attackTable.dodge = difficulty + Math.ceil((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult);
         }
-        attackTable.dodge = Math.max(1, attackTable.dodge);//We do this becuase we use the dodge value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
+        attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use the miss value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
+        attackTable.dodge = Math.max(1, attackTable.dodge);//We do this becuase we use the dodge value to display minimum roll required to hit when not grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
         //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult);
         attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
         attackTable.crit = 20 //attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
@@ -2627,7 +2628,7 @@ fighter.prototype = {
         } else {
             attacker.isEvading = Math.floor(roll / 2);
             attacker.isAggressive = Math.floor(roll / 2);
-            windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
+            windowController.addHit(attacker.name + " gained bonuses against " + target.name + " for one turn!");
         }
 
         if (battlefield.inGrabRange) {
@@ -2737,7 +2738,7 @@ fighter.prototype = {
         } else {
             attacker.isEvading = Math.floor(roll / 2);
             attacker.isAggressive = Math.floor(roll / 2);
-            windowController.addHit(attacker.name + " gained bonuses against" + target.name + " for one turn!");
+            windowController.addHit(attacker.name + " gained bonuses against " + target.name + " for one turn!");
         }
 
         if (battlefield.inGrabRange) {
