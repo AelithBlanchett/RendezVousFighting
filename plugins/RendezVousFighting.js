@@ -1807,9 +1807,9 @@ fighter.prototype = {
             target.isEscaping -= 3; //Submission moves make it harder to escape.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
-                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and losing stamina from the pain. " + attacker.name + " is also no longer at a penalty from being grappled!");
+                windowController.addHint(target.name + " is in a SUBMISSION hold. " + attacker.name + " is also no longer at a penalty from being grappled!");
             } else {
-                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and losing stamina from the pain.");
+                windowController.addHint(target.name + " is in a SUBMISSION hold.");
             }
         } else {
             windowController.addHit(attacker.name + " GRABBED " + target.name + "! ");
