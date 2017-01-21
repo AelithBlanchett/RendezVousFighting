@@ -1797,6 +1797,7 @@ fighter.prototype = {
             windowController.addHint(target.name + " put up quite a struggle, costing " + attacker.name + " additional stamina. ");
             attacker.hitStamina(10 + target.strength());
         } else if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+            windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint("Critical! " + attacker.name + " found a particularly good hold!");
             damage += 10;
         }
@@ -1806,9 +1807,9 @@ fighter.prototype = {
             target.isEscaping -= 3; //Submission moves make it harder to escape.
             if (target.isGrappling(attacker)) {
                 attacker.removeGrappler(target);
-                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and losing stamina from the pain. " + attacker.name + " is also no longer at a penalty from being grappled!");
+                windowController.addHint(target.name + " is in a SUBMISSION hold. " + attacker.name + " is also no longer at a penalty from being grappled!");
             } else {
-                windowController.addHint(target.name + " is in a SUBMISSION hold, taking damage and losing stamina from the pain.");
+                windowController.addHint(target.name + " is in a SUBMISSION hold.");
             }
         } else {
             windowController.addHit(attacker.name + " GRABBED " + target.name + "! ");
