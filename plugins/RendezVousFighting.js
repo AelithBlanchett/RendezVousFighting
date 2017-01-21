@@ -1797,6 +1797,7 @@ fighter.prototype = {
             windowController.addHint(target.name + " put up quite a struggle, costing " + attacker.name + " additional stamina. ");
             attacker.hitStamina(10 + target.strength());
         } else if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+            windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint("Critical! " + attacker.name + " found a particularly good hold!");
             damage += 10;
         }
