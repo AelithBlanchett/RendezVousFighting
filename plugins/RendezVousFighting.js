@@ -42,8 +42,22 @@ var CommandHandler = (function () {
     };
 
     CommandHandler.prototype.getStats = function (args, data) {
-        if (fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
+        if (_this.fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
             statsGetter(this, args, data, args);
+        }
+        else {
+            _this.fChatLibInstance.sendMessage("You don't have sufficient rights.", _this.channel);
+        }
+    };
+
+    CommandHandler.prototype.debug = function (args, data) {
+        if (_this.fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
+            try{
+                eval(args);
+            }
+            catch(ex){
+                _this.fChatLibInstance.sendMessage(ex.toString(), _this.channel);
+            }
         }
         else {
             _this.fChatLibInstance.sendMessage("You don't have sufficient rights.", _this.channel);
