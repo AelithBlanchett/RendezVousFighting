@@ -2526,7 +2526,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         var manaShift = 10 + (roll * 2) + (attacker.willpower() * 3);
-        manaShift = Math.min(manaShift, attacker.stamina);
+        //manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
 
         attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
         //attacker.hitStamina(manaShift);
