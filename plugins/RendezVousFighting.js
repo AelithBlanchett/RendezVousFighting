@@ -2571,7 +2571,7 @@ fighter.prototype = {
         }
 
 
-        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
+        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() + target.dexterity() - attacker.strength() - attacker.dexterity()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
