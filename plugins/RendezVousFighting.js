@@ -1070,7 +1070,7 @@ function arena() {
         "StatPoints": defaultStatPoints,
         "DeadAt": 0,
         "UnconsciousAt": 25,
-        "DisorientedAt": 40
+        "DisorientedAt": 50
     };
 };
 
@@ -1222,6 +1222,8 @@ function fighter(settings, globalSettings) {
     this._maxMana = 60 + this._willpower * 10;
     this._manaCap = this._maxMana;
     this._maxStamina = 60 + this._willpower * 10;
+    
+    this._dizzyValue = Math.ceil(this._maxHP * this._dizzyValue / 100); //Dizzy value is now a percentage of max health.
 
     this.manaBurn = 0;
 
@@ -1414,7 +1416,12 @@ fighter.prototype = {
         var clothDelta = this.cloth - this._statDelta.cloth;
 
         var message = "[color=orange]" + this.name;
-        message += "[/color][color=yellow] hit points: " + this.hp;
+        message += "[/color][color=yellow] hit points: ";
+        if (this.hp > this._dizzyValue ) {
+            message += this.hp;
+        } else {
+            message += "[color=red]" + this.hp + "[/color]";
+        }
         if (hpDelta > 0) message += "[color=cyan] (+" + hpDelta + ")[/color]";
         if (hpDelta < 0) message += "[color=red] (" + hpDelta + ")[/color]";
         message += "|" + this._maxHP;
@@ -1476,7 +1483,7 @@ fighter.prototype = {
         }
 
         if (this.isDisoriented > 0) {
-            windowController.addHint(this.name + " is dizzy! 1 point penalty to all attributes and 2 point penalty to attack and defense.");
+            windowController.addHint(this.name + " is dizzy from battle damage. 1 point penalty to all attributes.");
         }
 
         if (this.isEvading > 0) {
@@ -1543,9 +1550,9 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
@@ -1645,9 +1652,9 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " used up the melee attack bonus!");
         }
 
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
@@ -1727,11 +1734,12 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var baseDamage = roll / 4;
         var damage = attacker.strength() / 2;
+        var requiredStam = 20;
         if (attacker.isGrappling(target)) {
             baseDamage = roll;
             damage = attacker.strength() * 2;
+            requiredStam = 30;
         }
-        var requiredStam = 20;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -1748,8 +1756,8 @@ fighter.prototype = {
         }
 
         if (target.isRestrained) difficulty += Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
@@ -1904,8 +1912,8 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += Math.max(0, 8 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
@@ -2023,10 +2031,10 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
         }
 
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
         //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
@@ -2121,8 +2129,8 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 2; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
@@ -2221,8 +2229,8 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
@@ -2321,8 +2329,8 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
@@ -2412,7 +2420,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
         }
 
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
@@ -2423,7 +2431,7 @@ fighter.prototype = {
             attacker.isAggressive = 0;
         }
 
-        difficulty -= attacker.willpower();
+        //difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
             windowController.addHint(attacker.name + " was too disoriented or distracted to get any benefit from resting.");
@@ -2463,7 +2471,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
         }
 
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty considerably if you are restrained.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
@@ -2474,7 +2482,7 @@ fighter.prototype = {
             attacker.isAggressive = 0;
         }
 
-        difficulty -= attacker.willpower();
+        //difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
             windowController.addHint(attacker.name + " was too disoriented or distracted to focus.");
@@ -2512,7 +2520,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
         }
 
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if you are restrained.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
@@ -2523,7 +2531,7 @@ fighter.prototype = {
             attacker.isAggressive = 0;
         }
 
-        difficulty -= attacker.willpower();
+        //difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
             windowController.addHint(attacker.name + " was too disoriented or distracted to channel.");
@@ -2567,11 +2575,11 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += target.isEvading;
+            //Not affected by opponent's evasion bonus.
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
@@ -2677,11 +2685,11 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.spellpower() + target.strength() - attacker.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
-        if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
+        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += target.isEvading;
+            //Not affected by opponent's evasion bonus.
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
