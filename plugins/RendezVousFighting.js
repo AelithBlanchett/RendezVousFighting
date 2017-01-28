@@ -1517,7 +1517,7 @@ fighter.prototype = {
         var rangeMult = (20 - difficulty) / 40; //0.225
         var attackTable = {miss: 0, dodge: 0, glancing: 0, crit: 0}
 
-        attackTable.miss = difficulty;
+        //attackTable.miss = difficulty;
         //if (typeof attackerHitBonus !== 'undefined') {
         //    attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult);
         //    attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use the miss value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
@@ -1527,10 +1527,10 @@ fighter.prototype = {
             attackTable.dodge = difficulty + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult); //Used floor to make the result a more negative value.
         } else { // Attacker uses either dexterity or a potential alternative attribute to make the attack.
             attackTable.dodge = difficulty + Math.ceil((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult);
-        }
-        attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use the miss value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
-        attackTable.dodge = Math.max(1, attackTable.dodge);//We do this becuase we use the dodge value to display minimum roll required to hit when not grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
-        //attackTable.dodge = attackTable.miss + Math.ceil(targetDex * rangeMult);
+        }attackTable.dodge = Math.max(1, attackTable.dodge);//We do this becuase we use the dodge value to display minimum roll required to hit when not grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
+        
+        attackTable.miss = attackTable.dodge; //Lazy hack to make DEX apply during grappes. Will need to clean up code later.
+        
         attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
         attackTable.crit = 20 //attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
         return attackTable;
@@ -2571,7 +2571,7 @@ fighter.prototype = {
         }
 
 
-        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() + target.dexterity() - attacker.strength() - attacker.dexterity()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
+        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
