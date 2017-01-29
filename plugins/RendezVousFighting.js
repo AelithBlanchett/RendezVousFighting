@@ -298,6 +298,8 @@ var CommandHandler = (function () {
     };
     CommandHandler.prototype.leave = CommandHandler.prototype.exit;
     CommandHandler.prototype.leaveFight = CommandHandler.prototype.exit;
+    CommandHandler.prototype.quit = CommandHandler.prototype.exit;
+    CommandHandler.prototype.unready = CommandHandler.prototype.exit;
 
     CommandHandler.prototype.forfeit = function (args, data) {
         if (currentFighters.length > 0) {
