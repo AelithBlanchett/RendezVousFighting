@@ -1201,7 +1201,6 @@ function fighter(settings, globalSettings) {
     this._spellpower = (+settings.Spellpower);
     this._willpower = (+settings.Willpower);
 
-    this._dizzyValue = Math.max(globalSettings.DisorientedAt, 0);
     this._koValue = Math.max(globalSettings.UnconsciousAt, 0);
     this._deathValue = globalSettings.DeadAt;
 
@@ -1225,7 +1224,7 @@ function fighter(settings, globalSettings) {
     this._manaCap = this._maxMana;
     this._maxStamina = 60 + this._willpower * 10;
     
-    this._dizzyValue = Math.ceil(this._maxHP * this._dizzyValue / 100); //Dizzy value is now a percentage of max health.
+    this._dizzyValue = Math.floor(this._maxHP / 2); //You become dizzy at half health and below.
 
     this.manaBurn = 0;
 
@@ -1515,33 +1514,29 @@ fighter.prototype = {
         }
     },
 
-    buildActionTable: function (difficulty, targetDex, attackerDex, attackerHitBonus) {
+    buildActionTable: function (difficulty, targetDex, attackerDex) {
         var rangeMult = (20 - difficulty) / 40; //0.225
-        var attackTable = {miss: 0, dodge: 0, glancing: 0, crit: 0}
+        var attackTable = {miss: 0, glancing: 0, crit: 0}
 
-        //attackTable.miss = difficulty;
-        //if (typeof attackerHitBonus !== 'undefined') {
-        //    attackTable.miss -= Math.ceil(attackerHitBonus * rangeMult);
-        //    attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use the miss value to display minimum roll required to hit during grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
-        //}
         // Basing hit chance on difference multiplied by rangeMulti so that we have ideal DEX difference rather than ideal absolute DEX value.
         if (attackerDex > targetDex) {
-            attackTable.dodge = difficulty + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult); //Used floor to make the result a more negative value.
-        } else { // Attacker uses either dexterity or a potential alternative attribute to make the attack.
-            attackTable.dodge = difficulty + Math.ceil((targetDex - Math.max(attackerDex, attackerHitBonus)) * rangeMult);
-        }attackTable.dodge = Math.max(1, attackTable.dodge);//We do this becuase we use the dodge value to display minimum roll required to hit when not grappling. A roll of 1 is a fuble so you'd have to roll higher than that in any case.
+            attackTable.miss = difficulty + Math.floor((targetDex - attackerDex) * rangeMult); //Used floor to make the result a more negative value.
+        } else {
+            attackTable.miss = difficulty + Math.ceil((targetDex - attackerDex) * rangeMult);
+        }
         
-        attackTable.miss = attackTable.dodge; //Lazy hack to make DEX apply during grappes. Will need to clean up code later.
+        attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use this to display required roll and a roll of 1 is a fuble so you'd have to roll higher than that in any case.
+        attackTable.miss = Math.min(attackTable.miss, 19); //A roll of 20 is always a hit, so maximum difficulty is 19.
         
         attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
-        attackTable.crit = 20 //attackTable.crit = 21 - Math.ceil(Math.max(attackerDex, attackerHitBonus) * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
+        attackTable.crit = 20
         return attackTable;
     },
 
     actionLight: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 2; //Not directly affected by crits
+        var baseDamage = roll / 2;
         var damage = attacker.strength();
         var requiredStam = 15;
         var difficulty = 4;
@@ -1573,29 +1568,15 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam);
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
             if (attacker.hasAttackBonus > 0) {
                 attacker.hasAttackBonus = 0;
-                windowController.addHint(attacker.name + " lost the melee attack bonus because of the miss!");
-            }
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(" DODGE! ");
-            windowController.addHint(target.name + " dodged the attack. ");
-            if (attacker.hasAttackBonus > 0) {
-                attacker.hasAttackBonus = 0;
-                windowController.addHint(attacker.name + " lost the melee attack bonus because of the dodge!");
+                windowController.addHint(attacker.name + " lost the melee bonus because of the failed attack!");
             }
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1607,7 +1588,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 20;
+            damage += 10;
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -1626,7 +1607,7 @@ fighter.prototype = {
         target.hitHp(damage);
         target.hitCloth(3);
         attacker.hasAttackBonus += 1; // Hitting with light attacks sets you up to hit with a heavy.
-        windowController.addHit(attacker.name + " gained +1 melee attack bonus!");
+        windowController.addHit(attacker.name + " gained +1 melee bonus!");
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1648,7 +1629,7 @@ fighter.prototype = {
         if (attacker.hasAttackBonus > 0) {
             difficulty -= attacker.hasAttackBonus;
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " used up the melee attack bonus!");
+            windowController.addHit(attacker.name + " used up the melee bonus!");
         }
 
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
@@ -1674,24 +1655,12 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
-            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(" DODGE! ");
-            windowController.addHint(target.name + " dodged the attack. ");
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             return 0; //Failed attack, if we ever need to check that.
@@ -1704,7 +1673,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 20;
+            damage += 10;
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -1748,7 +1717,7 @@ fighter.prototype = {
         if (attacker.hasAttackBonus > 0) {
             difficulty -= attacker.hasAttackBonus;
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " used up the melee attack bonus!");
+            windowController.addHit(attacker.name + " used up the melee bonus!");
         }
 
         if (target.isRestrained) difficulty += Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
@@ -1788,23 +1757,13 @@ fighter.prototype = {
             return 1; //Successful attack, if we ever need to check that.
         }
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect. Happens during grappling.
             windowController.addHit(" FAILED! ");
             windowController.addHint(attacker.name + " failed to establish a hold!");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(" DODGE! ");
-            windowController.addHint(target.name + " was too fast, and escaped before " + attacker.name + " could establish a hold.");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1876,10 +1835,10 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " damages " + target.name + "'s clothes!");
         }
 
-        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        // Melee bonus generated by light attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         return 1; //Successful attack, if we ever need to check that.
@@ -1888,18 +1847,18 @@ fighter.prototype = {
     actionTackle: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 2; //Not directly affected by crits
-        var damage = attacker.strength();	//Affected by crits and the like
+        var baseDamage = roll / 2;
+        var damage = attacker.strength();
         var stamDamage = 30;
         var requiredStam = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
 
-        // Attack bonus generated by ligt attacks reduces difficulty of tackle and is then used up.
+        // Attack bonus generated by light attacks reduces difficulty of tackle and is then used up.
         if (attacker.hasAttackBonus > 0) {
             difficulty -= attacker.hasAttackBonus;
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " used up the melee attack bonus!");
+            windowController.addHit(attacker.name + " used up the melee bonus!");
         }
 
         if (attacker.isRestrained) difficulty += Math.max(0, 8 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
@@ -1928,15 +1887,11 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
@@ -1949,25 +1904,11 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(" DODGE! ");
-            windowController.addHint(target.name + " dodged the attack. ");
-            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
-            //If opponent fumbled on their previous action they should become stunned. Tackle is a special case becuase a hit stunns anyway, so we only clear the fumble status on a miss or dodge.
-            if (target.fumbled) {
-                target.isStunned = true;
-                target.fumbled = false;
-            }
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
         if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
             windowController.addHint(target.name + " rolled with the blow. They are still stunned, but lost less stamina. ");
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHint("Critical Hit! " + attacker.name + " really drove that one home!");
-            damage += 20;
+            damage += 10;
         }
 
         if (attacker.isGrappling(target)) {
@@ -1995,7 +1936,6 @@ fighter.prototype = {
 
         damage += baseDamage;
         damage = Math.max(damage, 1);
-        stamDamage = Math.max(stamDamage, 1);
         target.hitHp(damage);
         target.hitCloth(3);
         target.isStunned = true;
@@ -2016,10 +1956,10 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        // Melee bonus generated by light attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
@@ -2047,22 +1987,12 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(" DODGE! ");
-            windowController.addHint(target.name + " dodged the attack. ");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2073,7 +2003,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " hit somewhere that really hurts!");
-            damage += 20;
+            damage += 10;
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -2108,11 +2038,11 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Attack bonus generated by ligt attacks reduces difficulty of magic attack and is then used up.
+        // Attack bonus generated by light attacks reduces difficulty of magic attack and is then used up.
         if (attacker.hasAttackBonus > 0) {
             difficulty -= attacker.hasAttackBonus;
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " used up the melee attack bonus!");
+            windowController.addHit(attacker.name + " used up the melee bonus!");
         }
 
         if (attacker.isRestrained) difficulty += 2; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
@@ -2139,24 +2069,12 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
-            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(" DODGE! ");
-            windowController.addHint(target.name + " dodged the attack. ");
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             return 0; //Failed attack, if we ever need to check that.
@@ -2205,10 +2123,10 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Melee attack bonus generated by light attacks is wasted if you make any other move.
+        // Melee bonus generated by light attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
@@ -2235,25 +2153,15 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
-
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
+        
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
             return 0; //Failed attack, if we ever need to check that.
         }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(" DODGE! ");
-            windowController.addHint(target.name + " dodged the attack. ");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
+        
         if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
             windowController.addHit(" GLANCING HIT! ");
             windowController.addHint(target.name + " avoided taking full damage. ");
@@ -2261,7 +2169,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 20;
+            damage += 10;
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
@@ -2301,10 +2209,10 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        // Melee bonus generated by ligt attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
@@ -2331,22 +2239,12 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect. Happens during grappling.
             windowController.addHit(" FAILED! ");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(" DODGE! ");
-            windowController.addHint(target.name + " dodged the attack. ");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2357,7 +2255,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 20;
+            damage += 10;
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
@@ -2390,10 +2288,10 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        // Melee bonus generated by ligt attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
@@ -2421,7 +2319,7 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        var stamBonus = 10 + (2 * parseInt(roll)) + (attacker.willpower() * 3);  //(3 * parseInt(roll)) + (attacker.endurance() * 2);
+        var stamBonus = (2 * parseInt(roll)) + (attacker.willpower() * 4);
         attacker.addStamina(stamBonus);
         windowController.addHit(attacker.name + " SKIPS MOVE, RESTING!");
         windowController.addHint(attacker.name + " recovered " + stamBonus + " stamina from resting.");
@@ -2439,10 +2337,10 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Melee attack bonus generated by light attacks is wasted if you make any other move.
+        // Melee bonus generated by light attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
@@ -2486,10 +2384,10 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        // Melee bonus generated by light attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
@@ -2517,7 +2415,7 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        var manaShift = 10 + (roll * 2) + (attacker.willpower() * 3);
+        var manaShift = (roll * 2) + (attacker.willpower() * 4);
         //manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
 
         attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
@@ -2561,13 +2459,9 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), attacker.dexterity());
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
         var tempGrappleFlag = true;
         if (attacker.isGrappling(target)) { //If you're grappling someone they are freed, regardless of the outcome.
@@ -2576,25 +2470,13 @@ fighter.prototype = {
             tempGrappleFlag = false;
         }
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            // Repositioning action preserve the melee attack bonus generated by light attacks, but only if successful. If they fail you lose the bonus.
+            // Repositioning action preserve the melee bonus generated by light attacks, but only if successful. If they fail you lose the bonus.
             if (attacker.hasAttackBonus > 0) {
                 attacker.hasAttackBonus = 0;
-                windowController.addHit(attacker.name + " lost the melee attack bonus becuase of the failed action!");
-            }
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(target.name + " WAS TOO QUICK! ");
-            windowController.addHint(attacker.name + " failed. " + target.name + " was just too quick for them.");
-            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            // Repositioning action preserve the melee attack bonus generated by light attacks, but only if successful. If they fail you lose the bonus.
-            if (attacker.hasAttackBonus > 0) {
-                attacker.hasAttackBonus = 0;
-                windowController.addHit(attacker.name + " lost the melee attack bonus because of the failed action!");
+                windowController.addHit(attacker.name + " lost the melee bonus becuase of the failed action!");
             }
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -2641,10 +2523,10 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        // Melee bonus generated by light attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.spellpower() + target.strength() - attacker.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
@@ -2667,13 +2549,9 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, 0, 0, 0);// Teleport is not affected by DEX.
+        var attackTable = attacker.buildActionTable(difficulty, 0, 0);// Teleport is not affected by DEX.
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        if (target.canDodge(attacker)) {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.dodge + 1));
-        } else {
-            windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        }
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
         var tempGrappleFlag = true;
         if (attacker.isGrappling(target)) { //If you're grappling someone they are freed, regardless of the outcome.
@@ -2682,25 +2560,13 @@ fighter.prototype = {
             tempGrappleFlag = false;
         }
 
-        if (roll <= attackTable.miss && !target.canDodge(attacker)) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            // Repositioning action preserve the melee attack bonus generated by light attacks, but only if successful. If they fail you lose the bonus.
+            // Repositioning action preserve the melee bonus generated by light attacks, but only if successful. If they fail you lose the bonus.
             if (attacker.hasAttackBonus > 0) {
                 attacker.hasAttackBonus = 0;
-                windowController.addHit(attacker.name + " lost the melee attack bonus because of the failed action!");
-            }
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll <= attackTable.dodge && target.canDodge(attacker)) {	//Dodged-- no effect.
-            windowController.addHit(target.name + " WAS TOO QUICK! ");
-            windowController.addHint(attacker.name + " failed. " + target.name + " was just too quick for them.");
-            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            // Repositioning action preserve the melee attack bonus generated by light attacks, but only if successful. If they fail you lose the bonus.
-            if (attacker.hasAttackBonus > 0) {
-                attacker.hasAttackBonus = 0;
-                windowController.addHit(attacker.name + " lost the melee attack bonus because of the failed action!");
+                windowController.addHit(attacker.name + " lost the melee bonus because of the failed action!");
             }
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -2740,10 +2606,10 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
 
-        // Melee attack bonus generated by ligt attacks is wasted if you make any other move.
+        // Melee bonus generated by ligt attacks is wasted if you make any other move.
         if (attacker.hasAttackBonus > 0) {
             attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " lost the melee attack bonus!");
+            windowController.addHit(attacker.name + " lost the melee bonus!");
         }
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
