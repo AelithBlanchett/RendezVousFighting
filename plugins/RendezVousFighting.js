@@ -1761,7 +1761,7 @@ fighter.prototype = {
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
-        if (roll <= attackTable.miss) {	//Miss-- no effect. Happens during grappling.
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
             windowController.addHint(attacker.name + " failed to establish a hold!");
             return 0; //Failed attack, if we ever need to check that.
@@ -1773,7 +1773,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint("Critical! " + attacker.name + " found a particularly good hold!");
-            damage += 20;
+            damage += 10;
         }
 
         if (attacker.isGrappling(target)) {
@@ -2087,7 +2087,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 20;
+            damage += 10;
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
