@@ -1536,8 +1536,7 @@ fighter.prototype = {
     actionLight: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 2;
-        var damage = attacker.strength();
+        var damage = roll / 2 + attacker.strength();
         var requiredStam = 15;
         var difficulty = 4;
         
@@ -1602,7 +1601,6 @@ fighter.prototype = {
             }
         }
 
-        damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(3);
@@ -1614,8 +1612,7 @@ fighter.prototype = {
     actionHeavy: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll;
-        var damage = 2 * attacker.strength();
+        var damage = roll + (2 * attacker.strength());
         var requiredStam = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
@@ -1647,7 +1644,6 @@ fighter.prototype = {
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
-            baseDamage *= attacker.stamina / requiredStam;
             damage *= attacker.stamina / requiredStam;
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam) * (20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
@@ -1687,7 +1683,6 @@ fighter.prototype = {
             }
         }
 
-        damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(5);
@@ -1697,12 +1692,10 @@ fighter.prototype = {
     actionGrab: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 4;
-        var damage = attacker.strength() / 2;
+        var damage = (roll / 4) + (attacker.strength() / 2);
         var requiredStam = 20;
         if (attacker.isGrappling(target)) {
-            baseDamage = roll;
-            damage = attacker.strength() * 2;
+            damage = roll + (attacker.strength() * 2);
             requiredStam = 30;
         }
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
@@ -1734,7 +1727,6 @@ fighter.prototype = {
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
-            baseDamage *= attacker.stamina / requiredStam;
             damage *= attacker.stamina / requiredStam;
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam) * (20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
@@ -1794,7 +1786,6 @@ fighter.prototype = {
         //If we managed to grab without being in grab range, we are certainly in grabe range afterwards.
         if (!battlefield.inGrabRange) battlefield.inGrabRange = true;
 
-        damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(5);
@@ -1847,8 +1838,7 @@ fighter.prototype = {
     actionTackle: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 2;
-        var damage = attacker.strength();
+        var damage = roll /2 + attacker.strength();
         var stamDamage = 30;
         var requiredStam = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
@@ -1878,7 +1868,6 @@ fighter.prototype = {
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
-            baseDamage *= attacker.stamina / requiredStam;
             damage *= attacker.stamina / requiredStam;
             stamDamage *= attacker.stamina / requiredStam;
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam) * (20 - difficulty)); // Too tired? You're likely to miss.
@@ -1934,7 +1923,6 @@ fighter.prototype = {
 
         //Deal all the actual damage/effects here.
 
-        damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(3);
@@ -1945,8 +1933,7 @@ fighter.prototype = {
     actionRanged: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll;
-        var damage = 2 * attacker.strength();
+        var damage = roll + (2 * attacker.strength());
         var requiredStam = 30;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
@@ -1979,7 +1966,6 @@ fighter.prototype = {
         var critCheck = true;
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
-            baseDamage *= attacker.stamina / requiredStam;
             damage *= attacker.stamina / requiredStam;
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam) * (20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
@@ -2017,7 +2003,6 @@ fighter.prototype = {
             }
         }
 
-        damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(5);
@@ -2027,8 +2012,7 @@ fighter.prototype = {
     actionMagic: function (roll) {// Magically enhanced melee attack.
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll + target.hasMagicWeakness;
-        var damage = 2 * attacker.spellpower();
+        var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
         var requiredMana = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2061,7 +2045,6 @@ fighter.prototype = {
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
             critCheck = false;
-            baseDamage *= attacker.mana / requiredMana;
             damage *= attacker.mana / requiredMana;
             difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana) * (20 - difficulty)); // Too tired? You're likely to have your spell fizzle.
             windowController.addHint(attacker.name + " did not have enough mana, and took penalties to the attack.");
@@ -2102,7 +2085,6 @@ fighter.prototype = {
             }
         }
 
-        damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(5);
@@ -2112,8 +2094,7 @@ fighter.prototype = {
     actionHex: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll / 2 + target.hasMagicWeakness;
-        var damage = attacker.spellpower();
+        var damage = roll / 2 + target.hasMagicWeakness + attacker.spellpower();
         var requiredMana = 15;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2145,7 +2126,6 @@ fighter.prototype = {
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
             critCheck = false;
-            baseDamage *= attacker.mana / requiredMana;
             damage *= attacker.mana / requiredMana;
             difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana) * (20 - difficulty)); // Too tired? You're likely to have your spell fizzle.
             windowController.addHint(attacker.name + " did not have enough mana, and took penalties to the attack.");
@@ -2184,7 +2164,6 @@ fighter.prototype = {
             }
         }
 
-        damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(3);
@@ -2198,8 +2177,7 @@ fighter.prototype = {
     actionSpell: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var baseDamage = roll + target.hasMagicWeakness;
-        var damage = 2 * attacker.spellpower();
+        var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
         var requiredMana = 30;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2231,7 +2209,6 @@ fighter.prototype = {
         var critCheck = true;
         if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
             critCheck = false;
-            baseDamage *= attacker.mana / requiredMana;
             damage *= attacker.mana / requiredMana;
             difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana) * (20 - difficulty)); // Too tired? You're likely to have your spell fizzle.
             windowController.addHint(attacker.name + " did not have enough mana, and took penalties to the attack.");
@@ -2270,7 +2247,6 @@ fighter.prototype = {
             }
         }
 
-        damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitCloth(5);
