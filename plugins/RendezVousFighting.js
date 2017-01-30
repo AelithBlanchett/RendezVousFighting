@@ -1257,8 +1257,8 @@ function fighter(settings, globalSettings) {
     this.isGrappledBy = [];
     this.isFocused = 0;
     this.isEscaping = 0;//A bonus to escape attempts that increases whenever you fail one.
-    this.isEvading = false;
-    this.isAggressive = false;
+    this.isEvading = 0;
+    this.isAggressive = 0;
     this.isExposed = 0;
     this.hasAttackBonus = 0;
     this.hasMagicWeakness = 0;
@@ -1454,7 +1454,7 @@ fighter.prototype = {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
         battlefield.displayGrabbed = !battlefield.displayGrabbed; //only output it on every two turns
-        if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hasAttackBonus + " melee attack bonus.");
+        if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hasAttackBonus + " melee bonus.");
         if (this.hasMagicWeakness > 0) windowController.addHint(this.name + " would take " + this.hasMagicWeakness + " extra damage from a magical attack.");
         return message;
     },
@@ -1489,7 +1489,7 @@ fighter.prototype = {
         }
 
         if (this.isEvading > 0) {
-            windowController.addHint(this.name + " has a +" + this.isEvading + " evasion bonus.");
+            windowController.addHint(this.name + " has a +" + this.isEvading + " defence bonus.");
         }
 
         if (this.isAggressive > 0) {
@@ -1552,11 +1552,8 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
-        //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
@@ -1610,7 +1607,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 10; //Only x2 in this case because this bonus will also factor into the stamina damage.
+            damage += 20;
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -1654,11 +1651,8 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " used up the melee attack bonus!");
         }
 
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
-        //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += target.isEvading;
@@ -1710,7 +1704,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 10; //Even at just x2 damage, a critical heavy is a game changer.
+            damage += 20;
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -1758,10 +1752,7 @@ fighter.prototype = {
         }
 
         if (target.isRestrained) difficulty += Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
-        //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-
+        
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += target.isEvading;
             target.isEvading = 0;
@@ -1823,7 +1814,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint("Critical! " + attacker.name + " found a particularly good hold!");
-            damage += 10;
+            damage += 20;
         }
 
         if (attacker.isGrappling(target)) {
@@ -1847,7 +1838,7 @@ fighter.prototype = {
         damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(4);
+        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1913,10 +1904,7 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += Math.max(0, 8 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
-        if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
-        //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
@@ -1979,7 +1967,7 @@ fighter.prototype = {
             windowController.addHint(target.name + " rolled with the blow. They are still stunned, but lost less stamina. ");
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHint("Critical Hit! " + attacker.name + " really drove that one home!");
-            damage += 10;
+            damage += 20;
         }
 
         if (attacker.isGrappling(target)) {
@@ -2009,6 +1997,7 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         stamDamage = Math.max(stamDamage, 1);
         target.hitHp(damage);
+        target.hitCloth(3);
         target.isStunned = true;
         return 1; //Successful attack, if we ever need to check that.
     },
@@ -2033,14 +2022,11 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee attack bonus by making a different action!");
         }
 
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty considerably if the attacker is dizzy.
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
-        //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-
+        
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
             target.isEvading = 0;
@@ -2087,7 +2073,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " hit somewhere that really hurts!");
-            damage += 10;
+            damage += 20;
         } else { //Normal hit.
             windowController.addHit(" HIT! ");
         }
@@ -2104,7 +2090,7 @@ fighter.prototype = {
         damage += baseDamage;
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(3);
+        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2131,9 +2117,6 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 2; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
-        //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
@@ -2186,8 +2169,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 10; //Magical crits don't deal as much bonus damage, but...
-            //target.isDisoriented = 4; //They tend to leave the target dazed
+            damage += 20;
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
@@ -2231,11 +2213,8 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-
+        
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
             target.isEvading = 0;
@@ -2282,8 +2261,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 10; //Magical crits don't deal as much bonus damage, but...
-            //target.isDisoriented = 4; //They tend to leave the target dazed
+            damage += 20;
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
@@ -2331,11 +2309,8 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the target is dizzy.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        //if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-
+        
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
             target.isEvading = 0;
@@ -2382,8 +2357,7 @@ fighter.prototype = {
         } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 10; //Magical crits don't deal as much bonus damage, but...
-            //target.isDisoriented = 4; //They tend to leave the target dazed
+            damage += 20;
             windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
         } else { //Normal hit.
             windowController.addHit("MAGIC HIT! ");
@@ -2433,8 +2407,6 @@ fighter.prototype = {
             attacker.isAggressive = 0;
         }
 
-        //difficulty -= attacker.willpower();
-
         if (roll <= difficulty) {	//Failed!
             windowController.addHint(attacker.name + " was too disoriented or distracted to get any benefit from resting.");
             return 0; //Failed action, if we ever need to check that.
@@ -2459,7 +2431,7 @@ fighter.prototype = {
     actionFocus: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var difficulty = 4; //Base difficulty, rolls greater than this amount will succeed.
+        var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -2474,7 +2446,7 @@ fighter.prototype = {
         }
 
         //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
-        if (attacker.isRestrained) difficulty += 2; //Up the difficulty considerably if you are restrained.
+        if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
             target.isEvading = 0;
@@ -2483,8 +2455,6 @@ fighter.prototype = {
             difficulty -= attacker.isAggressive;
             attacker.isAggressive = 0;
         }
-
-        //difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
             windowController.addHint(attacker.name + " was too disoriented or distracted to focus.");
@@ -2508,7 +2478,7 @@ fighter.prototype = {
     actionChannel: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var difficulty = 4; //Base difficulty, rolls greater than this amount will succeed.
+        var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -2523,7 +2493,7 @@ fighter.prototype = {
         }
 
         //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
-        if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if you are restrained.
+        if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
             target.isEvading = 0;
@@ -2532,8 +2502,6 @@ fighter.prototype = {
             difficulty -= attacker.isAggressive;
             attacker.isAggressive = 0;
         }
-
-        //difficulty -= attacker.willpower();
 
         if (roll <= difficulty) {	//Failed!
             windowController.addHint(attacker.name + " was too disoriented or distracted to channel.");
@@ -2576,9 +2544,6 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
-
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             //Not affected by opponent's evasion bonus.
@@ -2664,8 +2629,6 @@ fighter.prototype = {
         return 1; //Successful attack, if we ever need to check that.
     },
 
-    //new move
-
     actionTeleport: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
@@ -2687,9 +2650,7 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.spellpower() + target.strength() - attacker.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
-        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if the attacker is dizzy.
-        //if (target.isDisoriented) difficulty -= 2; //Lower the difficulty if the attacker is dizzy.
-
+        
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             //Not affected by opponent's evasion bonus.
             target.isEvading = 0;
@@ -2791,8 +2752,6 @@ fighter.prototype = {
         if (attacker.isAggressive) {//Only applies to 1 action, so we reset it now.
             attacker.isAggressive = 0;
         }
-
-        //isStunned on yourself was never meant to be set to true on your own turn and appears to have been breaking the game.
         
         switch (action) {
             case "Light":
@@ -2805,6 +2764,7 @@ fighter.prototype = {
                 break;
             case "Grab":
                 attacker.hitStamina(20);
+                if (attacker.isGrappling(target)) attacker.hitStamina(10);//Submission costs 30 Stamina so we take away an extra 10.
                 break;
             case "Tackle":
                 attacker.hitStamina(30);
@@ -2815,15 +2775,15 @@ fighter.prototype = {
                 attacker.hitStamina(30);
                 break;
             case "Magic":
-                attacker.hitMana(20);
+                attacker.hitMana(30);
                 attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
                 windowController.addHint(attacker.name + " was left wide open by the failed attack and " + battlefield.getTarget().name + " has the opportunity to grab them!");
                 break;
             case "Hex":
-                attacker.hitMana(10);
+                attacker.hitMana(15);
                 break;
             case "Spell":
-                attacker.hitMana(20);
+                attacker.hitMana(30);
                 break;
             case "Escape":
                 attacker.hitStamina(10);
@@ -2899,7 +2859,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     var defaultArenaSettings = {};
     defaultArenaSettings["StatPoints"] = defaultStatPoints;
     defaultArenaSettings["GameSpeed"] = 1;
-    defaultArenaSettings["DisorientedAt"] = 40;
+    defaultArenaSettings["DisorientedAt"] = 50;
     defaultArenaSettings["UnconsciousAt"] = 0;
     defaultArenaSettings["DeadAt"] = 0;
     if (arenaSettings == undefined) {
