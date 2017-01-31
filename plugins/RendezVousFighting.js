@@ -1393,12 +1393,11 @@ fighter.prototype = {
 
         if (this._manaCap == this._maxMana) this.manaBurn = 0;
 
-        if (this.isUnconscious == false) {//We removed evading attacks status, so we no longer have to check for it.
-            var stamBonus = 2 + this.willpower();
+        if (this.isUnconscious == false) {
+            var stamBonus = 6 + this.willpower();
             this.addStamina(stamBonus);
-            var manaBonus = 2 + this.willpower();
+            var manaBonus = 6 + this.willpower();
             this.addMana(manaBonus);
-            // windowController.addHint( "At the end of her turn, " + this.name + " recovered " + stamBonus + " stamina and " + manaBonus + " mana."  );
         } else {
             this.isStunned = true;
         }
@@ -1535,7 +1534,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll / 2 + attacker.strength();
-        var requiredStam = 15;
+        var requiredStam = 20;
         var difficulty = 4;
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -1611,7 +1610,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.strength());
-        var requiredStam = 30;
+        var requiredStam = 35;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -1694,7 +1693,7 @@ fighter.prototype = {
         var requiredStam = 20;
         if (attacker.isGrappling(target)) {
             damage = roll + (attacker.strength() * 2);
-            requiredStam = 30;
+            requiredStam = 35;
         }
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
@@ -1838,8 +1837,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll /2 + attacker.strength();
-        var stamDamage = 30;
-        var requiredStam = 30;
+        var requiredStam = 35;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
 
@@ -1868,7 +1866,6 @@ fighter.prototype = {
         if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
             critCheck = false;
             damage *= attacker.stamina / requiredStam;
-            stamDamage *= attacker.stamina / requiredStam;
             difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam) * (20 - difficulty)); // Too tired? You're likely to miss.
             windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
         }
@@ -1933,7 +1930,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.strength());
-        var requiredStam = 30;
+        var requiredStam = 35;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2012,7 +2009,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
-        var requiredMana = 30;
+        var requiredMana = 35;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2094,7 +2091,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll / 2 + target.hasMagicWeakness + attacker.spellpower();
-        var requiredMana = 15;
+        var requiredMana = 20;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2177,7 +2174,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
-        var requiredMana = 30;
+        var requiredMana = 35;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2404,7 +2401,7 @@ fighter.prototype = {
     actionMove: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var requiredStam = 10;
+        var requiredStam = 15;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2493,7 +2490,7 @@ fighter.prototype = {
     actionTeleport: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var requiredMana = 10;
+        var requiredMana = 15;
         var difficulty = 6//Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
