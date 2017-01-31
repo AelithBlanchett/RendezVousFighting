@@ -2508,7 +2508,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
-        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.spellpower() + target.strength() - attacker.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
+        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.spellpower() + target.strength() - attacker.spellpower() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         
