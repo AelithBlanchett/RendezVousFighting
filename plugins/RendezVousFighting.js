@@ -2475,8 +2475,8 @@ fighter.prototype = {
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
         } else {
-            attacker.isEvading = Math.floor(roll / 2);
-            attacker.isAggressive = Math.floor(roll / 2);
+            attacker.isEvading = Math.floor((roll + attacker.dexterity()) / 3);
+            attacker.isAggressive = Math.floor((roll + attacker.dexterity()) / 3);
             windowController.addHit(attacker.name + " gained bonuses against " + target.name + " for one turn!");
         }
 
@@ -2569,8 +2569,8 @@ fighter.prototype = {
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
         } else {
-            attacker.isEvading = Math.floor(roll / 2);
-            attacker.isAggressive = Math.floor(roll / 2);
+            attacker.isEvading = Math.floor((roll + attacker.spellpower()) / 3);
+            attacker.isAggressive = Math.floor((roll + attacker.spellpower()) / 3);
             windowController.addHit(attacker.name + " gained bonuses against " + target.name + " for one turn!");
         }
 
