@@ -1397,7 +1397,7 @@ fighter.prototype = {
             this.manaBurn = 10;
         }
 
-        if (this._manaCap == this._maxMana) this.staminaBurn = 0;
+        if (this._manaCap == this._maxMana) this.manaBurn = 0;
         
         if (this._staminaCap > this._maxStamina) {
             this._staminaCap = Math.max(this._staminaCap - this.staminaBurn, this._maxStamina);
@@ -1440,7 +1440,11 @@ fighter.prototype = {
         message += "[/color][color=green] stamina: " + this.stamina;
         if (staminaDelta > 0) message += "[color=cyan] (+" + staminaDelta + ")[/color]";
         if (staminaDelta < 0) message += "[color=red] (" + staminaDelta + ")[/color]";
-        message += "|" + this._maxStamina;
+        
+        message += "|";
+        if (this._staminaCap > this._maxStamina) message += "[color=cyan]";
+        message += this._staminaCap;
+        if (this._staminaCap > this._maxStamina) message += "[/color]";
 
         message += "[/color] mana: " + this.mana;
         if (manaDelta > 0) message += "[color=cyan] (+" + manaDelta + ")[/color]";
