@@ -1627,7 +1627,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.strength());
-        var requiredStam = 35;
+        var requiredStam = 40;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -1710,7 +1710,7 @@ fighter.prototype = {
         var requiredStam = 20;
         if (attacker.isGrappling(target)) {
             damage = roll + (attacker.strength() * 2);
-            requiredStam = 35;
+            requiredStam = 40;
         }
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
@@ -1855,7 +1855,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll /2 + attacker.strength();
-        var requiredStam = 35;
+        var requiredStam = 40;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
 
@@ -1948,7 +1948,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.strength());
-        var requiredStam = 35;
+        var requiredStam = 40;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2027,7 +2027,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
-        var requiredMana = 35;
+        var requiredMana = 40;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2192,7 +2192,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
-        var requiredMana = 35;
+        var requiredMana = 40;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
