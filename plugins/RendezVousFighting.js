@@ -222,8 +222,8 @@ var CommandHandler = (function () {
                         hp += (currentFighters[0].endurance - 4) * 10;
                     }
                     currentFighters[0].hp = hp;
-                    currentFighters[0].mana = (parseInt(currentFighters[0].willpower) * 10 + 60);
-                    currentFighters[0].stamina = (parseInt(currentFighters[0].willpower) * 10 + 60);
+                    currentFighters[0].mana = (parseInt(currentFighters[0].willpower) * 10 + 60 + (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5);
+                    currentFighters[0].stamina = (parseInt(currentFighters[0].willpower) * 10 + 60 - (parseInt(currentFighters[0].spellpower) * 5 + (parseInt(currentFighters[0].strength) * 5);
                     _this.fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", _this.channel);
                 }
                 else {
@@ -246,8 +246,8 @@ var CommandHandler = (function () {
                             hp += (currentFighters[1].endurance - 4) * 10;
                         }
                         currentFighters[1].hp = hp;
-                        currentFighters[1].mana = (parseInt(currentFighters[1].willpower) * 10 + 60);
-                        currentFighters[1].stamina = (parseInt(currentFighters[1].willpower) * 10 + 60);
+                        currentFighters[1].mana = (parseInt(currentFighters[1].willpower) * 10 + 60 + (parseInt(currentFighters[1].spellpower) * 5 - (parseInt(currentFighters[1].strength) * 5);
+                        currentFighters[1].stamina = (parseInt(currentFighters[1].willpower) * 10 + 60 - (parseInt(currentFighters[1].spellpower) * 5 + (parseInt(currentFighters[1].strength) * 5);
                         _this.fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", _this.channel);
                     }
                     else {
@@ -418,6 +418,10 @@ var CommandHandler = (function () {
 
     CommandHandler.prototype.surge = CommandHandler.prototype.manaSurge;
     CommandHandler.prototype.mana = CommandHandler.prototype.manaSurge;
+
+    CommandHandler.prototype.adrenaline = function (args, data) {
+        attackFunc("adrenaline", data.character);
+    };
 
     CommandHandler.prototype.teleport = function (args, data) {
         attackFunc("Teleport", data.character);
@@ -1218,13 +1222,15 @@ function fighter(settings, globalSettings) {
     }
 
     this._maxHP = 60 + this._endurance * 10;
-    this._maxMana = 60 + this._willpower * 10;
+    this._maxMana = 60 + this._willpower * 10 + (this._spellpower - this._strength ) * 5;
     this._manaCap = this._maxMana;
-    this._maxStamina = 60 + this._willpower * 10;
+    this._maxStamina = 60 + this._willpower * 10  + (this._strength - this._spellpower ) * 5;
+    this._staminaCap = this._maxStamina
     
     this._dizzyValue = Math.floor(this._maxHP / 2); //You become dizzy at half health and below.
 
     this.manaBurn = 0;
+    this.staminaBurn = 0;
 
     this._damageEffectMult = globalSettings.GameSpeed;
 
@@ -1391,7 +1397,14 @@ fighter.prototype = {
             this.manaBurn = 10;
         }
 
-        if (this._manaCap == this._maxMana) this.manaBurn = 0;
+        if (this._manaCap == this._maxMana) this.staminaBurn = 0;
+        
+        if (this._staminaCap > this._maxStamina) {
+            this._staminaCap = Math.max(this._staminaCap - this.staminaBurn, this._maxStamina);
+            this.staminaBurn = 10;
+        }
+
+        if (this._staminaCap == this._maxStamina) this.staminaBurn = 0;
 
         if (this.isUnconscious == false) {
             var stamBonus = 6 + this.willpower();
@@ -2292,10 +2305,11 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        var stamBonus = (2 * parseInt(roll)) + (attacker.willpower() * 4);
-        attacker.addStamina(stamBonus);
+        var regen = roll + attacker.willpower() * 2;
+        attacker.addStamina(regen);
+        attacker.addMana(regen);
         windowController.addHit(attacker.name + " SKIPS MOVE, RESTING!");
-        windowController.addHint(attacker.name + " recovered " + stamBonus + " stamina from resting.");
+        windowController.addHint(attacker.name + " recovered " + regen + " stamina and mana from resting.");
         return 1;
     },
 
@@ -2369,7 +2383,7 @@ fighter.prototype = {
         }
 
         if (roll <= difficulty) {	//Failed!
-            windowController.addHint(attacker.name + " was too disoriented or distracted to channel.");
+            windowController.addHint(attacker.name + " was too disoriented or distracted to channel mana.");
             return 0; //Failed action, if we ever need to check that.
         }
 
@@ -2388,16 +2402,69 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        var manaShift = (roll * 2) + (attacker.willpower() * 4);
-        //manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
+        var manaShift = (roll * 3) + (attacker.willpower() * 6);
+        manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
 
-        attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
-        //attacker.hitStamina(manaShift);
+        attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);//oznaka
+        attacker.hitStamina(manaShift);
         attacker.addMana(manaShift);
         windowController.addHit(attacker.name + " GENERATES MANA!"); //Removed Stamina cost.
         windowController.addHint(attacker.name + " recovered " + manaShift + " mana, and will briefly be able to hold on to more mana than usual!");
         return 1;
-    },
+    },      
+
+    actionAdrenaline: function (roll) {
+        var attacker = this;
+        var target = battlefield.getTarget();
+        var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
+
+        // Melee bonus generated by light attacks is wasted if you make any other move.
+        if (attacker.hasAttackBonus > 0) {
+            attacker.hasAttackBonus = 0;
+            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
+        }
+
+        //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
+        if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
+
+        if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
+            target.isEvading = 0;
+        }
+        if (attacker.isAggressive) {//Apply bonus to our action from move/teleport then reset it.
+            difficulty -= attacker.isAggressive;
+            attacker.isAggressive = 0;
+        }
+
+        if (roll <= difficulty) {	//Failed!
+            windowController.addHint(attacker.name + " was too disoriented or distracted to recover stamina.");
+            return 0; //Failed action, if we ever need to check that.
+        } 
+
+        if (roll == 20) {
+            windowController.addHit("CRITICAL SUCCESS! ");
+            windowController.addHint(attacker.name + " can perform another action!");
+            target.isStunned = true;
+            if (target.isDisoriented) target.isDisoriented += 2;
+            if (target.isExposed) target.isExposed += 2;
+        }
+        
+        //If opponent fumbled on their previous action they should become stunned, unless they're already stunned by us rolling a 20.
+        if (target.fumbled & !target.isStunned) {
+            target.isStunned = true;
+            target.fumbled = false;
+        }
+
+        windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
+        var staminaShift = (roll * 3) + (attacker.willpower() * 6);
+        staminaShift = Math.min(staminaShift, attacker.mana); //This also needs to be commented awaay if we want to remove stamina cost.
+
+        attacker._manaCap = Math.max(attacker._staminaCap, attacker.stamina + staminaShift);
+        attacker.hitMana(staminaShift);
+        attacker.addStamina(staminaShift);
+        windowController.addHit(attacker.name + " REGENERATES STAMINA!"); //Removed Stamina cost.
+        windowController.addHint(attacker.name + " recovered " + staminaShift + " stamina, and will briefly be able to hold on to more stamina than usual!!");
+        return 1;
+    },      
 
     actionMove: function (roll) {
         var attacker = this;
