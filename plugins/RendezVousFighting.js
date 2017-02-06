@@ -2829,8 +2829,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
         windowController.addHit("FIGHTING STAGE: " + battlefield.stage + " - " + battlefield.getActor().name + " goes first!");
         battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina/Cloth)
         battlefield.outputFighterStats(); // Creates the fighter stat blocks (STR/DEX/END/INT/WIL)
-        windowController.addInfo("[url=http://www.f-list.net/c/rendezvous%20fight/]Visit this page for stage descriptions[/url]");
-        windowController.addInfo("[url=https://github.com/Barrodin/RF_Fight_Test/]Visit this page for patch notes[/url]");
+        windowController.addInfo("[url=http://www.f-list.net/c/rendezvous%20fight/]Visit this page for game information[/url]");
     }
 
     // Either way, update the output (which will display errors if there were any and post the battle start text to the gameplay screen).
