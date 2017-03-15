@@ -1,3 +1,5 @@
+bad code
+
 var mysql = require('mysql');
 var mySqlConfig = require('../config/config.mysql.js');
 var db;
