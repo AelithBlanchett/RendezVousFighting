@@ -1529,20 +1529,11 @@ fighter.prototype = {
     },
 
     buildActionTable: function (difficulty, targetDex, attackerDex) {
-        var rangeMult = (20 - difficulty) / 40; //0.225
-        var attackTable = {miss: 0, glancing: 0, crit: 0}
-
-        // Basing hit chance on difference multiplied by rangeMulti so that we have ideal DEX difference rather than ideal absolute DEX value.
-        if (attackerDex > targetDex) {
-            attackTable.miss = difficulty + Math.floor((targetDex - attackerDex) * rangeMult); //Used floor to make the result a more negative value.
-        } else {
-            attackTable.miss = difficulty + Math.ceil((targetDex - attackerDex) * rangeMult);
-        }
-        
-        attackTable.miss = Math.max(1, attackTable.miss);//We do this becuase we use this to display required roll and a roll of 1 is a fuble so you'd have to roll higher than that in any case.
+        var attackTable = {miss: 0, crit: 0}
+        // Modify difficulty by half the difference in DEX rounded down. Each odd point more gives you +1 attack and each even point more gives you +1 defence.
+        attackTable.miss = difficulty + Math.floor((targetDex - attackerDex)/2);
+        attackTable.miss = Math.max(1, attackTable.miss);//A roll of 1 is always a miss.
         attackTable.miss = Math.min(attackTable.miss, 19); //A roll of 20 is always a hit, so maximum difficulty is 19.
-        
-        attackTable.glancing = attackTable.dodge + Math.floor((targetDex - Math.max(attackerDex, attackerHitBonus)) * 2 * rangeMult); // Formula uses either attacker's dex or an alternative attribute.
         attackTable.crit = 20
         return attackTable;
     },
@@ -1594,11 +1585,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHit(" GLANCING HIT! ");
-            windowController.addHint(target.name + " avoided taking full damage. ");
-            damage /= 2;
-        } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
             damage += 10;
@@ -1676,11 +1663,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHit(" GLANCING HIT! ");
-            windowController.addHint(target.name + " avoided taking full damage. ");
-            damage /= 2;
-        } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
             damage += 10;
@@ -1775,10 +1758,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHint(target.name + " put up quite a struggle, costing " + attacker.name + " additional stamina. ");
-            attacker.hitStamina(10 + target.strength());
-        } else if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint("Critical! " + attacker.name + " found a particularly good hold!");
             damage += 10;
@@ -1907,9 +1887,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHint(target.name + " rolled with the blow. They are still stunned, but lost less stamina. ");
-        } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHint("Critical Hit! " + attacker.name + " really drove that one home!");
             damage += 10;
         }
@@ -1996,11 +1974,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHit(" GLANCING HIT! ");
-            windowController.addHint(target.name + " only took a flesh wound. ");
-            damage /= 2;
-        } else if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " hit somewhere that really hurts!");
             damage += 10;
@@ -2066,7 +2040,7 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
@@ -2077,11 +2051,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHit(" GLANCING HIT! ");
-            windowController.addHint(target.name + " avoided taking full damage. ");
-            damage /= 2;
-        } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
             damage += 10;
@@ -2147,7 +2117,7 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
         
@@ -2156,11 +2126,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
         
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHit(" GLANCING HIT! ");
-            windowController.addHint(target.name + " avoided taking full damage. ");
-            damage /= 2;
-        } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
             damage += 10;
@@ -2230,7 +2196,7 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());//Magic now uses willpower to determine hitting & missing, but DEX still decides critical and glancing hits.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity());
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
@@ -2239,11 +2205,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHit(" GLANCING HIT! ");
-            windowController.addHint(target.name + " avoided taking full damage. ");
-            damage /= 2;
-        } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL HIT! ");
             windowController.addHint(attacker.name + " landed a particularly vicious blow!");
             damage += 10;
@@ -2525,11 +2487,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHit(" CLOSE CALL! ");
-            windowController.addHint(attacker.name + " succeeded, but it was a close call, and cost them more stamina than usual. ");
-            attacker.hitStamina(10);
-        } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL SUCCESS! ");
             windowController.addHint(attacker.name + " can perform another action!");
             // The only way the target can be stunned is if we set it to stunned with the action we're processing right now.
@@ -2619,11 +2577,7 @@ fighter.prototype = {
             return 0; //Failed attack, if we ever need to check that.
         }
 
-        if (roll <= attackTable.glancing && target.canDodge(attacker)) { //Glancing blow-- reduced damage/effect, typically half normal.
-            windowController.addHit(" CLOSE CALL! ");
-            windowController.addHint(attacker.name + " succeeded, but it was a close call, and cost them more mana than usual. ");
-            attacker.hitMana(10);
-        } else if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+        if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
             windowController.addHit(" CRITICAL SUCCESS! ");
             windowController.addHint(attacker.name + " can perform another action!");
             // The only way the target can be stunned is if we set it to stunned with the action we're processing right now.
