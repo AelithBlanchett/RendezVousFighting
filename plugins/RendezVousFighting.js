@@ -2801,7 +2801,7 @@ function combatInput(actionMade) {
         roll = rollDice([20]);
     }
     actor.lastRolls.push(roll);
-    if (actor.lastRolls.length > 3) {
+    if (actor.lastRolls.length > 5) {
         actor.lastRolls.shift();
     }
     console.log(actor.lastRolls);
