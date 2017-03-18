@@ -1531,7 +1531,7 @@ fighter.prototype = {
     buildActionTable: function (difficulty, targetDex, attackerDex) {
         var attackTable = {miss: 0, crit: 0}
         // Modify difficulty by half the difference in DEX rounded down. Each odd point more gives you +1 attack and each even point more gives you +1 defence.
-        attackTable.miss = difficulty + Math.floor((targetDex - attackerDex)/2);
+        attackTable.miss = difficulty + Math.ceil((targetDex - attackerDex)/2);
         attackTable.miss = Math.max(1, attackTable.miss);//A roll of 1 is always a miss.
         attackTable.miss = Math.min(attackTable.miss, 19); //A roll of 20 is always a hit, so maximum difficulty is 19.
         attackTable.crit = 20
