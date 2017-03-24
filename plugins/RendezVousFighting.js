@@ -282,7 +282,7 @@ var CommandHandler = (function () {
                 }
                 if ((currentFighters.length == 1 && isFirst) || (currentFighters[0].exit == true && currentFighters[1].exit == true)) {
                     _this.fChatLibInstance.sendMessage("The fight has been ended.", _this.channel);
-                    setTimeout(resetFight(), 2500);
+                    setTimeout(resetFight, 2500);
                 }
                 else {
                     _this.fChatLibInstance.sendMessage("The fight will end if your opponent types !exit too.", _this.channel);
