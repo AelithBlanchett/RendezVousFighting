@@ -17,7 +17,7 @@ function dbConnect() {
     });                                     // process asynchronous requests in the meantime.
                                             // If you're also serving http, display a 503 error.
     db.on('error', function (err) {
-        console.log('db error', err);
+        //console.log('db error', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
             dbConnect();                         // lost due to either server restart, or a
         } else {                                      // connnection idle timeout (the wait_timeout
