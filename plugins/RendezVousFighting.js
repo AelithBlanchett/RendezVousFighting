@@ -2824,7 +2824,6 @@ function combatInput(actionMade) {
     } else {
         actor.actionFumble(action);
     }
-    actor["action" + action](roll);// Temporarily disabled fubling while I figure out what to do with it.
 
     windowController.addInfo("Raw Dice Roll: " + roll);
     windowController.addInfo(actor.name + "'s Average Dice Roll: " + luck);
