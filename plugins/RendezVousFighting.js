@@ -2627,44 +2627,47 @@ fighter.prototype = {
         
         switch (action) {
             case "Light":
-                attacker.hitStamina(15);
+                attacker.hitStamina(20);
                 break;
             case "Heavy":
-                attacker.hitStamina(30);
+                attacker.hitStamina(40);
                 attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
                 windowController.addHint(attacker.name + " was left wide open by the failed attack and " + battlefield.getTarget().name + " has the opportunity to grab them!");
                 break;
             case "Grab":
-                attacker.hitStamina(20);
-                if (attacker.isGrappling(target)) attacker.hitStamina(10);//Submission costs 30 Stamina so we take away an extra 10.
+                attacker.hitStamina(40);
+                if (attacker.isGrappling(target)) attacker.hitStamina(20);//Submission costs 40 Stamina so we take away an extra 20.
                 break;
             case "Tackle":
-                attacker.hitStamina(30);
+                attacker.hitStamina(40);
                 attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
                 windowController.addHint(attacker.name + " was left wide open by the failed attack and " + battlefield.getTarget().name + " has the opportunity to grab them!");
                 break;
             case "Ranged":
-                attacker.hitStamina(30);
+                attacker.hitStamina(40);
                 break;
             case "Magic":
-                attacker.hitMana(30);
+                attacker.hitMana(40);
                 attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
                 windowController.addHint(attacker.name + " was left wide open by the failed attack and " + battlefield.getTarget().name + " has the opportunity to grab them!");
                 break;
             case "Hex":
-                attacker.hitMana(15);
+                attacker.hitMana(20);
                 break;
             case "Spell":
-                attacker.hitMana(30);
+                attacker.hitMana(40);
                 break;
-            case "Escape":
-                attacker.hitStamina(10);
+            case "Move":
+                attacker.hitStamina(15);
                 break;
-            case "Skip/Rest":
+            case "Rest":
+                windowController.addHint(attacker.name + " could not calm their nerves.");
+                break;
+            case "Focus":
                 windowController.addHint(attacker.name + " could not calm their nerves.");
                 break;
             case "Teleport":
-                attacker.hitMana(10);
+                attacker.hitMana(15);
                 break;
         }
 
