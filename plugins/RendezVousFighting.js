@@ -2506,7 +2506,7 @@ fighter.prototype = {
         } else {
             attacker.isEvading = Math.floor((roll + attacker.dexterity()) / 3);
             attacker.isAggressive = Math.floor((roll + attacker.dexterity()) / 3);
-            windowController.addHit(attacker.name + " gained bonuses against " + target.name + " for one turn!");
+            windowController.addHit(attacker.name + " gained mobility bonuses against " + target.name + " for one turn!");
         }
 
         if (battlefield.inGrabRange) {
@@ -2596,7 +2596,7 @@ fighter.prototype = {
         } else {
             attacker.isEvading = Math.floor((roll + attacker.spellpower()) / 3);
             attacker.isAggressive = Math.floor((roll + attacker.spellpower()) / 3);
-            windowController.addHit(attacker.name + " gained bonuses against " + target.name + " for one turn!");
+            windowController.addHit(attacker.name + " gained mobility bonuses against " + target.name + " for one turn!");
         }
 
         if (battlefield.inGrabRange) {
