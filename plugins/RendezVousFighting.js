@@ -41,7 +41,7 @@ var CommandHandler = function (fChatLib, chan) {
         statsGetter(args, data, data.character);
     };
 
-    CommandHandler.prototype.getStats = function (args, data) {
+    CommandHandler.prototype.getstats = function (args, data) {
         if (_this.fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
             statsGetter(this, args, data, args);
         }
@@ -297,7 +297,7 @@ var CommandHandler = function (fChatLib, chan) {
         }
     };
     CommandHandler.prototype.leave = CommandHandler.prototype.exit;
-    CommandHandler.prototype.leaveFight = CommandHandler.prototype.exit;
+    CommandHandler.prototype.leavefight = CommandHandler.prototype.exit;
     CommandHandler.prototype.quit = CommandHandler.prototype.exit;
     CommandHandler.prototype.unready = CommandHandler.prototype.exit;
 
@@ -412,12 +412,12 @@ var CommandHandler = function (fChatLib, chan) {
         attackFunc("Spell", data.character);
     };
 
-    CommandHandler.prototype.manaSurge = function (args, data) {
+    CommandHandler.prototype.manasurge = function (args, data) {
         attackFunc("Channel", data.character);
     };
 
-    CommandHandler.prototype.surge = CommandHandler.prototype.manaSurge;
-    CommandHandler.prototype.mana = CommandHandler.prototype.manaSurge;
+    CommandHandler.prototype.surge = CommandHandler.prototype.manasurge;
+    CommandHandler.prototype.mana = CommandHandler.prototype.manasurge;
 
     CommandHandler.prototype.teleport = function (args, data) {
         attackFunc("Teleport", data.character);
