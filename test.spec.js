@@ -103,6 +103,13 @@ describe("Fighter testing", () => {
             }, 1000);
 
             setTimeout(function () {
+                CommandHandler.manaSurge("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.manaSurge("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
+            setTimeout(function () {
                 CommandHandler.ranged("", {character: "Aelith Blanchette", channel: "here"});
             }, 1000);
             setTimeout(function () {

@@ -28,13 +28,13 @@ function dbConnect() {
 
 dbConnect();
 
-var CommandHandler = (function () {
-    function CommandHandler(fChatLib, chan) {
-        this.fChatLibInstance = fChatLib;
-        this.channel = chan;
-        _this = this;
-    }
 
+
+var CommandHandler = function (fChatLib, chan) {
+
+    this.fChatLibInstance = fChatLib;
+    this.channel = chan;
+    _this = this;
     //Public
 
     CommandHandler.prototype.stats = function (args, data) {
@@ -431,14 +431,9 @@ var CommandHandler = (function () {
         attackFunc("Rip", data.character);
     };
     CommandHandler.prototype.ripclothes = CommandHandler.prototype.rip;
-
-    return CommandHandler;
-}());
-
-module.exports = function (parent, channel) {
-    var cmdHandler = new CommandHandler(parent, channel);
-    return cmdHandler;
 };
+
+module.exports.CommandHandler = CommandHandler;
 
 
 var currentFighters = [];

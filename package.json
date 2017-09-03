@@ -6,9 +6,9 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "fchatlib": "*",
-    "redis": "*",
-    "mysql": "*",
-    "jasmine": "2.2"
+    "fchatlib": "^1.1.0",
+    "jasmine": "2.2",
+    "mysql": "^2.14.1",
+    "redis": "^2.8.0"
   }
 }
