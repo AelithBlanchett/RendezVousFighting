@@ -38,12 +38,12 @@ var CommandHandler = function (fChatLib, chan) {
     //Public
 
     CommandHandler.prototype.stats = function (args, data) {
-        statsGetter(args, data, data.character);
+        statsGetter(data.character, data.character);
     };
 
     CommandHandler.prototype.getstats = function (args, data) {
         if (_this.fChatLibInstance.isUserChatOP(data.character, _this.channel)) {
-            statsGetter(this, args, data, args);
+            statsGetter(args, data.character);
         }
         else {
             _this.fChatLibInstance.sendMessage("You don't have sufficient rights.", _this.channel);
@@ -162,8 +162,8 @@ var CommandHandler = function (fChatLib, chan) {
         });
     };
 
-    var statsGetter = function (args, data, character) {
-        db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", data.character, function (err, rows, fields) {
+    var statsGetter = function (characterAsked, askingCharacter) {
+        db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
             if (rows != undefined && rows.length == 1) {
                 var hp = 100;
                 if (rows[0].endurance > 4) {
@@ -172,15 +172,15 @@ var CommandHandler = function (fChatLib, chan) {
                 var stats = rows[0];
                 var mana = (parseInt(rows[0].willpower) * 10 + 60);
                 var staminaMax = (parseInt(rows[0].willpower) * 10 + 60);
-                _this.fChatLibInstance.sendPrivMessage("[b]" + data.character + "[/b]'s stats" + "\n" +
+                _this.fChatLibInstance.sendPrivMessage("[b]" + stats.name + "[/b]'s stats" + "\n" +
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
                     "[b][color=green]Endurance[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + staminaMax + "\n" +
                     "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "[b][color=pink]Cloth[/color][/b]: " + stats.cloth + "\n" +
-                    "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, data.character);
+                    "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, askingCharacter);
             }
             else {
-                _this.fChatLibInstance.sendPrivMessage("You aren't registered yet.", data.character);
+                _this.fChatLibInstance.sendPrivMessage("You aren't registered yet.", askingCharacter);
             }
         });
     };
