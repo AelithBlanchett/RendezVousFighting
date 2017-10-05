@@ -247,7 +247,7 @@ var CommandHandler = function (fChatLib, chan) {
                         }
                         currentFighters[1].hp = hp;
                         currentFighters[1].mana = (parseInt(currentFighters[1].willpower) * 10 + 60 + (parseInt(currentFighters[1].spellpower) * 5 - (parseInt(currentFighters[1].strength) * 5)));
-                        currentFighters[1].stamina = (parseInt(currentFighters[1].willpower) * 10 + 60 - (parseInt(currentFighters[1].spellpower) * 5 + (parseInt(currentFighters[1].strength) * 5)));
+                        currentFighters[1].stamina = (parseInt(currentFighters[1].willpower) * 10 + 60 - (parseInt(currentFighters[1].spellpower) * 5 - (parseInt(currentFighters[1].strength) * 5)));
                         _this.fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", _this.channel);
                     }
                     else {
