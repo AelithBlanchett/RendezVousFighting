@@ -170,8 +170,8 @@ var CommandHandler = function (fChatLib, chan) {
                     hp += (parseInt(rows[0].endurance) - 4) * 10;
                 }
                 var stats = rows[0];
-                var mana = (parseInt(rows[0].willpower) * 10 + 60);
-                var staminaMax = (parseInt(rows[0].willpower) * 10 + 60);
+                var mana = (parseInt(rows[0].willpower) * 10 + 60 + (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
+                var staminaMax = (parseInt(rows[0].willpower) * 10 + 60 - (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
                 _this.fChatLibInstance.sendPrivMessage("[b]" + stats.name + "[/b]'s stats" + "\n" +
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
@@ -223,7 +223,7 @@ var CommandHandler = function (fChatLib, chan) {
                     }
                     currentFighters[0].hp = hp;
                     currentFighters[0].mana = (parseInt(currentFighters[0].willpower) * 10 + 60 + (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
-                    currentFighters[0].stamina = (parseInt(currentFighters[0].willpower) * 10 + 60 - (parseInt(currentFighters[0].spellpower) * 5 + (parseInt(currentFighters[0].strength) * 5)));
+                    currentFighters[0].stamina = (parseInt(currentFighters[0].willpower) * 10 + 60 - (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
                     _this.fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", _this.channel);
                 }
                 else {
