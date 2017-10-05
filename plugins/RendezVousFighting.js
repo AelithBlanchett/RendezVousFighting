@@ -170,8 +170,8 @@ var CommandHandler = function (fChatLib, chan) {
                     hp += (parseInt(rows[0].endurance) - 4) * 10;
                 }
                 var stats = rows[0];
-                var mana = (parseInt(currentFighters[0].willpower) * 10 + 60 + (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
-                var staminaMax = (parseInt(currentFighters[0].willpower) * 10 + 60 - (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
+                var mana = (parseInt(rows[0].willpower) * 10 + 60 + (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
+                var staminaMax = (parseInt(rows[0].willpower) * 10 + 60 - (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
                 _this.fChatLibInstance.sendPrivMessage("[b]" + stats.name + "[/b]'s stats" + "\n" +
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
