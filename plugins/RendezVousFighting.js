@@ -94,10 +94,10 @@ var CommandHandler = function (fChatLib, chan) {
 
     function checkIfValidStats(arrParam) {
         if (arrParam.length != 6) {
-            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 4,7,5,1,6,30", _this.channel);
+            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 5,7,5,0,6,30", _this.channel);
         }
         else if (!arrParam.every(arg => isInt(arg))) {
-            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 4,7,5,1,6,30", _this.channel);
+            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 5,7,5,0,6,30", _this.channel);
         }
         else {
             //register
@@ -110,19 +110,19 @@ var CommandHandler = function (fChatLib, chan) {
                 _this.fChatLibInstance.sendMessage("The total of points you've spent isn't equal to "+defaultStatPoints+". (" + total + "). Example: !register 5,7,5,0,6,30", _this.channel);
             }
             else if (parseInt(arrParam[0]) > 10 || (parseInt(arrParam[0]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Strength stat must be higher than 0 and lower than 11. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Strength stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
             else if (parseInt(arrParam[1]) > 10 || (parseInt(arrParam[1]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Dexterity stat must be higher than 0 and lower than 11. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Dexterity stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
             else if (parseInt(arrParam[2]) > 10 || (parseInt(arrParam[2]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Endurance stat must be higher than 0 and lower than 11. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Endurance stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
             else if (parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Spellpower stat must be higher than 0 and lower than 11. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Spellpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
             else if (parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Willpower stat must be higher than 0 and lower than 11. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Willpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
             else if (parseInt(arrParam[5]) < 0 || parseInt(arrParam[5]) > 100) {
                 _this.fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 5,7,5,0,6,30", _this.channel);
