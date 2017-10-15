@@ -116,7 +116,7 @@ var CommandHandler = function (fChatLib, chan) {
                 _this.fChatLibInstance.sendMessage("The Dexterity stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
             else if (parseInt(arrParam[2]) > 10 || (parseInt(arrParam[2]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Endurance stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Resilience stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
             else if (parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 0)) {
                 _this.fChatLibInstance.sendMessage("The Spellpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
