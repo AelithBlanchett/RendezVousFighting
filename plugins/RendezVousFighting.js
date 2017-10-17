@@ -1264,7 +1264,7 @@ fighter.prototype = {
         var total = this._strength;
         if (this.isDisoriented > 0) total -= 1;
         //if (this.isRestrained) total -= 2;
-        total = Math.max(total, 1);
+        //total = Math.max(total, 1);
         total = Math.ceil(total);
         return total;
     },
@@ -1273,7 +1273,7 @@ fighter.prototype = {
         var total = this._dexterity;
         if (this.isDisoriented > 0) total -= 1;
         //if (this.isRestrained) total -= 2;
-        total = Math.max(total, 1);
+        //total = Math.max(total, 1);
         total = Math.ceil(total);
         return total;
     },
@@ -1281,7 +1281,7 @@ fighter.prototype = {
     endurance: function () {
         var total = this._endurance;
         if (this.isDisoriented > 0) total -= 1;
-        total = Math.max(total, 1);
+        //total = Math.max(total, 1);
         total = Math.ceil(total);
         return total;
     },
@@ -1289,7 +1289,7 @@ fighter.prototype = {
     spellpower: function () {
         var total = this._spellpower;
         if (this.isDisoriented > 0) total -= 1;
-        total = Math.max(total, 1);
+        //total = Math.max(total, 1);
         total = Math.ceil(total);
         return total;
     },
@@ -1297,7 +1297,7 @@ fighter.prototype = {
     willpower: function () {
         var total = this._willpower;
         if (this.isDisoriented > 0) total -= 1;
-        total = Math.max(total, 1);
+        //total = Math.max(total, 1);
         total = Math.ceil(total);
         return total;
     },
