@@ -165,11 +165,8 @@ var CommandHandler = function (fChatLib, chan) {
     var statsGetter = function (characterAsked, askingCharacter) {
         db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
             if (rows != undefined && rows.length == 1) {
-                var hp = 100;
-                if (rows[0].endurance > 4) {
-                    hp += (parseInt(rows[0].endurance) - 4) * 10;
-                }
                 var stats = rows[0];
+                var hp = 60 + parseInt(stats.endurance) * 10;
                 var mana = (parseInt(rows[0].willpower) * 10 + 60 + (parseInt(rows[0].spellpower) * 5 - (parseInt(rows[0].strength) * 5)));
                 var staminaMax = (parseInt(rows[0].willpower) * 10 + 60 - (parseInt(rows[0].spellpower) * 5 - (parseInt(rows[0].strength) * 5)));
                 _this.fChatLibInstance.sendPrivMessage("[b]" + stats.name + "[/b]'s stats" + "\n" +
@@ -217,11 +214,7 @@ var CommandHandler = function (fChatLib, chan) {
                         return;
                     }
                     currentFighters[0] = rows[0];
-                    var hp = 100;
-                    if (currentFighters[0].endurance > 4) {
-                        hp += (currentFighters[0].endurance - 4) * 10;
-                    }
-                    currentFighters[0].hp = hp;
+                    currentFighters[0].hp = 60 + parseInt(currentFighters[0].endurance) * 10;
                     currentFighters[0].mana = (parseInt(currentFighters[0].willpower) * 10 + 60 + (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
                     currentFighters[0].stamina = (parseInt(currentFighters[0].willpower) * 10 + 60 - (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
                     _this.fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", _this.channel);
@@ -241,11 +234,7 @@ var CommandHandler = function (fChatLib, chan) {
                             return;
                         }
                         currentFighters[1] = rows[0];
-                        var hp = 100;
-                        if (currentFighters[1].endurance > 4) {
-                            hp += (currentFighters[1].endurance - 4) * 10;
-                        }
-                        currentFighters[1].hp = hp;
+                        currentFighters[1].hp = 60 + parseInt(currentFighters[1].endurance) * 10;
                         currentFighters[1].mana = (parseInt(currentFighters[1].willpower) * 10 + 60 + (parseInt(currentFighters[1].spellpower) * 5 - (parseInt(currentFighters[1].strength) * 5)));
                         currentFighters[1].stamina = (parseInt(currentFighters[1].willpower) * 10 + 60 - (parseInt(currentFighters[1].spellpower) * 5 - (parseInt(currentFighters[1].strength) * 5)));
                         _this.fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", _this.channel);
