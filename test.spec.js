@@ -23,7 +23,7 @@ describe("Fighter testing", () => {
 
     it("should start the match", function(done){
         CommandHandler.ready("", {character: "Aelith Blanchette", channel: "here"});
-        setTimeout(function(){CommandHandler.ready("", {character: "Britta Blixt", channel: "here"});}, 100);
+        setTimeout(function(){CommandHandler.ready("", {character: "Britta Blixt", channel: "here"});}, 1000);
 
         setTimeout(function() {
             setTimeout(function () {
@@ -104,10 +104,10 @@ describe("Fighter testing", () => {
             }, 1000);
 
             setTimeout(function () {
-                CommandHandler.manaSurge("", {character: "Aelith Blanchette", channel: "here"});
+                CommandHandler.manasurge("", {character: "Aelith Blanchette", channel: "here"});
             }, 1000);
             setTimeout(function () {
-                CommandHandler.manaSurge("", {character: "Britta Blixt", channel: "here"});
+                CommandHandler.manasurge("", {character: "Britta Blixt", channel: "here"});
             }, 1000);
 
             setTimeout(function () {

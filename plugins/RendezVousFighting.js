@@ -201,7 +201,7 @@ var CommandHandler = function (fChatLib, chan) {
     };
 
     var checkWrestlersTotalStatsSum = function(args){
-        if(args.strength && args.dexterity && args.endurance && args.spellpower && args.willpower){
+        if(args.strength != undefined && args.dexterity != undefined && args.endurance != undefined && args.spellpower != undefined && args.willpower != undefined ){
             return(parseInt(args.strength) + parseInt(args.dexterity) + parseInt(args.endurance) + parseInt(args.spellpower) + parseInt(args.willpower));
         }
         return 0;
@@ -1198,11 +1198,11 @@ function fighter(settings, globalSettings) {
     this._deathValue = globalSettings.DeadAt;
 
     //Check stat points for conformity to rules
-    if (this._strength > 10 || this._strength < 1) errors.push(settings.Name + "'s Strength is outside the allowed range (1 to 10).");
-    if (this._dexterity > 10 || this._dexterity < 1) errors.push(settings.Name + "'s Dexterity is outside the allowed range (1 to 10).");
-    if (this._endurance > 10 || this._endurance < 1) errors.push(settings.Name + "'s Endurance is outside the allowed range (1 to 10).");
-    if (this._spellpower > 10 || this._spellpower < 1) errors.push(settings.Name + "'s Spellpower is outside the allowed range (1 to 10).");
-    if (this._willpower > 10 || this._willpower < 1) errors.push(settings.Name + "'s Willpower is outside the allowed range (1 to 10).");
+    if (this._strength > 10 || this._strength < 0) errors.push(settings.Name + "'s Strength is outside the allowed range (0 to 10).");
+    if (this._dexterity > 10 || this._dexterity < 0) errors.push(settings.Name + "'s Dexterity is outside the allowed range (0 to 10).");
+    if (this._endurance > 10 || this._endurance < 0) errors.push(settings.Name + "'s Endurance is outside the allowed range (0 to 10).");
+    if (this._spellpower > 10 || this._spellpower < 0) errors.push(settings.Name + "'s Spellpower is outside the allowed range (0 to 10).");
+    if (this._willpower > 10 || this._willpower < 0) errors.push(settings.Name + "'s Willpower is outside the allowed range (0 to 10).");
 
     var stattotal = this._strength + this._dexterity + this._endurance + this._spellpower + this._willpower;
     if (stattotal != globalSettings.StatPoints && globalSettings.StatPoints != 0) errors.push(settings.Name + " has stats that are too high or too low (" + stattotal + " out of " + globalSettings.StatPoints + " points spent).");
@@ -1216,7 +1216,7 @@ function fighter(settings, globalSettings) {
     this._maxMana = 60 + this._willpower * 10 + (this._spellpower - this._strength ) * 5;
     this._manaCap = this._maxMana;
     this._maxStamina = 60 + this._willpower * 10  + (this._strength - this._spellpower ) * 5;
-    this._staminaCap = this._maxStamina
+    this._staminaCap = this._maxStamina;
     
     this._dizzyValue = Math.floor(this._maxHP / 2); //You become dizzy at half health and below.
 
