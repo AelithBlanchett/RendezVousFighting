@@ -1674,7 +1674,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll - 10 + (attacker.strength() / 2);
-        var requiredStam = 20;
+        var requiredStam = 10;
         if (attacker.isGrappling(target)) {
             damage = roll + (attacker.strength() * 2);
             requiredStam = 40;
