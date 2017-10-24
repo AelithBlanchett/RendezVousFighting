@@ -1676,7 +1676,7 @@ fighter.prototype = {
         var damage = roll - 10 + (attacker.strength() / 2);
         var requiredStam = 20;
         if (attacker.isGrappling(target)) {
-            damage = roll - 5 + (attacker.strength() * 3);
+            damage = roll + (attacker.strength() * 2);
             requiredStam = 40;
         }
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
@@ -1934,6 +1934,8 @@ fighter.prototype = {
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
         
+        if (attacker.isFocused) damage += Math.floor(attacker.isFocused / 10); //Focus gives bonus damage.
+        
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
             damage -= Math.ceil(target.isEvading / 2);
@@ -2171,6 +2173,8 @@ fighter.prototype = {
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
         if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         
+        if (attacker.isFocused) damage += Math.floor(attacker.isFocused / 10); //Focus gives bonus damage.
+        
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
             damage -= Math.ceil(target.isEvading / 2);
@@ -2321,7 +2325,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         windowController.addHit(attacker.name + " FOCUSES/AIMS!");
-        attacker.isFocused = 20 + (roll + attacker.willpower()) * 2;
+        attacker.isFocused = roll * 2 + attacker.willpower() * 4;
         return 1;
     },
 
