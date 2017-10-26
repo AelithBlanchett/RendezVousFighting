@@ -1442,7 +1442,8 @@ fighter.prototype = {
         this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana, cloth: this.cloth};
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
-        if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused (" + this.isFocused + " points).");
+        if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused (" + this.isFocused + " points). Focus is reduced by taking damage.");
+        if (this.isFocused) windowController.addHint(this.name + " has a +" + Math.ceil(this.isFocused/10) + " bonus to attack and damage because of the Focus.");
         if (battlefield.inGrabRange && battlefield.displayGrabbed) {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
@@ -1932,9 +1933,9 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
-        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
+        if (attacker.isFocused) difficulty -= Math.ceil(attacker.isFocused / 10); //Lower the difficulty considerably if the attacker is focused
         
-        if (attacker.isFocused) damage += Math.floor(attacker.isFocused / 10); //Focus gives bonus damage.
+        if (attacker.isFocused) damage += Math.ceil(attacker.isFocused / 10); //Focus gives bonus damage.
         
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
@@ -2171,9 +2172,9 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (attacker.isFocused) difficulty -= Math.ceil(attacker.isFocused / 10); //Lower the difficulty if the attacker is focused
         
-        if (attacker.isFocused) damage += Math.floor(attacker.isFocused / 10); //Focus gives bonus damage.
+        if (attacker.isFocused) damage += Math.ceil(attacker.isFocused / 10); //Focus gives bonus damage.
         
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
