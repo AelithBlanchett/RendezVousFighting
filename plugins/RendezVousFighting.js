@@ -2015,7 +2015,7 @@ fighter.prototype = {
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += target.isEvading:
+            difficulty += target.isEvading;
             damage -= target.isEvading;
             target.isEvading = 0;
         }
