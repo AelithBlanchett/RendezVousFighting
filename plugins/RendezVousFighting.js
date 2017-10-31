@@ -3,7 +3,7 @@ var mySqlConfig = require('../config/config.mysql.js');
 var db;
 var _this;
 
-var defaultStatPoints = 23;
+var defaultStatPoints = 24;
 
 function dbConnect() {
     db = mysql.createConnection(mySqlConfig); // Recreate the connection, since
@@ -1442,7 +1442,8 @@ fighter.prototype = {
         this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana, cloth: this.cloth};
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
-        if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused (" + this.isFocused + " points).");
+        if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused (" + this.isFocused + " points). Focus is reduced by taking damage.");
+        if (this.isFocused) windowController.addHint(this.name + " has a +" + Math.ceil(this.isFocused/10) + " bonus to attack and damage because of the Focus.");
         if (battlefield.inGrabRange && battlefield.displayGrabbed) {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
@@ -1482,11 +1483,11 @@ fighter.prototype = {
         }
 
         if (this.isEvading > 0) {
-            windowController.addHint(this.name + " has a +" + this.isEvading + " defence bonus.");
+            windowController.addHint(this.name + " has a temporary +" + this.isEvading + " mobility bonus to evasion and damage reduction.");
         }
 
         if (this.isAggressive > 0) {
-            windowController.addHint(this.name + " has a +" + this.isAggressive + " attack bonus.");
+            windowController.addHint(this.name + " has a temporary +" + this.isAggressive + " mobility bonus to accuracy and attack damage.");
         }
 
         if (this.isExposed > 0) {
@@ -1532,15 +1533,17 @@ fighter.prototype = {
         }
 
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
+        if (target.isRestrained) difficulty -= 4; //Lower it if the target is restrained.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += target.isEvading;
+            damage -= target.isEvading;
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -1611,14 +1614,16 @@ fighter.prototype = {
         }
 
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
-        if (target.isRestrained) difficulty -= 2; //Lower it if the target is restrained.
+        if (target.isRestrained) difficulty -= 4; //Lower it if the target is restrained.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += target.isEvading;
+            damage -= target.isEvading;
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -1685,14 +1690,16 @@ fighter.prototype = {
         }
 
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-        if (target.isRestrained) difficulty += Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants. Minimum of +0 difficulty, maximum of +8.
+        if (target.isRestrained) difficulty += (4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants.
         
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += target.isEvading;
+            damage -= target.isEvading;
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -1790,7 +1797,7 @@ fighter.prototype = {
         var clothRip = roll + attacker.strength();
 
         if (roll == 20) {
-            clothRip += 10;
+            clothRip += 20;
             windowController.addHit("CRITICAL!");
         }
 
@@ -1816,7 +1823,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = roll - 5 + attacker.strength();
         var requiredStam = 40;
-        var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
 
         // Attack bonus generated by light attacks reduces difficulty of tackle and is then used up.
@@ -1828,15 +1835,17 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += Math.max(0, 8 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
-        if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
+        if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += target.isEvading;
+            damage -= target.isEvading;
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -1924,14 +1933,18 @@ fighter.prototype = {
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
         if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
-        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty considerably if the attacker is focused
+        if (attacker.isFocused) difficulty -= Math.ceil(attacker.isFocused / 10); //Lower the difficulty considerably if the attacker is focused
+        
+        if (attacker.isFocused) damage += Math.ceil(attacker.isFocused / 10); //Focus gives bonus damage.
         
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
+            damage -= Math.ceil(target.isEvading / 2);
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -1998,15 +2011,17 @@ fighter.prototype = {
         }
 
         if (attacker.isRestrained) difficulty += 2; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
-        if (target.isRestrained) difficulty -= 2; //Lower the difficulty considerably if the target is restrained.
+        if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += target.isEvading;
+            difficulty += target.isEvading:
+            damage -= target.isEvading;
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -2060,7 +2075,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = roll - 5 + target.hasMagicWeakness + attacker.spellpower();
         var requiredMana = 20;
-        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 4; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -2074,16 +2089,18 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
-        if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
-        if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (attacker.isRestrained) difficulty += 2;
+        if (target.isRestrained) difficulty -= 4; //Ranged attacks during grapple are hard, but Hex is now melee.
+        //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
         
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
+            difficulty += target.isEvading;//Half effect on ranged attacks.
+            damage -= target.isEvading;
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -2155,14 +2172,18 @@ fighter.prototype = {
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
         if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
+        if (attacker.isFocused) difficulty -= Math.ceil(attacker.isFocused / 10); //Lower the difficulty if the attacker is focused
+        
+        if (attacker.isFocused) damage += Math.ceil(attacker.isFocused / 10); //Focus gives bonus damage.
         
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
+            damage -= Math.ceil(target.isEvading / 2);
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -2305,7 +2326,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         windowController.addHit(attacker.name + " FOCUSES/AIMS!");
-        attacker.isFocused = 20 + (roll + attacker.willpower()) * 2;
+        attacker.isFocused = roll * 2 + attacker.willpower() * 4;
         return 1;
     },
 
@@ -2375,7 +2396,7 @@ fighter.prototype = {
         }
 
 
-        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
+        if (attacker.isRestrained) difficulty += (6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
@@ -2465,7 +2486,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
-        if (attacker.isRestrained) difficulty += Math.max(2, 6 + Math.floor((target.spellpower() + target.strength() - attacker.spellpower() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +10.
+        if (attacker.isRestrained) difficulty += (6 + Math.floor((target.spellpower() + target.strength() - attacker.spellpower() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         
