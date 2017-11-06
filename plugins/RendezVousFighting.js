@@ -1306,7 +1306,7 @@ fighter.prototype = {
     addStamina: function (n) {
         var x = ~~n;
         this.stamina += x;
-        this.stamina = clamp(this.stamina, 0, this._maxStamina);
+        this.stamina = clamp(this.stamina, 0, this._staminaCap);
     },
 
     addCloth: function (n) {
@@ -1326,7 +1326,7 @@ fighter.prototype = {
             if (this.isRestrained) x *= 1.5;
             if (this.isDisoriented) x += this.isDisoriented;
             this.isFocused = Math.max(this.isFocused - x, 0);
-            if (this.isFocused == 0) windowController.addHint(this.name + " has lost their focus/aim!");
+            if (this.isFocused == 0) windowController.addHint(this.name + " has lost their focus!");
         }
     },
 
@@ -1442,8 +1442,8 @@ fighter.prototype = {
         this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana, cloth: this.cloth};
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
-        if (this.isFocused) windowController.addHint(this.name + " is Aimed/Focused (" + this.isFocused + " points). Focus is reduced by taking damage.");
-        if (this.isFocused) windowController.addHint(this.name + " has a +" + Math.ceil(this.isFocused/10) + " bonus to attack and damage because of the Focus.");
+        if (this.isFocused) windowController.addHint(this.name + " is Focused (" + this.isFocused + " points). Focus is reduced by taking damage.");
+        if (this.isFocused) windowController.addHint(this.name + " has a +" + Math.ceil(this.isFocused/10) + " bonus to attack and damage for Ranged and Spell atatcks because of the Focus.");
         if (battlefield.inGrabRange && battlefield.displayGrabbed) {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
@@ -2273,7 +2273,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         var staminaShift = (roll * 2) + (attacker.willpower() * 4);
-        staminaShift = Math.min(staminaShift, attacker.mana);
+        //staminaShift = Math.min(staminaShift, attacker.mana);
 
         attacker._staminaCap = Math.max(attacker._staminaCap, attacker.stamina + staminaShift);
         //attacker.hitMana(staminaShift);
@@ -2373,7 +2373,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         var manaShift = (roll * 2) + (attacker.willpower() * 4);
-        manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
+        //manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
 
         attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
         //attacker.hitStamina(manaShift);
