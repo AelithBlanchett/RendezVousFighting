@@ -1443,7 +1443,7 @@ fighter.prototype = {
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
         if (this.isFocused) windowController.addHint(this.name + " is Focused (" + this.isFocused + " points). Focus is reduced by taking damage.");
-        if (this.isFocused) windowController.addHint(this.name + " has a +" + Math.ceil(this.isFocused/10) + " bonus to attack and damage for Ranged and Spell atatcks because of the Focus.");
+        if (this.isFocused) windowController.addHint(this.name + "'s Ranged and Spell attacks have a +" + Math.ceil(this.isFocused/10) + " bonus to attack and damage because of the Focus.");
         if (battlefield.inGrabRange && battlefield.displayGrabbed) {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
