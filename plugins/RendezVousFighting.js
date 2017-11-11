@@ -1527,7 +1527,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll - 5 + attacker.strength();
-        var requiredStam = 20;
+        var requiredStam = 15;
         var difficulty = 4;
         
         //Opponents who are low on energy are easier to hit. Uses Stamina for physical and Mana for magical attacks.
@@ -1594,8 +1594,9 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
+        target.hitStamina(damage);
         target.hitCloth(3);
-        attacker.hasAttackBonus += 1; // Hitting with light attacks sets you up to hit with a heavy.
+        //attacker.hasAttackBonus += 1; // Hitting with light attacks sets you up to hit with a heavy.
         windowController.addHit(attacker.name + " gained +1 melee bonus!");
         return 1; //Successful attack, if we ever need to check that.
     },
@@ -1604,7 +1605,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.strength());
-        var requiredStam = 40;
+        var requiredStam = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
         //Opponents who are low on energy are easier to hit. Uses Stamina for physical and Mana for magical attacks.
@@ -1685,10 +1686,10 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll - 10 + (attacker.strength() / 2);
-        var requiredStam = 20;
+        var requiredStam = 15;
         if (attacker.isGrappling(target)) {
             damage = roll + (attacker.strength() * 2);
-            requiredStam = 40;
+            requiredStam = 30;
         }
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
@@ -1835,7 +1836,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll - 5 + attacker.strength();
-        var requiredStam = 40;
+        var requiredStam = 30;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
         //Opponents who are low on energy are easier to hit. Uses Stamina for physical and Mana for magical attacks.
@@ -1930,7 +1931,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.strength());
-        var requiredStam = 40;
+        var requiredStam = 30;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //Opponents who are low on energy are easier to hit. Uses Stamina for physical and Mana for magical attacks.
@@ -2012,7 +2013,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
-        var requiredMana = 40;
+        var requiredMana = 30;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
         //Opponents who are low on energy are easier to hit. Uses Stamina for physical and Mana for magical attacks.
@@ -2095,7 +2096,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll - 5 + target.hasMagicWeakness + attacker.spellpower();
-        var requiredMana = 20;
+        var requiredMana = 15;
         var difficulty = 4; //Base difficulty, rolls greater than this amount will hit.
         
         //Opponents who are low on energy are easier to hit. Uses Stamina for physical and Mana for magical attacks.
@@ -2167,11 +2168,12 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
+        target.hitMana(damage);
         target.hitCloth(3);
-        if (target.hasMagicWeakness < attacker.spellpower()) {
-            target.hasMagicWeakness += 1;//The hex reduces resistance against further magical attacks by 1 point.
-            windowController.addHit(attacker.name + " increased " + target.name + "'s weakness to magic!");
-        }
+        //if (target.hasMagicWeakness < attacker.spellpower()) {
+        //    target.hasMagicWeakness += 1;//The hex reduces resistance against further magical attacks by 1 point.
+        //    windowController.addHit(attacker.name + " increased " + target.name + "'s weakness to magic!");
+        //}
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2179,7 +2181,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
-        var requiredMana = 40;
+        var requiredMana = 30;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //Opponents who are low on energy are easier to hit. Uses Stamina for physical and Mana for magical attacks.
