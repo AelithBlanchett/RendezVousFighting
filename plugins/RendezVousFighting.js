@@ -1596,8 +1596,6 @@ fighter.prototype = {
         target.hitHp(damage);
         target.hitStamina(damage);
         target.hitCloth(3);
-        //attacker.hasAttackBonus += 1; // Hitting with light attacks sets you up to hit with a heavy.
-        windowController.addHit(attacker.name + " gained +1 melee bonus!");
         return 1; //Successful attack, if we ever need to check that.
     },
 

@@ -33,41 +33,41 @@ describe("Fighter testing", () => {
             setTimeout(function () {
                 CommandHandler.fumble("", {character: "Britta Blixt", channel: "here"});
             }, 1000);
-
-            setTimeout(function () {
-                CommandHandler.spell("", {character: "Aelith Blanchette", channel: "here"});
-            }, 1000);
-            setTimeout(function () {
-                CommandHandler.spell("", {character: "Britta Blixt", channel: "here"});
-            }, 1000);
-
-            setTimeout(function () {
-                CommandHandler.teleport("", {character: "Aelith Blanchette", channel: "here"});
-            }, 1000);
-            setTimeout(function () {
-                CommandHandler.teleport("", {character: "Britta Blixt", channel: "here"});
-            }, 1000);
-
-            setTimeout(function () {
-                CommandHandler.light("", {character: "Aelith Blanchette", channel: "here"});
-            }, 1000);
-            setTimeout(function () {
-                CommandHandler.light("", {character: "Britta Blixt", channel: "here"});
-            }, 1000);
-
-            setTimeout(function () {
-                CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
-            }, 1000);
-            setTimeout(function () {
-                CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
-            }, 1000);
-
-            setTimeout(function () {
-                CommandHandler.hex("", {character: "Aelith Blanchette", channel: "here"});
-            }, 1000);
-            setTimeout(function () {
-                CommandHandler.hex("", {character: "Britta Blixt", channel: "here"});
-            }, 1000);
+            //
+            // setTimeout(function () {
+            //     CommandHandler.spell("", {character: "Aelith Blanchette", channel: "here"});
+            // }, 1000);
+            // setTimeout(function () {
+            //     CommandHandler.spell("", {character: "Britta Blixt", channel: "here"});
+            // }, 1000);
+            //
+            // setTimeout(function () {
+            //     CommandHandler.teleport("", {character: "Aelith Blanchette", channel: "here"});
+            // }, 1000);
+            // setTimeout(function () {
+            //     CommandHandler.teleport("", {character: "Britta Blixt", channel: "here"});
+            // }, 1000);
+            //
+            // setTimeout(function () {
+            //     CommandHandler.light("", {character: "Aelith Blanchette", channel: "here"});
+            // }, 1000);
+            // setTimeout(function () {
+            //     CommandHandler.light("", {character: "Britta Blixt", channel: "here"});
+            // }, 1000);
+            //
+            // setTimeout(function () {
+            //     CommandHandler.heavy("", {character: "Aelith Blanchette", channel: "here"});
+            // }, 1000);
+            // setTimeout(function () {
+            //     CommandHandler.heavy("", {character: "Britta Blixt", channel: "here"});
+            // }, 1000);
+            //
+            // setTimeout(function () {
+            //     CommandHandler.hex("", {character: "Aelith Blanchette", channel: "here"});
+            // }, 1000);
+            // setTimeout(function () {
+            //     CommandHandler.hex("", {character: "Britta Blixt", channel: "here"});
+            // }, 1000);
 
             setTimeout(function () {
                 CommandHandler.ranged("", {character: "Aelith Blanchette", channel: "here"});
