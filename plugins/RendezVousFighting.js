@@ -1496,7 +1496,7 @@ fighter.prototype = {
 
         if (this.isExposed > 0) {
             this.isExposed -= 1;
-            if (this.isExposed == 0) windowController.addHint(this.name + " has recovered from the missed attack and can no longer be easily hit!");
+            if (this.isExposed == 0) windowController.addHint(this.name + " has recovered from the missed attack and can no longer be easily grabbed or hit!");
         }
 
         if (this.hp <= this._koValue && this.isUnconscious == false) {
