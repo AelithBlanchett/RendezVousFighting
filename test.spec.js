@@ -26,6 +26,14 @@ describe("Fighter testing", () => {
         setTimeout(function(){CommandHandler.ready("", {character: "Britta Blixt", channel: "here"});}, 1000);
 
         setTimeout(function() {
+
+            setTimeout(function () {
+                CommandHandler.fumble("", {character: "Aelith Blanchette", channel: "here"});
+            }, 1000);
+            setTimeout(function () {
+                CommandHandler.fumble("", {character: "Britta Blixt", channel: "here"});
+            }, 1000);
+
             setTimeout(function () {
                 CommandHandler.spell("", {character: "Aelith Blanchette", channel: "here"});
             }, 1000);
