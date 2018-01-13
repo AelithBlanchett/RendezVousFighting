@@ -2349,7 +2349,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         windowController.addHit(attacker.name + " FOCUSES!");
-        attacker.isFocused = roll * 2 + attacker.willpower() * 4;
+        attacker.isFocused += (roll * 2 + attacker.willpower() * 4);
         return 1;
     },
 
@@ -2477,6 +2477,7 @@ fighter.prototype = {
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
+            attacker.isEvading = Math.floor((roll + attacker.dexterity()) / 2);
         } else {
             attacker.isEvading = Math.floor((roll + attacker.dexterity()) / 2);
             attacker.isAggressive = Math.ceil((roll + attacker.dexterity()) / 2);
@@ -2486,7 +2487,6 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {
             windowController.addHit(attacker.name + " moved away!");
             battlefield.inGrabRange = false;
-            attacker.isEvading = Math.floor((roll + attacker.dexterity()) / 2);
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
         return 1; //Successful attack, if we ever need to check that.
@@ -2568,6 +2568,7 @@ fighter.prototype = {
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
+            attacker.isEvading = Math.floor((roll + attacker.spellpower()) / 2);
         } else {
             attacker.isEvading = Math.floor((roll + attacker.spellpower()) / 2);
             attacker.isAggressive = Math.ceil((roll + attacker.spellpower()) / 2);
@@ -2577,7 +2578,6 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {
             windowController.addHit(attacker.name + " moved away!");
             battlefield.inGrabRange = false;
-            attacker.isEvading = Math.floor((roll + attacker.spellpower()) / 2);
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
         
