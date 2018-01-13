@@ -1590,6 +1590,9 @@ fighter.prototype = {
                 windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
+        
+        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
+        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
@@ -1669,6 +1672,9 @@ fighter.prototype = {
                 windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
+        
+        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
+        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
@@ -1837,7 +1843,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " used up the melee bonus!");
         }
 
-        if (attacker.isRestrained) difficulty += Math.max(0, 8 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
+        if (attacker.isRestrained) difficulty += Math.max(0, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
@@ -1987,6 +1993,9 @@ fighter.prototype = {
                 windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
+        
+        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
+        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
@@ -2067,6 +2076,9 @@ fighter.prototype = {
                 windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
+        
+        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
+        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
@@ -2144,6 +2156,9 @@ fighter.prototype = {
                 windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
+        
+        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
+        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
@@ -2228,6 +2243,9 @@ fighter.prototype = {
                 windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
             }
         }
+        
+        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
+        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
@@ -2468,6 +2486,7 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {
             windowController.addHit(attacker.name + " moved away!");
             battlefield.inGrabRange = false;
+            attacker.isEvading = Math.floor((roll + attacker.dexterity()) / 2);
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
         return 1; //Successful attack, if we ever need to check that.
@@ -2558,6 +2577,7 @@ fighter.prototype = {
         if (battlefield.inGrabRange) {
             windowController.addHit(attacker.name + " moved away!");
             battlefield.inGrabRange = false;
+            attacker.isEvading = Math.floor((roll + attacker.spellpower()) / 2);
             windowController.addHint(attacker.name + " managed to put some distance between them and " + target.name + " and is now out of grabbing range.");
         }
         
