@@ -1843,7 +1843,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " used up the melee bonus!");
         }
 
-        if (attacker.isRestrained) difficulty += Math.max(0, 6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
+        if (attacker.isRestrained) difficulty += Math.max(0, 9 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
@@ -2419,7 +2419,7 @@ fighter.prototype = {
         }
 
 
-        if (attacker.isRestrained) difficulty += (6 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
+        if (attacker.isRestrained) difficulty += (9 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
 
@@ -2510,7 +2510,7 @@ fighter.prototype = {
             windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
-        if (attacker.isRestrained) difficulty += (6 + Math.floor((target.spellpower() + target.strength() - attacker.spellpower() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
+        if (attacker.isRestrained) difficulty += (9 + Math.floor((target.spellpower() + target.strength() - attacker.spellpower() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         
