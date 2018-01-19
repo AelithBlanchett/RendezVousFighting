@@ -1909,7 +1909,7 @@ fighter.prototype = {
         } else {
             battlefield.inGrabRange = true;//A regular tackle will put you close enough to your opponent to initiate a grab.
             windowController.addHit(attacker.name + " TACKLED " + target.name + ". " + attacker.name + " can take another action while their opponent is stunned!");
-            windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
+            //windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
         }
 
         //Deal all the actual damage/effects here.
