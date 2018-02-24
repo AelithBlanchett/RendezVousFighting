@@ -1900,12 +1900,12 @@ fighter.prototype = {
             } else {
                 windowController.addHit(attacker.name + " THREW " + target.name + "! " + attacker.name + " can make another move!");
             }
-            windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
+            //windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else if (target.isGrappling(attacker)) {
             attacker.removeGrappler(target);
             battlefield.inGrabRange = false;//A throw will put the fighters out of grappling range.
             windowController.addHit(attacker.name + " found a hold and THREW " + target.name + " off! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
-            windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
+            //windowController.addHint(target.name + ", you should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else {
             battlefield.inGrabRange = true;//A regular tackle will put you close enough to your opponent to initiate a grab.
             windowController.addHit(attacker.name + " TACKLED " + target.name + ". " + attacker.name + " can take another action while their opponent is stunned!");
