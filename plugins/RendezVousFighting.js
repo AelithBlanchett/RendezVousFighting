@@ -77,12 +77,12 @@ var CommandHandler = function (fChatLib, chan) {
                     var arrParam = args.split(",");
                     if (checkIfValidStats(arrParam)) {
                         var finalArgs = [data.character, _this.channel].concat(arrParam);
-                        db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
+                        db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`) VALUES (?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
                             if (!err) {
                                 _this.fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", _this.channel);
                             }
                             else {
-                                _this.fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. " + err, _this.channel);
+                                _this.fChatLibInstance.sendMessage("There was an error during the registration. Contact Aelith Blanchette. " + err, _this.channel);
                             }
                         });
                     }
@@ -93,17 +93,17 @@ var CommandHandler = function (fChatLib, chan) {
     };
 
     function checkIfValidStats(arrParam) {
-        if (arrParam.length != 6) {
-            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 5,7,5,0,6,30", _this.channel);
+        if (arrParam.length != 5) {
+            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 5,7,5,0,6", _this.channel);
         }
         else if (!arrParam.every(arg => isInt(arg))) {
-            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 5,7,5,0,6,30", _this.channel);
+            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 5,7,5,0,6", _this.channel);
         }
         else {
             //register
             var total = 0;
-            var statsOnly = arrParam.slice(0, 5);
-            total = statsOnly.reduce(function (a, b) {
+            //var statsOnly = arrParam.slice(0, 5);
+            total = arrParam.reduce(function (a, b) {
                 return parseInt(a) + parseInt(b);
             }, 0);
             if (total != defaultStatPoints) {
@@ -124,9 +124,6 @@ var CommandHandler = function (fChatLib, chan) {
             else if (parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 0)) {
                 _this.fChatLibInstance.sendMessage("The Willpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
-            else if (parseInt(arrParam[5]) < 0 || parseInt(arrParam[5]) > 100) {
-                _this.fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 5,7,5,0,6,30", _this.channel);
-            }
             else {
                 return true;
             }
@@ -144,7 +141,7 @@ var CommandHandler = function (fChatLib, chan) {
                     var arrParam = args.split(",");
                     if (checkIfValidStats(arrParam)) {
                         var finalArgs = arrParam.concat([data.character]);
-                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ?, `cloth` = ? WHERE `name` = ?;", finalArgs, function (err) {
+                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ? WHERE `name` = ?;", finalArgs, function (err) {
                             if (!err) {
                                 _this.fChatLibInstance.sendMessage("Your stats have successfully been changed.", _this.channel);
                             }
@@ -163,7 +160,7 @@ var CommandHandler = function (fChatLib, chan) {
     };
 
     var statsGetter = function (characterAsked, askingCharacter) {
-        db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
+        db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
             if (rows != undefined && rows.length == 1) {
                 var stats = rows[0];
                 var hp = 60 + parseInt(stats.endurance) * 10;
@@ -173,7 +170,7 @@ var CommandHandler = function (fChatLib, chan) {
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
                     "[b][color=green]Resilience[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + staminaMax + "\n" +
-                    "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "[b][color=pink]Cloth[/color][/b]: " + stats.cloth + "\n" +
+                    "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "\n" +
                     "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, askingCharacter);
             }
             else {
@@ -206,7 +203,7 @@ var CommandHandler = function (fChatLib, chan) {
 
     CommandHandler.prototype.ready = function (args, data) {
         if (currentFighters.length == 0) {
-            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) => {
+            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) => {
                 if (rows != undefined && rows.length == 1) {
                     var statPointsUsed = checkWrestlersTotalStatsSum(rows[0]);
                     if(statPointsUsed != defaultStatPoints){
@@ -226,7 +223,7 @@ var CommandHandler = function (fChatLib, chan) {
         }
         else if (currentFighters.length == 1) {
             if (currentFighters[0].name != data.character) {
-                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function (err, rows, fields) {
+                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function (err, rows, fields) {
                     if (rows != undefined && rows.length == 1) {
                         var statPointsUsed = checkWrestlersTotalStatsSum(rows[0]);
                         if(statPointsUsed != defaultStatPoints){
@@ -415,11 +412,6 @@ var CommandHandler = function (fChatLib, chan) {
     CommandHandler.prototype.rest = function (args, data) {
         attackFunc("Rest", data.character);
     };
-
-    CommandHandler.prototype.rip = function (args, data) {
-        attackFunc("Rip", data.character);
-    };
-    CommandHandler.prototype.ripclothes = CommandHandler.prototype.rip;
 
     CommandHandler.prototype.fumble = function (args, data) {
         attackFunc("Fumble", data.character);
@@ -832,7 +824,6 @@ var windowController = {
         "HP": "Hit Points. <br />How much health you have initially.",
         "Mana": "Mana. <br />How much mana you have initially.",
         "Stamina": "Stamina. <br />How much stamina you have initially.",
-        "Cloth": "Cloth. <br />How durable your clothes are. <br />Typically, fighters start with 20 points of cloth per major item of clothing worn.",
         "StatPoints": "Maximum Stat Points. <br /> The maximum number of points each fighter may have spread among their stats. Typically 20. If you wish to allow fighters to have any number of points in their stats (including uneven fights where one fighter has an advantage), set this value to 0.",
         "GameSpeed": "Game speed. <br /> This value works as a multiplier to all damage. A value of 2, for example, would double damage. A value of 0.5 would halve damage. You may want to reduce it if you allow a higher than normal number of stat points (26-32 or more).",
         "DisorientedAt": "Dizzy. <br /> If a fighter's HP falls too far below this value they will become disoriented and take a penalty to all their actions. Affected by the fighters Willpower.",
@@ -841,7 +832,6 @@ var windowController = {
         "Light": "Light attack (20 Stamina) <br />Punches, weak kicks, weak weapon uses and such. Deals some damage and also reduces the target's stamina. <br /> Strength adds to damage and affects the chance to hit. <br />Intelligence adds to stamina damage. <br />Dexterity affects defense.",
         "Heavy": "Heavy attack (35 Stamina) <br />Heavy kicks, weapons, combos, etc. Harder to perform, but deal more damage. <br />Strength greatly affects damage and affects chance to hit.<br /> Dexterity affects defense.",
         "Grab": "Grab (35 Stamina, 20 if successful) <br />Deals little damage initially. But once grabbed, the opponent is held until they manage to escape by using the Grab action as well. Light and Heavy attacks can be used in a grab, as well as Grab for a submission hold. Target has reduced strength and dexterity while grabbed. <br />Strength and Dexterity affect chance to hit. <br />Strength affects the damage of submission moves. <br />Dexterity affects defense. <br />Reduced stamina cost if successful.",
-        "Rip": "Rip/Damage Clothes (Free) <br />Does no HP damage, damaging clothes instead. Much greater effect when used in a grab. 1 piece of clothing equals 20 points. Keep that in mind. If you only have bikini on you, it is 40 points, for 2 pieces. You can use this stat anyway you like as well.",
         "Tackle": "Tackle or Throw (40 Stamina, 20 if successful.) <br />Deals stamina damage and stuns the opponent, preventing them from taking their next action. (Effectively letting you perform another action). Tackle during Grab releases opponent. <br /> Strength and Dexterity affects chance to hit. <br />Dexterity greatly affects defense.  <br />Reduced stamina cost if successful.",
         "Magic": "Magic attack (24 Mana) <br /> Blasts, bombs, and magical might. Attack your opponents from range, if you have the reservesIntelligence greatly affects damage.",
         "Ranged": "Ranged attack (20 Stamina) <br /> Small arms, bows and throwing knives, and minor innate magical powers (eye beams, frost breath and such). Ranged attacks are stamina efficient, and deal moderate damage based on either Dexterity or Intelligence (whichever is higher), but are only so-so in terms of accuracy unless you take the time to Aim/Focus first.",
@@ -1227,14 +1217,11 @@ function fighter(settings, globalSettings) {
     this.stamina = 0;
     this.addStamina(settings.Stamina);
 
-    this.cloth = 0;
-    this.addCloth(settings.Cloth);
-
     this.rollTotal = 0; // Two values that we track in order to calculate average roll, which we will call Luck on the output screen.
     this.rollsMade = 0; // Luck = rollTotal / rollsMade
     this.lastRolls = [];
 
-    this._statDelta = {hp: this.hp, mana: this.mana, stamina: this.stamina, cloth: this.cloth};
+    this._statDelta = {hp: this.hp, mana: this.mana, stamina: this.stamina};
 
     this.isUnconscious = false;
     this.isDead = false;
@@ -1311,12 +1298,6 @@ fighter.prototype = {
         this.stamina = clamp(this.stamina, 0, this._staminaCap);
     },
 
-    addCloth: function (n) {
-        var x = ~~n;
-        this.cloth += x;
-        this.cloth = Math.max(this.cloth, 0);
-    },
-
     hitHp: function (n) {
         var x = ~~n;
         x *= this._damageEffectMult;
@@ -1342,12 +1323,6 @@ fighter.prototype = {
         var x = ~~n;
         this.stamina -= x;
         this.stamina = clamp(this.stamina, 0, this._maxStamina);
-    },
-
-    hitCloth: function (n) {
-        var x = ~~n;
-        this.cloth -= x * this._damageEffectMult;
-        this.cloth = Math.max(this.cloth, 0);
     },
 
     pickFatality: function () {
@@ -1406,7 +1381,6 @@ fighter.prototype = {
         var hpDelta = this.hp - this._statDelta.hp;
         var staminaDelta = this.stamina - this._statDelta.stamina;
         var manaDelta = this.mana - this._statDelta.mana;
-        var clothDelta = this.cloth - this._statDelta.cloth;
 
         var message = "[color=orange]" + this.name;
         message += "[/color][color=yellow] hit points: ";
@@ -1437,11 +1411,7 @@ fighter.prototype = {
         message += this._manaCap;
         if (this._manaCap > this._maxMana) message += "[/color]";
 
-        message += "[color=purple] cloth: " + this.cloth + "[/color]";
-        if (clothDelta > 0) message += "[color=cyan] (+" + clothDelta + ")[/color]";
-        if (clothDelta < 0) message += "[color=red] (" + clothDelta + ")[/color]";
-
-        this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana, cloth: this.cloth};
+        this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana};
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
         if (this.isFocused) windowController.addHint(this.name + " is Focused (" + this.isFocused + " points). Focus is reduced by taking damage.");
@@ -1589,7 +1559,6 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitStamina(damage);
-        target.hitCloth(3);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1663,7 +1632,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1760,44 +1728,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
-        return 1; //Successful attack, if we ever need to check that.
-    },
-
-    actionRip: function (roll) {
-        var attacker = this;
-        var target = battlefield.getTarget();
-        
-        //If opponent fumbled on their previous action they should become stunned.
-        if (target.fumbled) {
-            target.isStunned = true;
-            target.fumbled = false;
-        }
-
-        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            roll -= target.isEvading;
-            target.isEvading = 0;
-        }
-        if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
-            roll += attacker.isAggressive;
-            attacker.isAggressive = 0;
-        }
-
-        var clothRip = roll + attacker.strength();
-
-        if (roll == 20) {
-            clothRip += 20;
-            windowController.addHit("CRITICAL!");
-        }
-
-        if (attacker.isGrappling(target)) {
-            target.hitCloth(clothRip * 2);
-            windowController.addHit(attacker.name + " rips " + target.name + "'s clothes in a grab!");
-        } else {
-            target.hitCloth(clothRip);
-            windowController.addHit(attacker.name + " damages " + target.name + "'s clothes!");
-        }
-
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1882,7 +1812,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(3);
         target.isStunned = true;
         return 1; //Successful attack, if we ever need to check that.
     },
@@ -1959,7 +1888,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2035,7 +1963,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2110,7 +2037,6 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitMana(damage);
-        target.hitCloth(3);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2186,7 +2112,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2584,7 +2509,6 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     fighterOne["HP"] = parseInt(firstFighterSettings.hp);
     fighterOne["Mana"] = parseInt(firstFighterSettings.mana);
     fighterOne["Stamina"] = parseInt(firstFighterSettings.stamina);
-    fighterOne["Cloth"] = parseInt(firstFighterSettings.cloth);
 
     var fighterTwo = {};
     fighterTwo["Name"] = secondFighterSettings.name;
@@ -2596,7 +2520,6 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     fighterTwo["HP"] = parseInt(secondFighterSettings.hp);
     fighterTwo["Mana"] = parseInt(secondFighterSettings.mana);
     fighterTwo["Stamina"] = parseInt(secondFighterSettings.stamina);
-    fighterTwo["Cloth"] = parseInt(secondFighterSettings.cloth);
 
     fighterSettings.push(fighterOne);
     fighterSettings.push(fighterTwo);
@@ -2613,7 +2536,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
         //windowController.nextPanel();
         windowController.addHit("Game started!");
         windowController.addHit("FIGHTING STAGE: " + battlefield.stage + " - " + battlefield.getActor().name + " goes first!");
-        battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina/Cloth)
+        battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina)
         battlefield.outputFighterStats(); // Creates the fighter stat blocks (STR/DEX/END/INT/WIL)
         windowController.addInfo("[url=http://www.f-list.net/c/rendezvous%20fight/]Visit this page for game information[/url]");
     }
@@ -2655,7 +2578,7 @@ function combatInput(actionMade) {
     windowController.addInfo(actor.name + "'s Average Dice Roll: " + luck);
 
     battlefield.turnUpkeep(); //End of turn upkeep (Stamina regen, check for being stunned/knocked out, etc.)
-    battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina/Cloth)
+    battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina)
     //battlefield.outputFighterStats();
     windowController.updateOutput(); //Tells the window controller to format and dump all the queued up messages to the results screen.
 };
