@@ -1381,6 +1381,9 @@ fighter.prototype = {
         var hpDelta = this.hp - this._statDelta.hp;
         var staminaDelta = this.stamina - this._statDelta.stamina;
         var manaDelta = this.mana - this._statDelta.mana;
+        var hpPercent = Math.ceil(100 * this.hp / this._maxHP);
+        var staminaPercent = Math.ceil(100 * this.stamina / this._maxStamina);
+        var manaPercent = Math.ceil(100 * this.mana / this._maxMana);
 
         var message = "[color=orange]" + this.name;
         message += "[/color][color=yellow] hit points: ";
@@ -1392,6 +1395,7 @@ fighter.prototype = {
         if (hpDelta > 0) message += "[color=cyan] (+" + hpDelta + ")[/color]";
         if (hpDelta < 0) message += "[color=red] (" + hpDelta + ")[/color]";
         message += "|" + this._maxHP;
+        message += " (" + hpPercent + "%)";
 
         message += "[/color][color=green] stamina: " + this.stamina;
         if (staminaDelta > 0) message += "[color=cyan] (+" + staminaDelta + ")[/color]";
@@ -1401,6 +1405,7 @@ fighter.prototype = {
         if (this._staminaCap > this._maxStamina) message += "[color=cyan]";
         message += this._staminaCap;
         if (this._staminaCap > this._maxStamina) message += "[/color]";
+        message += " (" + staminaPercent + "%)";
 
         message += "[/color] mana: " + this.mana;
         if (manaDelta > 0) message += "[color=cyan] (+" + manaDelta + ")[/color]";
@@ -1410,6 +1415,7 @@ fighter.prototype = {
         if (this._manaCap > this._maxMana) message += "[color=cyan]";
         message += this._manaCap;
         if (this._manaCap > this._maxMana) message += "[/color]";
+        message += " (" + manaPercent + "%)";
 
         this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana};
 
@@ -1821,7 +1827,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.strength());
         var requiredStam = 20;
-        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 12; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -2045,7 +2051,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.spellpower());
         var requiredMana = 20;
-        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 12; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
