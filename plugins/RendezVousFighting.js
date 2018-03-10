@@ -1322,7 +1322,7 @@ fighter.prototype = {
     hitStamina: function (n) {
         var x = ~~n;
         this.stamina -= x;
-        this.stamina = clamp(this.stamina, 0, this._maxStamina);
+        this.stamina = clamp(this.stamina, 0, this._staminaCap);
     },
 
     pickFatality: function () {
@@ -1382,8 +1382,8 @@ fighter.prototype = {
         var staminaDelta = this.stamina - this._statDelta.stamina;
         var manaDelta = this.mana - this._statDelta.mana;
         var hpPercent = Math.ceil(100 * this.hp / this._maxHP);
-        var staminaPercent = Math.ceil(100 * this.stamina / this._maxStamina);
-        var manaPercent = Math.ceil(100 * this.mana / this._maxMana);
+        var staminaPercent = Math.ceil(100 * this.stamina / this._staminaCap);
+        var manaPercent = Math.ceil(100 * this.mana / this._manaCap);
 
         var message = "[color=orange]" + this.name;
         message += "[/color][color=yellow] hit points: ";
