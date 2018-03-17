@@ -2289,7 +2289,7 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), 1, 1);//Move is not affected by opponent's energy levels.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), target.stamina, target._staminaCap);
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
@@ -2369,7 +2369,7 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, 0, 0, 1, 1);// Teleport is not affected by DEX or opponent's energy levels.
+        var attackTable = attacker.buildActionTable(difficulty, 0, 0, target.mana, target._manaCap);
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
