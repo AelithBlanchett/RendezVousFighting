@@ -77,12 +77,12 @@ var CommandHandler = function (fChatLib, chan) {
                     var arrParam = args.split(",");
                     if (checkIfValidStats(arrParam)) {
                         var finalArgs = [data.character, _this.channel].concat(arrParam);
-                        db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`, `cloth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
+                        db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`) VALUES (?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
                             if (!err) {
                                 _this.fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", _this.channel);
                             }
                             else {
-                                _this.fChatLibInstance.sendMessage("There was an error during the registration. Contact Lustful Aelith. " + err, _this.channel);
+                                _this.fChatLibInstance.sendMessage("There was an error during the registration. Contact Aelith Blanchette. " + err, _this.channel);
                             }
                         });
                     }
@@ -93,17 +93,17 @@ var CommandHandler = function (fChatLib, chan) {
     };
 
     function checkIfValidStats(arrParam) {
-        if (arrParam.length != 6) {
-            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 5,7,5,0,6,30", _this.channel);
+        if (arrParam.length != 5) {
+            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 5,7,5,0,6", _this.channel);
         }
         else if (!arrParam.every(arg => isInt(arg))) {
-            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 5,7,5,0,6,30", _this.channel);
+            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 5,7,5,0,6", _this.channel);
         }
         else {
             //register
             var total = 0;
-            var statsOnly = arrParam.slice(0, 5);
-            total = statsOnly.reduce(function (a, b) {
+            //var statsOnly = arrParam.slice(0, 5);
+            total = arrParam.reduce(function (a, b) {
                 return parseInt(a) + parseInt(b);
             }, 0);
             if (total != defaultStatPoints) {
@@ -124,9 +124,6 @@ var CommandHandler = function (fChatLib, chan) {
             else if (parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 0)) {
                 _this.fChatLibInstance.sendMessage("The Willpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
             }
-            else if (parseInt(arrParam[5]) < 0 || parseInt(arrParam[5]) > 100) {
-                _this.fChatLibInstance.sendMessage("The starting cloth stat can't be higher than 100 or lower than 0. Example: !register 5,7,5,0,6,30", _this.channel);
-            }
             else {
                 return true;
             }
@@ -144,7 +141,7 @@ var CommandHandler = function (fChatLib, chan) {
                     var arrParam = args.split(",");
                     if (checkIfValidStats(arrParam)) {
                         var finalArgs = arrParam.concat([data.character]);
-                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ?, `cloth` = ? WHERE `name` = ?;", finalArgs, function (err) {
+                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ? WHERE `name` = ?;", finalArgs, function (err) {
                             if (!err) {
                                 _this.fChatLibInstance.sendMessage("Your stats have successfully been changed.", _this.channel);
                             }
@@ -163,7 +160,7 @@ var CommandHandler = function (fChatLib, chan) {
     };
 
     var statsGetter = function (characterAsked, askingCharacter) {
-        db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
+        db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
             if (rows != undefined && rows.length == 1) {
                 var stats = rows[0];
                 var hp = 60 + parseInt(stats.endurance) * 10;
@@ -173,7 +170,7 @@ var CommandHandler = function (fChatLib, chan) {
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
                     "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
                     "[b][color=green]Resilience[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + staminaMax + "\n" +
-                    "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "[b][color=pink]Cloth[/color][/b]: " + stats.cloth + "\n" +
+                    "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "\n" +
                     "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, askingCharacter);
             }
             else {
@@ -206,7 +203,7 @@ var CommandHandler = function (fChatLib, chan) {
 
     CommandHandler.prototype.ready = function (args, data) {
         if (currentFighters.length == 0) {
-            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) => {
+            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) => {
                 if (rows != undefined && rows.length == 1) {
                     var statPointsUsed = checkWrestlersTotalStatsSum(rows[0]);
                     if(statPointsUsed != defaultStatPoints){
@@ -226,7 +223,7 @@ var CommandHandler = function (fChatLib, chan) {
         }
         else if (currentFighters.length == 1) {
             if (currentFighters[0].name != data.character) {
-                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower, cloth FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function (err, rows, fields) {
+                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function (err, rows, fields) {
                     if (rows != undefined && rows.length == 1) {
                         var statPointsUsed = checkWrestlersTotalStatsSum(rows[0]);
                         if(statPointsUsed != defaultStatPoints){
@@ -415,11 +412,6 @@ var CommandHandler = function (fChatLib, chan) {
     CommandHandler.prototype.rest = function (args, data) {
         attackFunc("Rest", data.character);
     };
-
-    CommandHandler.prototype.rip = function (args, data) {
-        attackFunc("Rip", data.character);
-    };
-    CommandHandler.prototype.ripclothes = CommandHandler.prototype.rip;
 
     CommandHandler.prototype.fumble = function (args, data) {
         attackFunc("Fumble", data.character);
@@ -832,7 +824,6 @@ var windowController = {
         "HP": "Hit Points. <br />How much health you have initially.",
         "Mana": "Mana. <br />How much mana you have initially.",
         "Stamina": "Stamina. <br />How much stamina you have initially.",
-        "Cloth": "Cloth. <br />How durable your clothes are. <br />Typically, fighters start with 20 points of cloth per major item of clothing worn.",
         "StatPoints": "Maximum Stat Points. <br /> The maximum number of points each fighter may have spread among their stats. Typically 20. If you wish to allow fighters to have any number of points in their stats (including uneven fights where one fighter has an advantage), set this value to 0.",
         "GameSpeed": "Game speed. <br /> This value works as a multiplier to all damage. A value of 2, for example, would double damage. A value of 0.5 would halve damage. You may want to reduce it if you allow a higher than normal number of stat points (26-32 or more).",
         "DisorientedAt": "Dizzy. <br /> If a fighter's HP falls too far below this value they will become disoriented and take a penalty to all their actions. Affected by the fighters Willpower.",
@@ -841,7 +832,6 @@ var windowController = {
         "Light": "Light attack (20 Stamina) <br />Punches, weak kicks, weak weapon uses and such. Deals some damage and also reduces the target's stamina. <br /> Strength adds to damage and affects the chance to hit. <br />Intelligence adds to stamina damage. <br />Dexterity affects defense.",
         "Heavy": "Heavy attack (35 Stamina) <br />Heavy kicks, weapons, combos, etc. Harder to perform, but deal more damage. <br />Strength greatly affects damage and affects chance to hit.<br /> Dexterity affects defense.",
         "Grab": "Grab (35 Stamina, 20 if successful) <br />Deals little damage initially. But once grabbed, the opponent is held until they manage to escape by using the Grab action as well. Light and Heavy attacks can be used in a grab, as well as Grab for a submission hold. Target has reduced strength and dexterity while grabbed. <br />Strength and Dexterity affect chance to hit. <br />Strength affects the damage of submission moves. <br />Dexterity affects defense. <br />Reduced stamina cost if successful.",
-        "Rip": "Rip/Damage Clothes (Free) <br />Does no HP damage, damaging clothes instead. Much greater effect when used in a grab. 1 piece of clothing equals 20 points. Keep that in mind. If you only have bikini on you, it is 40 points, for 2 pieces. You can use this stat anyway you like as well.",
         "Tackle": "Tackle or Throw (40 Stamina, 20 if successful.) <br />Deals stamina damage and stuns the opponent, preventing them from taking their next action. (Effectively letting you perform another action). Tackle during Grab releases opponent. <br /> Strength and Dexterity affects chance to hit. <br />Dexterity greatly affects defense.  <br />Reduced stamina cost if successful.",
         "Magic": "Magic attack (24 Mana) <br /> Blasts, bombs, and magical might. Attack your opponents from range, if you have the reservesIntelligence greatly affects damage.",
         "Ranged": "Ranged attack (20 Stamina) <br /> Small arms, bows and throwing knives, and minor innate magical powers (eye beams, frost breath and such). Ranged attacks are stamina efficient, and deal moderate damage based on either Dexterity or Intelligence (whichever is higher), but are only so-so in terms of accuracy unless you take the time to Aim/Focus first.",
@@ -1227,14 +1217,11 @@ function fighter(settings, globalSettings) {
     this.stamina = 0;
     this.addStamina(settings.Stamina);
 
-    this.cloth = 0;
-    this.addCloth(settings.Cloth);
-
     this.rollTotal = 0; // Two values that we track in order to calculate average roll, which we will call Luck on the output screen.
     this.rollsMade = 0; // Luck = rollTotal / rollsMade
     this.lastRolls = [];
 
-    this._statDelta = {hp: this.hp, mana: this.mana, stamina: this.stamina, cloth: this.cloth};
+    this._statDelta = {hp: this.hp, mana: this.mana, stamina: this.stamina};
 
     this.isUnconscious = false;
     this.isDead = false;
@@ -1247,8 +1234,6 @@ function fighter(settings, globalSettings) {
     this.isEvading = 0;
     this.isAggressive = 0;
     this.isExposed = 0;
-    this.hasAttackBonus = 0;
-    this.hasMagicWeakness = 0;
     this.fumbled = false; //A status that gets set when you fumble, so that opponents next action can stun you.
 };
 
@@ -1313,12 +1298,6 @@ fighter.prototype = {
         this.stamina = clamp(this.stamina, 0, this._staminaCap);
     },
 
-    addCloth: function (n) {
-        var x = ~~n;
-        this.cloth += x;
-        this.cloth = Math.max(this.cloth, 0);
-    },
-
     hitHp: function (n) {
         var x = ~~n;
         x *= this._damageEffectMult;
@@ -1343,13 +1322,7 @@ fighter.prototype = {
     hitStamina: function (n) {
         var x = ~~n;
         this.stamina -= x;
-        this.stamina = clamp(this.stamina, 0, this._maxStamina);
-    },
-
-    hitCloth: function (n) {
-        var x = ~~n;
-        this.cloth -= x * this._damageEffectMult;
-        this.cloth = Math.max(this.cloth, 0);
+        this.stamina = clamp(this.stamina, 0, this._staminaCap);
     },
 
     pickFatality: function () {
@@ -1408,7 +1381,9 @@ fighter.prototype = {
         var hpDelta = this.hp - this._statDelta.hp;
         var staminaDelta = this.stamina - this._statDelta.stamina;
         var manaDelta = this.mana - this._statDelta.mana;
-        var clothDelta = this.cloth - this._statDelta.cloth;
+        var hpPercent = Math.ceil(100 * this.hp / this._maxHP);
+        var staminaPercent = Math.ceil(100 * this.stamina / this._staminaCap);
+        var manaPercent = Math.ceil(100 * this.mana / this._manaCap);
 
         var message = "[color=orange]" + this.name;
         message += "[/color][color=yellow] hit points: ";
@@ -1420,6 +1395,7 @@ fighter.prototype = {
         if (hpDelta > 0) message += "[color=cyan] (+" + hpDelta + ")[/color]";
         if (hpDelta < 0) message += "[color=red] (" + hpDelta + ")[/color]";
         message += "|" + this._maxHP;
+        message += " (" + hpPercent + "%)";
 
         message += "[/color][color=green] stamina: " + this.stamina;
         if (staminaDelta > 0) message += "[color=cyan] (+" + staminaDelta + ")[/color]";
@@ -1429,6 +1405,7 @@ fighter.prototype = {
         if (this._staminaCap > this._maxStamina) message += "[color=cyan]";
         message += this._staminaCap;
         if (this._staminaCap > this._maxStamina) message += "[/color]";
+        message += " (" + staminaPercent + "%)";
 
         message += "[/color] mana: " + this.mana;
         if (manaDelta > 0) message += "[color=cyan] (+" + manaDelta + ")[/color]";
@@ -1438,12 +1415,9 @@ fighter.prototype = {
         if (this._manaCap > this._maxMana) message += "[color=cyan]";
         message += this._manaCap;
         if (this._manaCap > this._maxMana) message += "[/color]";
+        message += " (" + manaPercent + "%)";
 
-        message += "[color=purple] cloth: " + this.cloth + "[/color]";
-        if (clothDelta > 0) message += "[color=cyan] (+" + clothDelta + ")[/color]";
-        if (clothDelta < 0) message += "[color=red] (" + clothDelta + ")[/color]";
-
-        this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana, cloth: this.cloth};
+        this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana};
 
         if (this.isRestrained) windowController.addHint(this.name + " is Grappled.");
         if (this.isFocused) windowController.addHint(this.name + " is Focused (" + this.isFocused + " points). Focus is reduced by taking damage.");
@@ -1452,8 +1426,6 @@ fighter.prototype = {
             windowController.addHint("The fighters are in grappling range"); //Added notification about fighters being in grappling range.
         }
         battlefield.displayGrabbed = !battlefield.displayGrabbed; //only output it on every two turns
-        if (this.hasAttackBonus > 0) windowController.addHint(this.name + " has built up a +" + this.hasAttackBonus + " melee bonus.");
-        if (this.hasMagicWeakness > 0) windowController.addHint(this.name + " would take " + this.hasMagicWeakness + " extra damage from a magical attack.");
         return message;
     },
 
@@ -1487,11 +1459,11 @@ fighter.prototype = {
         }
 
         if (this.isEvading > 0) {
-            windowController.addHint(this.name + " has a temporary +" + this.isEvading + " mobility bonus to evasion and damage reduction.");
+            windowController.addHint(this.name + " has a temporary +" + this.isEvading + " bonus to evasion and damage reduction.");
         }
 
         if (this.isAggressive > 0) {
-            windowController.addHint(this.name + " has a temporary +" + this.isAggressive + " mobility bonus to accuracy and attack damage.");
+            windowController.addHint(this.name + " has a temporary +" + this.isAggressive + " bonus to accuracy and attack damage.");
         }
 
         if (this.isExposed > 0) {
@@ -1567,10 +1539,6 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
-            if (attacker.hasAttackBonus > 0) {
-                attacker.hasAttackBonus = 0;
-                windowController.addHint(attacker.name + " lost the melee bonus because of the failed attack!");
-            }
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1597,7 +1565,6 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitStamina(damage);
-        target.hitCloth(3);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1612,13 +1579,6 @@ fighter.prototype = {
         if (target.fumbled) {
             target.isStunned = true;
             target.fumbled = false;
-        }
-
-        // Attack bonus generated by ligt attacks reduces difficulty of heavy and is then used up.
-        if (attacker.hasAttackBonus > 0) {
-            difficulty -= attacker.hasAttackBonus;
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " used up the melee bonus!");
         }
 
         if (attacker.isRestrained) difficulty += 2; //Up the difficulty if the attacker is restrained.
@@ -1678,7 +1638,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1692,13 +1651,6 @@ fighter.prototype = {
             requiredStam = 20;
         }
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
-
-        // Attack bonus generated by ligt attacks reduces difficulty of grab and is then used up.
-        if (attacker.hasAttackBonus > 0) {
-            difficulty -= attacker.hasAttackBonus;
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " used up the melee bonus!");
-        }
 
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
         if (target.isRestrained) difficulty += (4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants.
@@ -1726,7 +1678,7 @@ fighter.prototype = {
 
         if (target.isExposed < 1 && !battlefield.inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
             battlefield.inGrabRange = true;
-            attacker.hasAttackBonus += Math.ceil(roll / 4);//Every action needs to have a benefit that scales with the roll in order not to feel wasted.
+            attacker.isAggressive += Math.ceil(roll/2);//Every action needs to have a benefit that scales with the roll in order not to feel wasted.
             windowController.addHit(attacker.name + " moved into grappling range! " + target.name + " can try to push them away with an attack.");
             if (roll == 20) {//If we're just moving into range grab counts as a buff so a crit gives a bonus action.
                 windowController.addHit("CRITICAL SUCCESS! ");
@@ -1782,50 +1734,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
-        return 1; //Successful attack, if we ever need to check that.
-    },
-
-    actionRip: function (roll) {
-        var attacker = this;
-        var target = battlefield.getTarget();
-        
-        //If opponent fumbled on their previous action they should become stunned.
-        if (target.fumbled) {
-            target.isStunned = true;
-            target.fumbled = false;
-        }
-
-        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            roll -= target.isEvading;
-            target.isEvading = 0;
-        }
-        if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
-            roll += attacker.isAggressive;
-            attacker.isAggressive = 0;
-        }
-
-        var clothRip = roll + attacker.strength();
-
-        if (roll == 20) {
-            clothRip += 20;
-            windowController.addHit("CRITICAL!");
-        }
-
-        if (attacker.isGrappling(target)) {
-            target.hitCloth(clothRip * 2);
-            windowController.addHit(attacker.name + " rips " + target.name + "'s clothes in a grab!");
-        } else {
-            target.hitCloth(clothRip);
-            windowController.addHit(attacker.name + " damages " + target.name + "'s clothes!");
-        }
-
-        // Melee bonus generated by light attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
-        }
-
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1835,13 +1743,6 @@ fighter.prototype = {
         var damage = roll - 5 + attacker.strength();
         var requiredStam = 20;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
-
-        // Attack bonus generated by light attacks reduces difficulty of tackle and is then used up.
-        if (attacker.hasAttackBonus > 0) {
-            difficulty -= attacker.hasAttackBonus;
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " used up the melee bonus!");
-        }
 
         if (attacker.isRestrained) difficulty += Math.max(0, 9 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
@@ -1898,6 +1799,7 @@ fighter.prototype = {
                 attacker.removeGrappler(target);
                 windowController.addHit(attacker.name + " gained the upper hand and THREW " + target.name + "! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
             } else {
+                damage += 5 + attacker.strength();
                 windowController.addHit(attacker.name + " THREW " + target.name + "! " + attacker.name + " can make another move!");
             }
             //windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
@@ -1916,7 +1818,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(3);
         target.isStunned = true;
         return 1; //Successful attack, if we ever need to check that.
     },
@@ -1926,18 +1827,12 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = roll + (2 * attacker.strength());
         var requiredStam = 20;
-        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 12; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
             target.isStunned = true;
             target.fumbled = false;
-        }
-
-        // Melee bonus generated by light attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
@@ -1999,14 +1894,13 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
     actionMagic: function (roll) {// Magically enhanced melee attack.
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
+        var damage = roll + (2 * attacker.spellpower());
         var requiredMana = 20;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2014,13 +1908,6 @@ fighter.prototype = {
         if (target.fumbled) {
             target.isStunned = true;
             target.fumbled = false;
-        }
-
-        // Attack bonus generated by light attacks reduces difficulty of magic attack and is then used up.
-        if (attacker.hasAttackBonus > 0) {
-            difficulty -= attacker.hasAttackBonus;
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " used up the melee bonus!");
         }
 
         if (attacker.isRestrained) difficulty += 2; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
@@ -2082,14 +1969,13 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
     actionHex: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll - 5 + target.hasMagicWeakness + attacker.spellpower();
+        var damage = roll - 5 + attacker.spellpower();
         var requiredMana = 10;
         var difficulty = 4; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2097,12 +1983,6 @@ fighter.prototype = {
         if (target.fumbled) {
             target.isStunned = true;
             target.fumbled = false;
-        }
-
-        // Melee bonus generated by light attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         if (attacker.isRestrained) difficulty += 2;
@@ -2163,31 +2043,20 @@ fighter.prototype = {
         damage = Math.max(damage, 1);
         target.hitHp(damage);
         target.hitMana(damage);
-        target.hitCloth(3);
-        //if (target.hasMagicWeakness < attacker.spellpower()) {
-        //    target.hasMagicWeakness += 1;//The hex reduces resistance against further magical attacks by 1 point.
-        //    windowController.addHit(attacker.name + " increased " + target.name + "'s weakness to magic!");
-        //}
         return 1; //Successful attack, if we ever need to check that.
     },
 
     actionSpell: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll + target.hasMagicWeakness + (2 * attacker.spellpower());
+        var damage = roll + (2 * attacker.spellpower());
         var requiredMana = 20;
-        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 12; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
             target.isStunned = true;
             target.fumbled = false;
-        }
-
-        // Melee bonus generated by ligt attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
         }
 
         if (attacker.isRestrained) difficulty += 4; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
@@ -2249,7 +2118,6 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.hitCloth(5);
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -2257,12 +2125,6 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
-
-        // Melee bonus generated by ligt attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
-        }
 
         //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
@@ -2311,12 +2173,6 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
 
-        // Melee bonus generated by light attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
-        }
-
         //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
 
@@ -2357,12 +2213,6 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
-
-        // Melee bonus generated by light attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
-        }
 
         //if (attacker.isDisoriented) difficulty += 2; //Up the difficulty if you are dizzy.
         if (attacker.isRestrained) difficulty += 9; //Up the difficulty considerably if you are restrained.
@@ -2439,7 +2289,7 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), 1, 1);//Move is not affected by opponent's energy levels.
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), target.stamina, target._staminaCap);
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
@@ -2453,11 +2303,6 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            // Repositioning action preserve the melee bonus generated by light attacks, but only if successful. If they fail you lose the bonus.
-            if (attacker.hasAttackBonus > 0) {
-                attacker.hasAttackBonus = 0;
-                windowController.addHit(attacker.name + " lost the melee bonus becuase of the failed action!");
-            }
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2504,12 +2349,6 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        // Melee bonus generated by light attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " wasted the melee bonus by making a different action!");
-        }
-
         if (attacker.isRestrained) difficulty += (9 + Math.floor((target.spellpower() + target.strength() - attacker.spellpower() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
@@ -2530,7 +2369,7 @@ fighter.prototype = {
 
         attacker.hitMana(requiredMana); //Now that mana has been checked, reduce the attacker's mana by the appopriate amount.
 
-        var attackTable = attacker.buildActionTable(difficulty, 0, 0, 1, 1);// Teleport is not affected by DEX or opponent's energy levels.
+        var attackTable = attacker.buildActionTable(difficulty, 0, 0, target.mana, target._manaCap);
         //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
         windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
 
@@ -2544,11 +2383,6 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
-            // Repositioning action preserve the melee bonus generated by light attacks, but only if successful. If they fail you lose the bonus.
-            if (attacker.hasAttackBonus > 0) {
-                attacker.hasAttackBonus = 0;
-                windowController.addHit(attacker.name + " lost the melee bonus because of the failed action!");
-            }
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2587,12 +2421,6 @@ fighter.prototype = {
     actionFumble: function (action) {
         var attacker = this;
         var target = battlefield.getTarget();
-
-        // Melee bonus generated by ligt attacks is wasted if you make any other move.
-        if (attacker.hasAttackBonus > 0) {
-            attacker.hasAttackBonus = 0;
-            windowController.addHit(attacker.name + " lost the melee bonus!");
-        }
 
         if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
             target.isEvading = 0;
@@ -2687,7 +2515,6 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     fighterOne["HP"] = parseInt(firstFighterSettings.hp);
     fighterOne["Mana"] = parseInt(firstFighterSettings.mana);
     fighterOne["Stamina"] = parseInt(firstFighterSettings.stamina);
-    fighterOne["Cloth"] = parseInt(firstFighterSettings.cloth);
 
     var fighterTwo = {};
     fighterTwo["Name"] = secondFighterSettings.name;
@@ -2699,7 +2526,6 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     fighterTwo["HP"] = parseInt(secondFighterSettings.hp);
     fighterTwo["Mana"] = parseInt(secondFighterSettings.mana);
     fighterTwo["Stamina"] = parseInt(secondFighterSettings.stamina);
-    fighterTwo["Cloth"] = parseInt(secondFighterSettings.cloth);
 
     fighterSettings.push(fighterOne);
     fighterSettings.push(fighterTwo);
@@ -2716,7 +2542,7 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
         //windowController.nextPanel();
         windowController.addHit("Game started!");
         windowController.addHit("FIGHTING STAGE: " + battlefield.stage + " - " + battlefield.getActor().name + " goes first!");
-        battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina/Cloth)
+        battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina)
         battlefield.outputFighterStats(); // Creates the fighter stat blocks (STR/DEX/END/INT/WIL)
         windowController.addInfo("[url=http://www.f-list.net/c/rendezvous%20fight/]Visit this page for game information[/url]");
     }
@@ -2758,7 +2584,7 @@ function combatInput(actionMade) {
     windowController.addInfo(actor.name + "'s Average Dice Roll: " + luck);
 
     battlefield.turnUpkeep(); //End of turn upkeep (Stamina regen, check for being stunned/knocked out, etc.)
-    battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina/Cloth)
+    battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina)
     //battlefield.outputFighterStats();
     windowController.updateOutput(); //Tells the window controller to format and dump all the queued up messages to the results screen.
 };
