@@ -94,10 +94,10 @@ var CommandHandler = function (fChatLib, chan) {
 
     function checkIfValidStats(arrParam) {
         if (arrParam.length != 5) {
-            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 5,7,5,0,6", _this.channel);
+            _this.fChatLibInstance.sendMessage("The number of parameters was incorrect. Example: !register 5,8,5,0,6", _this.channel);
         }
         else if (!arrParam.every(arg => isInt(arg))) {
-            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 5,7,5,0,6", _this.channel);
+            _this.fChatLibInstance.sendMessage("All the parameters aren't integers. Example: !register 5,8,5,0,6", _this.channel);
         }
         else {
             //register
@@ -107,22 +107,22 @@ var CommandHandler = function (fChatLib, chan) {
                 return parseInt(a) + parseInt(b);
             }, 0);
             if (total != defaultStatPoints) {
-                _this.fChatLibInstance.sendMessage("The total of points you've spent isn't equal to "+defaultStatPoints+". (" + total + "). Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The total of points you've spent isn't equal to "+defaultStatPoints+". (" + total + "). Example: !register 5,8,5,0,6", _this.channel);
             }
             else if (parseInt(arrParam[0]) > 10 || (parseInt(arrParam[0]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Strength stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Strength stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
             }
             else if (parseInt(arrParam[1]) > 10 || (parseInt(arrParam[1]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Dexterity stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Dexterity stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
             }
             else if (parseInt(arrParam[2]) > 10 || (parseInt(arrParam[2]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Resilience stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Resilience stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
             }
             else if (parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Spellpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Spellpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
             }
             else if (parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Willpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,7,5,0,6,30", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Willpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
             }
             else {
                 return true;
@@ -370,6 +370,8 @@ var CommandHandler = function (fChatLib, chan) {
         attackFunc("Grab", data.character);
     };
 
+    CommandHandler.prototype.submission = CommandHandler.prototype.grab;
+
     CommandHandler.prototype.tackle = function (args, data) {
         attackFunc("Tackle", data.character);
     };
@@ -411,6 +413,10 @@ var CommandHandler = function (fChatLib, chan) {
 
     CommandHandler.prototype.rest = function (args, data) {
         attackFunc("Rest", data.character);
+    };
+
+    CommandHandler.prototype.skip = function (args, data) {
+        attackFunc("Skip", data.character);
     };
 
     CommandHandler.prototype.fumble = function (args, data) {
@@ -1983,7 +1989,6 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.spellpower();
-        damage *= 2;
         var requiredMana = 5;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2431,6 +2436,13 @@ fighter.prototype = {
         }
         
         return 1; //Successful attack, if we ever need to check that.
+    },
+
+    actionSkip: function (action) {
+        var attacker = this;
+        var target = battlefield.getTarget();
+        
+        windowController.addHit(attacker.name + " skipped the turn! ");
     },
 
     actionFumble: function (action) {
