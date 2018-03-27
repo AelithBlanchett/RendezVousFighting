@@ -1195,7 +1195,7 @@ function fighter(settings, globalSettings) {
         throw new Error(settings.Name + " was not created due to invalid settings.");
     }
 
-    this._maxHP = 60 + this._endurance * 10;
+    this._maxHP = 40 + this._endurance * 10 + this._willpower * 5;
     this._maxMana = 60 + this._willpower * 10 + (this._spellpower - this._strength ) * 5;
     this._manaCap = this._maxMana;
     this._maxStamina = 60 + this._willpower * 10  + (this._strength - this._spellpower ) * 5;
@@ -1343,6 +1343,7 @@ fighter.prototype = {
             "Maceration",
             "Brutality!",
             "Slow and sensual death",
+            "Literally fucking to death",
             "Extremely staged and theatrical finisher"];
 
         return fatalities[Math.floor(Math.random() * fatalities.length)];
@@ -1407,7 +1408,7 @@ fighter.prototype = {
         if (this._staminaCap > this._maxStamina) message += "[/color]";
         message += " (" + staminaPercent + "%)";
 
-        message += "[/color] mana: " + this.mana;
+        message += "[/color][color=blue] mana: " + this.mana;
         if (manaDelta > 0) message += "[color=cyan] (+" + manaDelta + ")[/color]";
         if (manaDelta < 0) message += "[color=red] (" + manaDelta + ")[/color]";
 
@@ -1415,7 +1416,7 @@ fighter.prototype = {
         if (this._manaCap > this._maxMana) message += "[color=cyan]";
         message += this._manaCap;
         if (this._manaCap > this._maxMana) message += "[/color]";
-        message += " (" + manaPercent + "%)";
+        message += " (" + manaPercent + "%)[/color]";
 
         this._statDelta = {hp: this.hp, stamina: this.stamina, mana: this.mana};
 
@@ -1500,9 +1501,9 @@ fighter.prototype = {
     actionLight: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll - 5 + attacker.strength();
-        var requiredStam = 10;
-        var difficulty = 4;
+        var damage = rollDice([6,6]) - 1 + attacker.strength();
+        var requiredStam = 5;
+        var difficulty = 6;
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -1571,8 +1572,9 @@ fighter.prototype = {
     actionHeavy: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll + (2 * attacker.strength());
-        var requiredStam = 20;
+        var damage = rollDice([6,6]) - 1 + attacker.strength();
+        damage *= 2;
+        var requiredStam = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -1644,12 +1646,15 @@ fighter.prototype = {
     actionGrab: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll - 10 + (attacker.strength() / 2);
-        var requiredStam = 10;
+        var damage = rollDice([6,6]) - 1 + attacker.strength();
+        var requiredStam = 5;
         if (attacker.isGrappling(target)) {
-            damage = roll + (attacker.strength() * 2);
-            requiredStam = 20;
-        }
+            damage *= 2
+            requiredStam = 10;
+        } else {
+            damage /= 2;
+        }        
+        
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
@@ -1740,9 +1745,9 @@ fighter.prototype = {
     actionTackle: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll - 5 + attacker.strength();
-        var requiredStam = 20;
-        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
+        var damage = rollDice([6,6]) - 1 + attacker.strength();
+        var requiredStam = 10;
+        var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
         if (attacker.isRestrained) difficulty += Math.max(0, 9 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
@@ -1825,9 +1830,10 @@ fighter.prototype = {
     actionRanged: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll + (2 * attacker.strength());
-        var requiredStam = 20;
-        var difficulty = 12; //Base difficulty, rolls greater than this amount will hit.
+        var damage = rollDice([6,6]) - 1 + attacker.strength();
+        damage *= 2;
+        var requiredStam = 10;
+        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -1900,8 +1906,9 @@ fighter.prototype = {
     actionMagic: function (roll) {// Magically enhanced melee attack.
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll + (2 * attacker.spellpower());
-        var requiredMana = 20;
+        var damage = rollDice([6,6]) - 1 + attacker.spellpower();
+        damage *= 2;
+        var requiredMana = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -1975,9 +1982,10 @@ fighter.prototype = {
     actionHex: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll - 5 + attacker.spellpower();
-        var requiredMana = 10;
-        var difficulty = 4; //Base difficulty, rolls greater than this amount will hit.
+        var damage = rollDice([6,6]) - 1 + attacker.spellpower();
+        damage *= 2;
+        var requiredMana = 5;
+        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -2049,9 +2057,10 @@ fighter.prototype = {
     actionSpell: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = roll + (2 * attacker.spellpower());
-        var requiredMana = 20;
-        var difficulty = 12; //Base difficulty, rolls greater than this amount will hit.
+        var damage = rollDice([6,6]) - 1 + attacker.spellpower();
+        damage *= 2;
+        var requiredMana = 10;
+        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -2157,7 +2166,7 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        var staminaShift = (roll * 2) + (attacker.willpower() * 4);
+        var staminaShift = 12 + (attacker.willpower() * 2);
         //staminaShift = Math.min(staminaShift, attacker.mana);
 
         attacker._staminaCap = Math.max(attacker._staminaCap, attacker.stamina + staminaShift);
@@ -2245,7 +2254,7 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        var manaShift = (roll * 2) + (attacker.willpower() * 4);
+        var manaShift = 12 + (attacker.willpower() * 2);
         //manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
 
         attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
@@ -2259,7 +2268,7 @@ fighter.prototype = {
     actionMove: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var requiredStam = 10;
+        var requiredStam = 5;
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2317,15 +2326,18 @@ fighter.prototype = {
             if (target.isDisoriented) target.isDisoriented += 2;
             if (target.isExposed) target.isExposed += 2;
         }
+        
+        //The total mobility bonus generated. This will be split bewteen attack and defense.
+        var totalBonus = rollDice([6,6]) - 1 + attacker.dexterity();
 
         if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
-            attacker.isEvading = Math.floor((roll + attacker.dexterity()) / 2);
+            attacker.isEvading = Math.floor(totalBonus / 2);
         } else {
-            attacker.isEvading = Math.floor((roll + attacker.dexterity()) / 2);
-            attacker.isAggressive = Math.ceil((roll + attacker.dexterity()) / 2);
+            attacker.isEvading = Math.floor(totalBonus / 2);
+            attacker.isAggressive = Math.ceil(totalBonus / 2);
             windowController.addHit(attacker.name + " gained mobility bonuses against " + target.name + " for one turn!");
         }
 
@@ -2340,7 +2352,7 @@ fighter.prototype = {
     actionTeleport: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var requiredMana = 10;
+        var requiredMana = 5;
         var difficulty = 6//Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2397,15 +2409,18 @@ fighter.prototype = {
             if (target.isDisoriented) target.isDisoriented += 2;
             if (target.isExposed) target.isExposed += 2;
         }
+        
+        //The total mobility bonus generated. This will be split bewteen attack and defense.
+        var totalBonus = rollDice([6,6]) - 1 + attacker.spellpower();
 
         if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
             attacker.removeGrappler(target);
             tempGrappleFlag = false;
-            attacker.isEvading = Math.floor((roll + attacker.spellpower()) / 2);
+            attacker.isEvading = Math.floor(totalBonus / 2);
         } else {
-            attacker.isEvading = Math.floor((roll + attacker.spellpower()) / 2);
-            attacker.isAggressive = Math.ceil((roll + attacker.spellpower()) / 2);
+            attacker.isEvading = Math.floor(totalBonus / 2);
+            attacker.isAggressive = Math.ceil(totalBonus / 2);
             windowController.addHit(attacker.name + " gained mobility bonuses against " + target.name + " for one turn!");
         }
 
