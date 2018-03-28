@@ -1755,7 +1755,7 @@ fighter.prototype = {
         var requiredStam = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
-        if (attacker.isRestrained) difficulty += Math.max(0, 9 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
+        if (attacker.isRestrained) difficulty += Math.max(0, 12 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
@@ -1787,7 +1787,7 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
-            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
+            if (attacker.isRestrained) attacker.isEscaping += 5;//If we fail to escape, it'll be easier next time.
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
             //If opponent fumbled on their previous action they should become stunned. Tackle is a special case because it stuns anyway if it hits, so we only do this on a miss.
@@ -2219,7 +2219,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         windowController.addHit(attacker.name + " FOCUSES!");
-        attacker.isFocused += (roll * 2 + attacker.willpower() * 4);
+        attacker.isFocused = rollDice([6,6,6,6]) + 10 + attacker.willpower() * 4;
         return 1;
     },
 
@@ -2316,7 +2316,7 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
-            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
+            if (attacker.isRestrained) attacker.isEscaping += 5;//If we fail to escape, it'll be easier next time.
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2399,7 +2399,7 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
-            if (attacker.isRestrained) attacker.isEscaping += 6;//If we fail to escape, it'll be easier next time.
+            if (attacker.isRestrained) attacker.isEscaping += 5;//If we fail to escape, it'll be easier next time.
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -2438,11 +2438,8 @@ fighter.prototype = {
         return 1; //Successful attack, if we ever need to check that.
     },
 
-    actionSkip: function (action) {
-        var attacker = this;
-        var target = battlefield.getTarget();
-        
-        windowController.addHit(attacker.name + " skipped the turn! ");
+    actionSkip: function (action) {        
+        windowController.addHit(this.name + " skipped the turn! ");
     },
 
     actionFumble: function (action) {
