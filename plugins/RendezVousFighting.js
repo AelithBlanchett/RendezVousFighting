@@ -373,7 +373,21 @@ var CommandHandler = function (fChatLib, chan) {
     CommandHandler.prototype.submission = CommandHandler.prototype.grab;
 
     CommandHandler.prototype.tackle = function (args, data) {
-        attackFunc("Tackle", data.character);
+        if (battlefield.inGrabRange) {
+            _this.fChatLibInstance.sendMessage("You can't use Tackle when you already are in grappling range.", _this.channel);
+        }
+        else {
+            attackFunc("Tackle", data.character);
+        }
+    };
+
+    CommandHandler.prototype.throw = function (args, data) {
+        if (battlefield.getActor().isRestrained || battlefield.getTarget().isRestrained) {
+            attackFunc("Throw", data.character);
+        }
+        else {
+            _this.fChatLibInstance.sendMessage("You can only use Throw if you are grappling.", _this.channel);
+        }
     };
 
     CommandHandler.prototype.ranged = function (args, data) {
@@ -1755,6 +1769,68 @@ fighter.prototype = {
         var requiredStam = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
+        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
+
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+            difficulty += target.isEvading;
+            damage -= target.isEvading;
+            target.isEvading = 0;
+        }
+        if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+            difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
+            attacker.isAggressive = 0;
+        }
+
+        var critCheck = true;
+        if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
+            critCheck = false;
+            damage *= attacker.stamina / requiredStam;
+            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam) * (20 - difficulty)); // Too tired? You're likely to miss.
+            windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
+        }
+
+        attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
+
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), target.stamina, target._staminaCap);
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
+
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
+            windowController.addHit(" FAILED!");
+            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
+            //If opponent fumbled on their previous action they should become stunned. Tackle is a special case because it stuns anyway if it hits, so we only do this on a miss.
+            if (target.fumbled) {
+                target.isStunned = true;
+                target.fumbled = false;
+            }
+            return 0; //Failed attack, if we ever need to check that.
+        }
+
+        if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+            windowController.addHint("Critical Hit! " + attacker.name + " really drove that one home!");
+            damage += 10;
+        }
+
+        battlefield.inGrabRange = true;//A regular tackle will put you close enough to your opponent to initiate a grab.
+        windowController.addHit(attacker.name + " TACKLED " + target.name + ". " + attacker.name + " can take another action while their opponent is stunned!");
+        
+        //Deal all the actual damage/effects here.
+
+        damage = Math.max(damage, 1);
+        target.hitHp(damage);
+        target.isStunned = true;
+        return 1; //Successful attack, if we ever need to check that.
+    },
+    
+    actionThrow: function (roll) {
+        var attacker = this;
+        var target = battlefield.getTarget();
+        var damage = rollDice([6,6]) - 1 + attacker.strength();
+        var requiredStam = 10;
+        var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
+
         if (attacker.isRestrained) difficulty += Math.max(0, 12 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +4 difficulty, maximum of +12.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
@@ -1810,7 +1886,7 @@ fighter.prototype = {
                 attacker.removeGrappler(target);
                 windowController.addHit(attacker.name + " gained the upper hand and THREW " + target.name + "! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
             } else {
-                damage += 5 + attacker.strength();
+                damage += (5 + attacker.strength());
                 windowController.addHit(attacker.name + " THREW " + target.name + "! " + attacker.name + " can make another move!");
             }
             //windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
