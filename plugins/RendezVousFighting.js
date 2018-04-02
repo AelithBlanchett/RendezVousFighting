@@ -366,12 +366,24 @@ var CommandHandler = function (fChatLib, chan) {
         attackFunc("Heavy", data.character);
     };
 
-    CommandHandler.prototype.grab = function (args, data) {
-        attackFunc("Grab", data.character);
+    CommandHandler.prototype.grab = function (args, data) {//oznaka
+        if (!battlefield.getTarget().isRestrained && (battlefield.inGrabRange || battlefield.getTarget().isExposed)) {
+            attackFunc("Grab", data.character);
+        }
+        else {
+            _this.fChatLibInstance.sendMessage("You can only use Grab if you are not already grappling your opponent and if either you are in grappling range or your opponent is Exposed.", _this.channel);
+        }
     };
 
-    CommandHandler.prototype.submission = CommandHandler.prototype.grab;
-
+    CommandHandler.prototype.submission = function (args, data) {
+        if (battlefield.getTarget().isRestrained) {
+            attackFunc("Submission", data.character);
+        }
+        else {
+            _this.fChatLibInstance.sendMessage("You can only use Submission if you are grappling your opponent.", _this.channel);
+        }
+    };
+    
     CommandHandler.prototype.tackle = function (args, data) {
         if (battlefield.inGrabRange) {
             _this.fChatLibInstance.sendMessage("You can't use Tackle when you already are in grappling range.", _this.channel);
@@ -1489,7 +1501,7 @@ fighter.prototype = {
 
         if (this.isExposed > 0) {
             this.isExposed -= 1;
-            if (this.isExposed == 0) windowController.addHint(this.name + " has recovered from the missed attack and can no longer be easily hit or grabbed!");
+            if (this.isExposed == 0) windowController.addHint(this.name + " has recovered from the missed attack and is no longer Exposed!");
         }
 
         if (this.hp <= this._koValue && this.isUnconscious == false) {
@@ -1634,7 +1646,7 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and is now Exposed! " + target.name + " has -2 difficulty to hit and can use Grab even if fighters are not in grappling range!");
             return 0; //Failed attack, if we ever need to check that.
         }
 
@@ -1667,19 +1679,13 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
+        damage /= 2;
         var requiredStam = 5;
-        if (attacker.isGrappling(target)) {
-            damage *= 2
-            requiredStam = 10;
-        } else {
-            damage /= 2;
-        }        
         
         var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-        if (target.isRestrained) difficulty += (4 + Math.floor((target.strength() - attacker.strength()) / 2)); //Up the difficulty of submission moves based on the relative strength of the combatants.
-        
+                
         if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
             difficulty += target.isEvading;
             damage -= target.isEvading;
@@ -1701,6 +1707,7 @@ fighter.prototype = {
 
         attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
 
+        //I should probably delete this section, but if everything works properly it shouldn't ever trigger, so I'll leave it in for now in case I change my mind and want to put it back in.
         if (target.isExposed < 1 && !battlefield.inGrabRange) {//When you're out of grappling range a grab will put you into grappling range without a roll.
             battlefield.inGrabRange = true;
             attacker.isAggressive += Math.ceil(roll/2);//Every action needs to have a benefit that scales with the roll in order not to feel wasted.
@@ -1739,22 +1746,87 @@ fighter.prototype = {
             damage += 10;
         }
 
-        if (attacker.isGrappling(target)) {
-            windowController.addHit(" SUBMISSION ");
-            target.isEscaping -= 3; //Submission moves make it harder to escape.
-            if (target.isGrappling(attacker)) {
-                attacker.removeGrappler(target);
-                windowController.addHint(target.name + " is in a SUBMISSION hold. " + attacker.name + " is also no longer at a penalty from being grappled!");
-            } else {
-                windowController.addHint(target.name + " is in a SUBMISSION hold.");
-            }
-        } else {
-            windowController.addHit(attacker.name + " GRABBED " + target.name + "! ");
-            windowController.addHint(target.name + " is being grappled! " + attacker.name + " can use Grab to try for a submission hold or Tackle to throw them - dealing damage, but setting them free.");
-            target.isGrappledBy.push(attacker.name);
-        }
+        //grab can only be used when you are not grappling the target, so we no longer need the old check.
+        windowController.addHit(attacker.name + " GRABBED " + target.name + "! ");
+        windowController.addHint(target.name + " is being grappled! " + attacker.name + " has reduced difficulty to use melee attacks and can also use the special attacks Throw and Submission.");
+        windowController.addHint(target.name + " can try to escape the grapple by using Move, Throw, or Teleport.");
+        target.isGrappledBy.push(attacker.name);
 
         //If we managed to grab without being in grab range, we are certainly in grabe range afterwards.
+        if (!battlefield.inGrabRange) battlefield.inGrabRange = true;
+
+        damage = Math.max(damage, 1);
+        target.hitHp(damage);
+        return 1; //Successful attack, if we ever need to check that.
+    },
+
+    actionSubmission: function (roll) {
+        var attacker = this;
+        var target = battlefield.getTarget();
+        var damage = rollDice([6,6]) - 1 + attacker.strength();
+        damage *= 3;
+        var requiredStam = 25;
+        
+        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
+        difficulty += Math.floor((target.strength() - attacker.strength()) / 2); //Up the difficulty of submission moves based on the relative strength of the combatants.
+        difficulty *= Math.ceil(2 * target.hp / target._maxHP);//Multiply difficulty with percentage of opponent's health and 2, so that 50% health yields normal difficulty.
+        
+        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
+                
+        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
+            difficulty += target.isEvading;
+            damage -= target.isEvading;
+            target.isEvading = 0;
+        }
+        if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
+            difficulty -= attacker.isAggressive;
+            damage += attacker.isAggressive;
+            attacker.isAggressive = 0;
+        }
+
+        var critCheck = true;
+        if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
+            critCheck = false;
+            damage *= attacker.stamina / requiredStam;
+            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam) * (20 - difficulty)); // Too tired? You're likely to miss.
+            windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
+        }
+
+        attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount. (We'll hit the attacker up for the rest on a miss or a dodge).
+        
+        //If opponent fumbled on their previous action they should become stunned.
+        // We put it down here for Grab so it doesn't interfere with the stun from a crit on moving into range.
+        if (target.fumbled) {
+            target.isStunned = true;
+            target.fumbled = false;
+        }
+
+        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), target.stamina, target._staminaCap);
+        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
+        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
+
+        if (roll <= attackTable.miss) {	//Miss-- no effect.
+            windowController.addHit(" FAILED! ");
+            windowController.addHint(attacker.name + " failed to establish a hold!");
+            return 0; //Failed attack, if we ever need to check that.
+        }
+
+        if (roll >= attackTable.crit && critCheck) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
+            windowController.addHit(" CRITICAL HIT! ");
+            windowController.addHint("Critical! " + attacker.name + " found a particularly good hold!");
+            damage += 10;
+        }
+
+        windowController.addHit(" SUBMISSION ");
+        target.isEscaping -= 5; //Submission moves make it harder to escape.
+        if (target.isGrappling(attacker)) {
+            attacker.removeGrappler(target);
+            windowController.addHint(target.name + " is in a SUBMISSION hold. " + attacker.name + " is also no longer at a penalty from being grappled!");
+        } else {
+            windowController.addHint(target.name + " is in a SUBMISSION hold.");
+        }
+
+        //If we managed to make a submission without being in grab range, we are certainly in grabe range afterwards.
         if (!battlefield.inGrabRange) battlefield.inGrabRange = true;
 
         damage = Math.max(damage, 1);
@@ -1799,7 +1871,7 @@ fighter.prototype = {
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and is now Exposed! " + target.name + " has -2 difficulty to hit and can use Grab even if fighters are not in grappling range!");
             //If opponent fumbled on their previous action they should become stunned. Tackle is a special case because it stuns anyway if it hits, so we only do this on a miss.
             if (target.fumbled) {
                 target.isStunned = true;
@@ -1865,7 +1937,7 @@ fighter.prototype = {
             windowController.addHit(" FAILED!");
             if (attacker.isRestrained) attacker.isEscaping += 5;//If we fail to escape, it'll be easier next time.
             attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
+            windowController.addHint(attacker.name + " was left wide open by the failed attack and is now Exposed! " + target.name + " has -2 difficulty to hit and can use Grab even if fighters are not in grappling range!");
             //If opponent fumbled on their previous action they should become stunned. Tackle is a special case because it stuns anyway if it hits, so we only do this on a miss.
             if (target.fumbled) {
                 target.isStunned = true;
@@ -2682,6 +2754,7 @@ function combatInput(actionMade) {
 
     windowController.addInfo("Raw Dice Roll: " + roll);
     windowController.addInfo(actor.name + "'s Average Dice Roll: " + luck);
+    if (roll == 20) windowController.addInfo("\n" + "[eicon]d20crit[/eicon]" + "\n");//Test to see if this works. Might add more graphics in the future.
 
     battlefield.turnUpkeep(); //End of turn upkeep (Stamina regen, check for being stunned/knocked out, etc.)
     battlefield.outputFighterStatus(); // Creates the fighter status blocks (HP/Mana/Stamina)
