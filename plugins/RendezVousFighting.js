@@ -1173,7 +1173,11 @@ arena.prototype = {
             "Circus",
             "Castle",
             "Museum",
-            "Beach"
+            "Beach",
+            "Bowling Club",
+            "Concert Stage"
+            "Wild West Town",
+            "Movie Set"
         ];
 
         return stages[Math.floor(Math.random() * stages.length)];
