@@ -77,13 +77,6 @@ describe("Fighter testing", () => {
             }, 1000);
 
             setTimeout(function () {
-                CommandHandler.rip("", {character: "Aelith Blanchette", channel: "here"});
-            }, 1000);
-            setTimeout(function () {
-                CommandHandler.rip("", {character: "Britta Blixt", channel: "here"});
-            }, 1000);
-
-            setTimeout(function () {
                 CommandHandler.grab("", {character: "Aelith Blanchette", channel: "here"});
             }, 1000);
             setTimeout(function () {

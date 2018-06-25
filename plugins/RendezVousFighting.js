@@ -1175,7 +1175,7 @@ arena.prototype = {
             "Museum",
             "Beach",
             "Bowling Club",
-            "Concert Stage"
+            "Concert Stage",
             "Wild West Town",
             "Movie Set"
         ];
@@ -1245,13 +1245,13 @@ function fighter(settings, globalSettings) {
     this._damageEffectMult = globalSettings.GameSpeed;
 
     this.hp = 0;
-    this.addHp(settings.HP);
+    this.addHp(this._maxHP);
 
     this.mana = 0;
-    this.addMana(settings.Mana);
+    this.addMana(this._maxMana);
 
     this.stamina = 0;
-    this.addStamina(settings.Stamina);
+    this.addStamina(this._maxStamina);
 
     this.rollTotal = 0; // Two values that we track in order to calculate average roll, which we will call Luck on the output screen.
     this.rollsMade = 0; // Luck = rollTotal / rollsMade
@@ -1411,7 +1411,7 @@ fighter.prototype = {
     },
 
     getStatBlock: function () {
-        return "[color=cyan]" + this.name + " stats: Strength:" + this.strength() + " Dexterity:" + this.dexterity() + " Resilience:" + this.endurance() + " Spellpower:" + this.spellpower() + " Willpower:" + this.willpower() + "[/color]";
+        return "[color=cyan]" + this.name + " stats: Strength: " + this.strength() + " Dexterity: " + this.dexterity() + " Resilience: " + this.endurance() + " Spellpower: " + this.spellpower() + " Willpower: " + this.willpower() + "[/color]";
     },
 
     getStatus: function () {
