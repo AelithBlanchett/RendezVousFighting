@@ -163,13 +163,13 @@ var CommandHandler = function (fChatLib, chan) {
         db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
             if (rows != undefined && rows.length == 1) {
                 var stats = rows[0];
-                var hp = 60 + parseInt(stats.endurance) * 10;
+                var hp = 40 + parseInt(stats.endurance) * 10 + parseInt(stats.willpower) * 5;
                 var mana = (parseInt(rows[0].willpower) * 10 + 60 + (parseInt(rows[0].spellpower) * 5 - (parseInt(rows[0].strength) * 5)));
                 var staminaMax = (parseInt(rows[0].willpower) * 10 + 60 - (parseInt(rows[0].spellpower) * 5 - (parseInt(rows[0].strength) * 5)));
                 _this.fChatLibInstance.sendPrivMessage("[b]" + stats.name + "[/b]'s stats" + "\n" +
-                    "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
-                    "[b][color=orange]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=pink]Mana[/color][/b]: " + mana + "\n" +
-                    "[b][color=green]Resilience[/color][/b]:  " + stats.endurance + "      " + "[b][color=pink]Stamina[/color][/b]: " + staminaMax + "\n" +
+                    "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=yellow]Hit Points[/color][/b]: " + hp + "\n" +
+                    "[b][color=pink]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=blue]Stamina[/color][/b]: " + staminaMax + "\n" +
+                    "[b][color=white]Resilience[/color][/b]:  " + stats.endurance + "      " + "[b][color=green]Mana[/color][/b]: " + mana + "\n" +
                     "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "\n" +
                     "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, askingCharacter);
             }
