@@ -1842,8 +1842,9 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
-        var requiredStam = 10;
-        var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
+        damage /= 2;
+        var requiredStam = 5;
+        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
 
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
