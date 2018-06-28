@@ -2371,7 +2371,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         windowController.addHit(attacker.name + " FOCUSES!");
-        attacker.isFocused += rollDice([6,6,6,6]) + 10 + attacker.willpower() * 4;
+        attacker.isFocused += rollDice([6,6,6,6]) + 16 + attacker.willpower() * 5;
         return 1;
     },
 
