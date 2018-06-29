@@ -1610,6 +1610,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
         damage *= 2;
+        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredStam = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
@@ -1991,6 +1992,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
         damage *= 2;
+        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredStam = 10;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2067,6 +2069,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.spellpower();
         damage *= 2;
+        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredMana = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2217,6 +2220,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.spellpower();
         damage *= 2;
+        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredMana = 10;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
