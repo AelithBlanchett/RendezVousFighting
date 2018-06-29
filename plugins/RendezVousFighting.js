@@ -2332,7 +2332,7 @@ fighter.prototype = {
         var staminaShift = 12 + (attacker.willpower() * 2);
         //staminaShift = Math.min(staminaShift, attacker.mana);
 
-        attacker._staminaCap = Math.max(attacker._staminaCap, attacker.stamina + staminaShift);
+        //attacker._staminaCap = Math.max(attacker._staminaCap, attacker.stamina + staminaShift);
         //attacker.hitMana(staminaShift);
         attacker.addStamina(staminaShift);
         windowController.addHit(attacker.name + " REGENERATES STAMINA!"); //Removed Stamina cost.
@@ -2420,7 +2420,7 @@ fighter.prototype = {
         var manaShift = 12 + (attacker.willpower() * 2);
         //manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
 
-        attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
+        //attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
         //attacker.hitStamina(manaShift);
         attacker.addMana(manaShift);
         windowController.addHit(attacker.name + " GENERATES MANA!"); //Removed Stamina cost.
