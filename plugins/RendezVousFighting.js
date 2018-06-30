@@ -1610,6 +1610,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
         damage *= 2;
+        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredStam = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
@@ -1905,6 +1906,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
+        damage *= 2;
         var requiredStam = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
 
@@ -1963,7 +1965,7 @@ fighter.prototype = {
                 attacker.removeGrappler(target);
                 windowController.addHit(attacker.name + " gained the upper hand and THREW " + target.name + "! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
             } else {
-                damage += (5 + attacker.strength());
+                damage += 10;
                 windowController.addHit(attacker.name + " THREW " + target.name + "! " + attacker.name + " can make another move!");
             }
             //windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
@@ -1982,7 +1984,7 @@ fighter.prototype = {
 
         damage = Math.max(damage, 1);
         target.hitHp(damage);
-        target.isStunned = true;
+        //target.isStunned = true;
         return 1; //Successful attack, if we ever need to check that.
     },
 
@@ -1991,6 +1993,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
         damage *= 2;
+        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredStam = 10;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2067,6 +2070,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.spellpower();
         damage *= 2;
+        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredMana = 10;
         var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2217,6 +2221,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.spellpower();
         damage *= 2;
+        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredMana = 10;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
@@ -2327,7 +2332,7 @@ fighter.prototype = {
         var staminaShift = 12 + (attacker.willpower() * 2);
         //staminaShift = Math.min(staminaShift, attacker.mana);
 
-        attacker._staminaCap = Math.max(attacker._staminaCap, attacker.stamina + staminaShift);
+        //attacker._staminaCap = Math.max(attacker._staminaCap, attacker.stamina + staminaShift);
         //attacker.hitMana(staminaShift);
         attacker.addStamina(staminaShift);
         windowController.addHit(attacker.name + " REGENERATES STAMINA!"); //Removed Stamina cost.
@@ -2415,7 +2420,7 @@ fighter.prototype = {
         var manaShift = 12 + (attacker.willpower() * 2);
         //manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
 
-        attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
+        //attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
         //attacker.hitStamina(manaShift);
         attacker.addMana(manaShift);
         windowController.addHit(attacker.name + " GENERATES MANA!"); //Removed Stamina cost.
