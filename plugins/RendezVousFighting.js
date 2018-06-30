@@ -168,8 +168,8 @@ var CommandHandler = function (fChatLib, chan) {
                 var staminaMax = (parseInt(rows[0].willpower) * 10 + 60 - (parseInt(rows[0].spellpower) * 5 - (parseInt(rows[0].strength) * 5)));
                 _this.fChatLibInstance.sendPrivMessage("[b]" + stats.name + "[/b]'s stats" + "\n" +
                     "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=yellow]Hit Points[/color][/b]: " + hp + "\n" +
-                    "[b][color=pink]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=blue]Stamina[/color][/b]: " + staminaMax + "\n" +
-                    "[b][color=white]Resilience[/color][/b]:  " + stats.endurance + "      " + "[b][color=green]Mana[/color][/b]: " + mana + "\n" +
+                    "[b][color=pink]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=green]Stamina[/color][/b]: " + staminaMax + "\n" +
+                    "[b][color=white]Resilience[/color][/b]:  " + stats.endurance + "      " + "[b][color=blue]Mana[/color][/b]: " + mana + "\n" +
                     "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "\n" +
                     "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, askingCharacter);
             }
@@ -2336,7 +2336,7 @@ fighter.prototype = {
         //attacker.hitMana(staminaShift);
         attacker.addStamina(staminaShift);
         windowController.addHit(attacker.name + " REGENERATES STAMINA!"); //Removed Stamina cost.
-        windowController.addHint(attacker.name + " recovered " + staminaShift + " stamina, and will briefly be able to hold on to more stamina than usual!!");
+        windowController.addHint(attacker.name + " recovered " + staminaShift + " stamina!");
         return 1;
     },
 
@@ -2377,7 +2377,7 @@ fighter.prototype = {
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
         windowController.addHit(attacker.name + " FOCUSES!");
-        attacker.isFocused += rollDice([6,6,6,6]) + 16 + attacker.willpower() * 5;
+        attacker.isFocused += rollDice([6,6,6,6]) + 10 + attacker.willpower() * 4;
         return 1;
     },
 
@@ -2424,7 +2424,7 @@ fighter.prototype = {
         //attacker.hitStamina(manaShift);
         attacker.addMana(manaShift);
         windowController.addHit(attacker.name + " GENERATES MANA!"); //Removed Stamina cost.
-        windowController.addHint(attacker.name + " recovered " + manaShift + " mana, and will briefly be able to hold on to more mana than usual!");
+        windowController.addHint(attacker.name + " recovered " + manaShift + " mana!");
         return 1;
     },      
 
