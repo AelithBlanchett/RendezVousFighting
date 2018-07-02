@@ -212,8 +212,8 @@ var CommandHandler = function (fChatLib, chan) {
                     }
                     currentFighters[0] = rows[0];
                     currentFighters[0].hp = 60 + parseInt(currentFighters[0].resilience) * 10;
-                    currentFighters[0].mana = (parseInt(currentFighters[0].special) * 10 + 60 + (parseInt(currentFighters[0].endurance) * 5 - (parseInt(currentFighters[0].strength) * 5)));
-                    currentFighters[0].stamina = (parseInt(currentFighters[0].special) * 10 + 60 - (parseInt(currentFighters[0].endurance) * 5 - (parseInt(currentFighters[0].strength) * 5)));
+                    currentFighters[0].mana = parseInt(currentFighters[0].special) * 10;
+                    currentFighters[0].stamina = 20 + parseInt(currentFighters[0].endurance) * 20;
                     _this.fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", _this.channel);
                 }
                 else {
@@ -232,8 +232,8 @@ var CommandHandler = function (fChatLib, chan) {
                         }
                         currentFighters[1] = rows[0];
                         currentFighters[1].hp = 60 + parseInt(currentFighters[1].resilience) * 10;
-                        currentFighters[1].mana = (parseInt(currentFighters[1].special) * 10 + 60 + (parseInt(currentFighters[1].endurance) * 5 - (parseInt(currentFighters[1].strength) * 5)));
-                        currentFighters[1].stamina = (parseInt(currentFighters[1].special) * 10 + 60 - (parseInt(currentFighters[1].endurance) * 5 - (parseInt(currentFighters[1].strength) * 5)));
+                        currentFighters[1].mana = parseInt(currentFighters[1].special) * 10;
+                        currentFighters[1].stamina = 20 + parseInt(currentFighters[1].special) * 20;
                         _this.fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", _this.channel);
                     }
                     else {
