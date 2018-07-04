@@ -77,7 +77,7 @@ var CommandHandler = function (fChatLib, chan) {
                     var arrParam = args.split(",");
                     if (checkIfValidStats(arrParam)) {
                         var finalArgs = [data.character, _this.channel].concat(arrParam);
-                        db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `endurance`, `spellpower`, `willpower`) VALUES (?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
+                        db.query("INSERT INTO `flistplugins`.`RDVF_stats` (`name`, `room`, `strength`, `dexterity`, `resilience`, `endurance`, `special`) VALUES (?, ?, ?, ?, ?, ?, ?)", finalArgs, function (err) {
                             if (!err) {
                                 _this.fChatLibInstance.sendMessage("Welcome! Enjoy your stay.", _this.channel);
                             }
@@ -119,10 +119,10 @@ var CommandHandler = function (fChatLib, chan) {
                 _this.fChatLibInstance.sendMessage("The Resilience stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
             }
             else if (parseInt(arrParam[3]) > 10 || (parseInt(arrParam[3]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Spellpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Endurance stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
             }
             else if (parseInt(arrParam[4]) > 10 || (parseInt(arrParam[4]) < 0)) {
-                _this.fChatLibInstance.sendMessage("The Willpower stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
+                _this.fChatLibInstance.sendMessage("The Special stat has a minimum value of 0 and a maximum value of 10. Example: !register 5,8,5,0,6", _this.channel);
             }
             else {
                 return true;
@@ -141,7 +141,7 @@ var CommandHandler = function (fChatLib, chan) {
                     var arrParam = args.split(",");
                     if (checkIfValidStats(arrParam)) {
                         var finalArgs = arrParam.concat([data.character]);
-                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `endurance` = ?, `spellpower` = ?, `willpower` = ? WHERE `name` = ?;", finalArgs, function (err) {
+                        db.query("UPDATE `flistplugins`.`RDVF_stats` SET `strength` = ?, `dexterity` = ?, `resilience` = ?, `endurance` = ?, `special` = ? WHERE `name` = ?;", finalArgs, function (err) {
                             if (!err) {
                                 _this.fChatLibInstance.sendMessage("Your stats have successfully been changed.", _this.channel);
                             }
@@ -160,18 +160,18 @@ var CommandHandler = function (fChatLib, chan) {
     };
 
     var statsGetter = function (characterAsked, askingCharacter) {
-        db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
+        db.query("SELECT name, strength, dexterity, resilience, endurance, special FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", characterAsked, (err, rows, fields) => {
             if (rows != undefined && rows.length == 1) {
                 var stats = rows[0];
-                var hp = 40 + parseInt(stats.endurance) * 10 + parseInt(stats.willpower) * 5;
-                var mana = (parseInt(rows[0].willpower) * 10 + 60 + (parseInt(rows[0].spellpower) * 5 - (parseInt(rows[0].strength) * 5)));
-                var staminaMax = (parseInt(rows[0].willpower) * 10 + 60 - (parseInt(rows[0].spellpower) * 5 - (parseInt(rows[0].strength) * 5)));
+                var hp = 60 + parseInt(stats.resilience) * 10;
+                var mana = parseInt(stats.special) * 10;
+                var staminaMax = 20 + parseInt(stats.endurance) * 20;
                 _this.fChatLibInstance.sendPrivMessage("[b]" + stats.name + "[/b]'s stats" + "\n" +
-                    "[b][color=red]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=yellow]Hit Points[/color][/b]: " + hp + "\n" +
-                    "[b][color=pink]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=green]Stamina[/color][/b]: " + staminaMax + "\n" +
-                    "[b][color=white]Resilience[/color][/b]:  " + stats.endurance + "      " + "[b][color=blue]Mana[/color][/b]: " + mana + "\n" +
-                    "[b][color=cyan]Spellpower[/color][/b]:    " + stats.spellpower + "      " + "\n" +
-                    "[b][color=purple]Willpower[/color][/b]: " + stats.willpower, askingCharacter);
+                    "[b][color=white]Strength[/color][/b]:  " + stats.strength + "      " + "[b][color=red]Hit Points[/color][/b]: " + hp + "\n" +
+                    "[b][color=white]Dexterity[/color][/b]:  " + stats.dexterity + "      " + "[b][color=green]Stamina[/color][/b]: " + staminaMax + "\n" +
+                    "[b][color=white]Resilience[/color][/b]:  " + stats.resilience + "      " + "[b][color=blue]Mana[/color][/b]: " + mana + "\n" +
+                    "[b][color=white]Endurance[/color][/b]:    " + stats.endurance + "      " + "\n" +
+                    "[b][color=white]Special[/color][/b]: " + stats.special, askingCharacter);
             }
             else {
                 _this.fChatLibInstance.sendPrivMessage("You aren't registered yet.", askingCharacter);
@@ -195,15 +195,15 @@ var CommandHandler = function (fChatLib, chan) {
     };
 
     var checkWrestlersTotalStatsSum = function(args){
-        if(args.strength != undefined && args.dexterity != undefined && args.endurance != undefined && args.spellpower != undefined && args.willpower != undefined ){
-            return(parseInt(args.strength) + parseInt(args.dexterity) + parseInt(args.endurance) + parseInt(args.spellpower) + parseInt(args.willpower));
+        if(args.strength != undefined && args.dexterity != undefined && args.resilience != undefined && args.endurance != undefined && args.special != undefined ){
+            return(parseInt(args.strength) + parseInt(args.dexterity) + parseInt(args.resilience) + parseInt(args.endurance) + parseInt(args.special));
         }
         return 0;
     };
 
     CommandHandler.prototype.ready = function (args, data) {
         if (currentFighters.length == 0) {
-            db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) => {
+            db.query("SELECT name, strength, dexterity, resilience, endurance, special FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], (err, rows, fields) => {
                 if (rows != undefined && rows.length == 1) {
                     var statPointsUsed = checkWrestlersTotalStatsSum(rows[0]);
                     if(statPointsUsed != defaultStatPoints){
@@ -211,9 +211,9 @@ var CommandHandler = function (fChatLib, chan) {
                         return;
                     }
                     currentFighters[0] = rows[0];
-                    currentFighters[0].hp = 60 + parseInt(currentFighters[0].endurance) * 10;
-                    currentFighters[0].mana = (parseInt(currentFighters[0].willpower) * 10 + 60 + (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
-                    currentFighters[0].stamina = (parseInt(currentFighters[0].willpower) * 10 + 60 - (parseInt(currentFighters[0].spellpower) * 5 - (parseInt(currentFighters[0].strength) * 5)));
+                    currentFighters[0].hp = 60 + parseInt(currentFighters[0].resilience) * 10;
+                    currentFighters[0].mana = parseInt(currentFighters[0].special) * 10;
+                    currentFighters[0].stamina = 20 + parseInt(currentFighters[0].endurance) * 20;
                     _this.fChatLibInstance.sendMessage(data.character + " is the first one to step in the ring, ready to fight! Who will be the lucky opponent?", _this.channel);
                 }
                 else {
@@ -223,7 +223,7 @@ var CommandHandler = function (fChatLib, chan) {
         }
         else if (currentFighters.length == 1) {
             if (currentFighters[0].name != data.character) {
-                db.query("SELECT name, strength, dexterity, endurance, spellpower, willpower FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function (err, rows, fields) {
+                db.query("SELECT name, strength, dexterity, resilience, endurance, special FROM `flistplugins`.`RDVF_stats` WHERE name = ? LIMIT 1", [data.character], function (err, rows, fields) {
                     if (rows != undefined && rows.length == 1) {
                         var statPointsUsed = checkWrestlersTotalStatsSum(rows[0]);
                         if(statPointsUsed != defaultStatPoints){
@@ -231,9 +231,9 @@ var CommandHandler = function (fChatLib, chan) {
                             return;
                         }
                         currentFighters[1] = rows[0];
-                        currentFighters[1].hp = 60 + parseInt(currentFighters[1].endurance) * 10;
-                        currentFighters[1].mana = (parseInt(currentFighters[1].willpower) * 10 + 60 + (parseInt(currentFighters[1].spellpower) * 5 - (parseInt(currentFighters[1].strength) * 5)));
-                        currentFighters[1].stamina = (parseInt(currentFighters[1].willpower) * 10 + 60 - (parseInt(currentFighters[1].spellpower) * 5 - (parseInt(currentFighters[1].strength) * 5)));
+                        currentFighters[1].hp = 60 + parseInt(currentFighters[1].resilience) * 10;
+                        currentFighters[1].mana = parseInt(currentFighters[1].special) * 10;
+                        currentFighters[1].stamina = 20 + parseInt(currentFighters[1].endurance) * 20;
                         _this.fChatLibInstance.sendMessage(data.character + " accepts the challenge! Let's get it on!", _this.channel);
                     }
                     else {
@@ -406,28 +406,16 @@ var CommandHandler = function (fChatLib, chan) {
         attackFunc("Ranged", data.character);
     };
 
-    CommandHandler.prototype.focus = function (args, data) {
-        attackFunc("Focus", data.character);
+    CommandHandler.prototype.aim = function (args, data) {
+        attackFunc("Aim", data.character);
     };
 
     CommandHandler.prototype.move = function (args, data) {
         attackFunc("Move", data.character);
     };
 
-    CommandHandler.prototype.magic = function (args, data) {
-        attackFunc("Magic", data.character);
-    };
-
-    CommandHandler.prototype.hex = function (args, data) {
-        attackFunc("Hex", data.character);
-    };
-
-    CommandHandler.prototype.spell = function (args, data) {
-        attackFunc("Spell", data.character);
-    };
-
-    CommandHandler.prototype.manasurge = function (args, data) {
-        attackFunc("Channel", data.character);
+    CommandHandler.prototype.bloodmagic = function (args, data) {
+        attackFunc("Bloodmagic", data.character);
     };
 
     CommandHandler.prototype.surge = CommandHandler.prototype.manasurge;
@@ -850,26 +838,26 @@ var windowController = {
     _rollovers: {
         "Strength": "Strength. <br /> This is your base damage stat; the higher this is, the higher your basic attacks will be. This affects all attacks besides ranged attacks and magic.",
         "Dexterity": "Dexterity. <br /> This is your accuracy and dodge stat; the higher this is, the more likely you will be able to dodge attacks or reduce their effects, or strike with more precision on your own.",
-        "Endurance": "Endurance. <br /> This is your basic defense stat; the higher this is the more health you will have and the faster your stamina will refill over time.",
-        "Spellpower": "Spellpower. <br /> This is your magic stat; the higher this is, the more damage you will deal.",
-        "Willpower": "Willpower. <br /> This is your mana-pool stat; the higher this is, the more magic attacks you can perform and the faster you will regain mana. Willpower also makes you more resistant to being knocked out or disoriented.",
+        "Resilience": "Resilience. <br /> This is your basic defense stat; the higher this is the more health you will have and the faster your stamina will refill over time.",
+        "Endurance": "Endurance. <br /> This is your stamina stat; the higher this is, the more Stamina you will have.",
+        "Special": "Special. <br /> This is your mana-pool stat; the higher this is, the more magic attacks you can perform and the faster you will regain mana. Special also makes you more resistant to being knocked out or disoriented.",
         "HP": "Hit Points. <br />How much health you have initially.",
         "Mana": "Mana. <br />How much mana you have initially.",
         "Stamina": "Stamina. <br />How much stamina you have initially.",
         "StatPoints": "Maximum Stat Points. <br /> The maximum number of points each fighter may have spread among their stats. Typically 20. If you wish to allow fighters to have any number of points in their stats (including uneven fights where one fighter has an advantage), set this value to 0.",
         "GameSpeed": "Game speed. <br /> This value works as a multiplier to all damage. A value of 2, for example, would double damage. A value of 0.5 would halve damage. You may want to reduce it if you allow a higher than normal number of stat points (26-32 or more).",
-        "DisorientedAt": "Dizzy. <br /> If a fighter's HP falls too far below this value they will become disoriented and take a penalty to all their actions. Affected by the fighters Willpower.",
-        "UnconsciousAt": "KO'd. <br />If a fighter's HP falls below this value they will be knocked out and become helpless. Affected by the fighters Willpower.",
-        "DeadAt": "Dead. <br />If a fighter's HP falls below this value they will be killed. Not affected by the fighters Willpower; Dead is Dead.",
+        "DisorientedAt": "Dizzy. <br /> If a fighter's HP falls too far below this value they will become disoriented and take a penalty to all their actions. Affected by the fighters Special.",
+        "UnconsciousAt": "KO'd. <br />If a fighter's HP falls below this value they will be knocked out and become helpless. Affected by the fighters Special.",
+        "DeadAt": "Dead. <br />If a fighter's HP falls below this value they will be killed. Not affected by the fighters Special; Dead is Dead.",
         "Light": "Light attack (20 Stamina) <br />Punches, weak kicks, weak weapon uses and such. Deals some damage and also reduces the target's stamina. <br /> Strength adds to damage and affects the chance to hit. <br />Intelligence adds to stamina damage. <br />Dexterity affects defense.",
         "Heavy": "Heavy attack (35 Stamina) <br />Heavy kicks, weapons, combos, etc. Harder to perform, but deal more damage. <br />Strength greatly affects damage and affects chance to hit.<br /> Dexterity affects defense.",
         "Grab": "Grab (35 Stamina, 20 if successful) <br />Deals little damage initially. But once grabbed, the opponent is held until they manage to escape by using the Grab action as well. Light and Heavy attacks can be used in a grab, as well as Grab for a submission hold. Target has reduced strength and dexterity while grabbed. <br />Strength and Dexterity affect chance to hit. <br />Strength affects the damage of submission moves. <br />Dexterity affects defense. <br />Reduced stamina cost if successful.",
         "Tackle": "Tackle or Throw (40 Stamina, 20 if successful.) <br />Deals stamina damage and stuns the opponent, preventing them from taking their next action. (Effectively letting you perform another action). Tackle during Grab releases opponent. <br /> Strength and Dexterity affects chance to hit. <br />Dexterity greatly affects defense.  <br />Reduced stamina cost if successful.",
         "Magic": "Magic attack (24 Mana) <br /> Blasts, bombs, and magical might. Attack your opponents from range, if you have the reservesIntelligence greatly affects damage.",
         "Ranged": "Ranged attack (20 Stamina) <br /> Small arms, bows and throwing knives, and minor innate magical powers (eye beams, frost breath and such). Ranged attacks are stamina efficient, and deal moderate damage based on either Dexterity or Intelligence (whichever is higher), but are only so-so in terms of accuracy unless you take the time to Aim/Focus first.",
-        "Rest": "Rest (Free) <br />Restores stamina. <br /> Endurance affects stamina regained. <br />Wisdom affects the likelihood of successfully resting in stressful conditions.",
-        "Channel": "Channel (Free) <br />Restores mana at the cost of stamina. <br /> Willpower affects the amount of stamina converted into mana, and affects the likelihood of successfully channeling in stressful conditions.",
-        "Focus": "Focus/Aim (Free) <br />Increases concentration. Makes you slightly harder to hit, and considerably improves your accuracy. <br /> Willpower affects how much damage you may take before your focus/aim is lost, and affects the likelihood of successfully focusing/aiming in stressful conditions.",
+        "Rest": "Rest (Free) <br />Restores stamina. <br /> Resilience affects stamina regained. <br />Wisdom affects the likelihood of successfully resting in stressful conditions.",
+        "Channel": "Channel (Free) <br />Restores mana at the cost of stamina. <br /> Special affects the amount of stamina converted into mana, and affects the likelihood of successfully channeling in stressful conditions.",
+        "Focus": "Focus/Aim (Free) <br />Increases concentration. Makes you slightly harder to hit, and considerably improves your accuracy. <br /> Special affects how much damage you may take before your focus/aim is lost, and affects the likelihood of successfully focusing/aiming in stressful conditions.",
         "Move": "Escape/Pursue (20 stamina) <br />If you are being grappled, Escape/Pursue will let you attempt to break free. When you are not grappling, escape will open up some distance between you and your opponent, forcing them to pursue you or try to tackle you if they want to use melee attacks. When your opponent is at a distance, Escape/Pursue will let you pursue them, trying to force them back into melee..",
         "Defense": "Makes it harder to hit for everyone",
         "Hex": "Magical attack that reduces resistance against magic."
@@ -1209,9 +1197,9 @@ function fighter(settings, globalSettings) {
     //Set stats from settings
     this._strength = (+settings.Strength);
     this._dexterity = (+settings.Dexterity);
+    this._resilience = (+settings.Resilience);
     this._endurance = (+settings.Endurance);
-    this._spellpower = (+settings.Spellpower);
-    this._willpower = (+settings.Willpower);
+    this._special = (+settings.Special);
 
     this._koValue = Math.max(globalSettings.UnconsciousAt, 0);
     this._deathValue = globalSettings.DeadAt;
@@ -1219,11 +1207,11 @@ function fighter(settings, globalSettings) {
     //Check stat points for conformity to rules
     if (this._strength > 10 || this._strength < 0) errors.push(settings.Name + "'s Strength is outside the allowed range (0 to 10).");
     if (this._dexterity > 10 || this._dexterity < 0) errors.push(settings.Name + "'s Dexterity is outside the allowed range (0 to 10).");
+    if (this._resilience > 10 || this._resilience < 0) errors.push(settings.Name + "'s Resilience is outside the allowed range (0 to 10).");
     if (this._endurance > 10 || this._endurance < 0) errors.push(settings.Name + "'s Endurance is outside the allowed range (0 to 10).");
-    if (this._spellpower > 10 || this._spellpower < 0) errors.push(settings.Name + "'s Spellpower is outside the allowed range (0 to 10).");
-    if (this._willpower > 10 || this._willpower < 0) errors.push(settings.Name + "'s Willpower is outside the allowed range (0 to 10).");
+    if (this._special > 10 || this._special < 0) errors.push(settings.Name + "'s Special is outside the allowed range (0 to 10).");
 
-    var stattotal = this._strength + this._dexterity + this._endurance + this._spellpower + this._willpower;
+    var stattotal = this._strength + this._dexterity + this._resilience + this._endurance + this._special;
     if (stattotal != globalSettings.StatPoints && globalSettings.StatPoints != 0) errors.push(settings.Name + " has stats that are too high or too low (" + stattotal + " out of " + globalSettings.StatPoints + " points spent).");
 
     if (errors.length) {
@@ -1231,10 +1219,10 @@ function fighter(settings, globalSettings) {
         throw new Error(settings.Name + " was not created due to invalid settings.");
     }
 
-    this._maxHP = 40 + this._endurance * 10 + this._willpower * 5;
-    this._maxMana = 60 + this._willpower * 10 + (this._spellpower - this._strength ) * 5;
+    this._maxHP = 60 + this._resilience * 10;
+    this._maxMana = this._special * 10;
     this._manaCap = this._maxMana;
-    this._maxStamina = 60 + this._willpower * 10  + (this._strength - this._spellpower ) * 5;
+    this._maxStamina = 20 + this._endurance * 20;
     this._staminaCap = this._maxStamina;
     
     this._dizzyValue = Math.floor(this._maxHP / 2); //You become dizzy at half health and below.
@@ -1292,6 +1280,14 @@ fighter.prototype = {
         return total;
     },
 
+    resilience: function () {
+        var total = this._resilience;
+        if (this.isDisoriented > 0) total -= 1;
+        //total = Math.max(total, 1);
+        total = Math.ceil(total);
+        return total;
+    },
+
     endurance: function () {
         var total = this._endurance;
         if (this.isDisoriented > 0) total -= 1;
@@ -1300,16 +1296,8 @@ fighter.prototype = {
         return total;
     },
 
-    spellpower: function () {
-        var total = this._spellpower;
-        if (this.isDisoriented > 0) total -= 1;
-        //total = Math.max(total, 1);
-        total = Math.ceil(total);
-        return total;
-    },
-
-    willpower: function () {
-        var total = this._willpower;
+    special: function () {
+        var total = this._special;
         if (this.isDisoriented > 0) total -= 1;
         //total = Math.max(total, 1);
         total = Math.ceil(total);
@@ -1401,9 +1389,9 @@ fighter.prototype = {
         if (this._staminaCap == this._maxStamina) this.staminaBurn = 0;
 
         if (this.isUnconscious == false) {//Disable regeneration.
-        //    var stamBonus = 6 + this.willpower();
+        //    var stamBonus = 6 + this.endurance();
         //    this.addStamina(stamBonus);
-        //    var manaBonus = 6 + this.willpower();
+        //    var manaBonus = 6 + this.special();
         //    this.addMana(manaBonus);
         } else {
             this.isStunned = true;
@@ -1411,7 +1399,7 @@ fighter.prototype = {
     },
 
     getStatBlock: function () {
-        return "[color=cyan]" + this.name + " stats: Strength: " + this.strength() + " Dexterity: " + this.dexterity() + " Resilience: " + this.endurance() + " Spellpower: " + this.spellpower() + " Willpower: " + this.willpower() + "[/color]";
+        return "[color=cyan]" + this.name + " stats: Strength: " + this.strength() + " Dexterity: " + this.dexterity() + " Resilience: " + this.resilience() + " Endurance: " + this.endurance() + " Special: " + this.special() + "[/color]";
     },
 
     getStatus: function () {
@@ -1539,7 +1527,7 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
         var requiredStam = 5;
-        var difficulty = 6;
+        var difficulty = 5;
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -1610,9 +1598,8 @@ fighter.prototype = {
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
         damage *= 2;
-        damage += Math.min(attacker.strength(), attacker.spellpower());
         var requiredStam = 10;
-        var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -1650,7 +1637,7 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED! ");
-            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
+            //attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and is now Exposed! " + target.name + " has -2 difficulty to hit and can use Grab even if fighters are not in grappling range!");
             return 0; //Failed attack, if we ever need to check that.
         }
@@ -1687,7 +1674,7 @@ fighter.prototype = {
         damage /= 2;
         var requiredStam = 5;
         
-        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 5; //Base difficulty, rolls greater than this amount will hit.
 
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
                 
@@ -1843,9 +1830,8 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var damage = rollDice([6,6]) - 1 + attacker.strength();
-        damage /= 2;
         var requiredStam = 5;
-        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 5; //Base difficulty, rolls greater than this amount will hit.
 
         if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
 
@@ -1876,7 +1862,7 @@ fighter.prototype = {
 
         if (roll <= attackTable.miss) {	//Miss-- no effect.
             windowController.addHit(" FAILED!");
-            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
+            //attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
             windowController.addHint(attacker.name + " was left wide open by the failed attack and is now Exposed! " + target.name + " has -2 difficulty to hit and can use Grab even if fighters are not in grappling range!");
             //If opponent fumbled on their previous action they should become stunned. Tackle is a special case because it stuns anyway if it hits, so we only do this on a miss.
             if (target.fumbled) {
@@ -1897,7 +1883,7 @@ fighter.prototype = {
         //Deal all the actual damage/effects here.
 
         damage = Math.max(damage, 1);
-        target.hitHp(damage);
+        target.hitStamina(damage);
         target.isStunned = true;
         return 1; //Successful attack, if we ever need to check that.
     },
@@ -1991,238 +1977,9 @@ fighter.prototype = {
     actionRanged: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
-        var damage = rollDice([6,6]) - 1 + attacker.strength();
+        var damage = rollDice([6,6]) + 3;
         damage *= 2;
-        damage += Math.min(attacker.strength(), attacker.spellpower());
-        var requiredStam = 10;
-        var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
-        
-        //If opponent fumbled on their previous action they should become stunned.
-        if (target.fumbled) {
-            target.isStunned = true;
-            target.fumbled = false;
-        }
-
-        if (attacker.isRestrained) difficulty += 4; //Up the difficulty considerably if the attacker is restrained.
-        if (target.isRestrained) difficulty += 4; //Ranged attacks during grapple are hard.
-        if (target.isRestrained) difficulty -= 2; //Lower the difficulty slightly if the target is restrained.
-        if (attacker.isFocused) difficulty -= Math.ceil(attacker.isFocused / 10); //Lower the difficulty considerably if the attacker is focused
-        
-        if (attacker.isFocused) damage += Math.ceil(attacker.isFocused / 10); //Focus gives bonus damage.
-        
-        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += Math.ceil(target.isEvading / 2);//Half effect on ranged attacks.
-            damage -= Math.ceil(target.isEvading / 2);
-            target.isEvading = 0;
-        }
-        if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
-            difficulty -= attacker.isAggressive;
-            damage += attacker.isAggressive;
-            attacker.isAggressive = 0;
-        }
-
-        var critCheck = true;
-        if (attacker.stamina < requiredStam) {	//Not enough stamina-- reduced effect
-            critCheck = false;
-            damage *= attacker.stamina / requiredStam;
-            difficulty += Math.ceil(((requiredStam - attacker.stamina) / requiredStam) * (20 - difficulty)); // Too tired? You're likely to miss.
-            windowController.addHint(attacker.name + " did not have enough stamina, and took penalties to the attack.");
-        }
-
-        attacker.hitStamina(requiredStam); //Now that stamina has been checked, reduce the attacker's stamina by the appopriate amount.
-
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), target.stamina, target._staminaCap);
-        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit(" FAILED!");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll >= attackTable.crit && critCheck == true) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
-            windowController.addHit(" CRITICAL HIT! ");
-            windowController.addHint(attacker.name + " hit somewhere that really hurts!");
-            damage += 10;
-        } else { //Normal hit.
-            windowController.addHit(" HIT! ");
-        }
-
-        //Deal all the actual damage/effects here.
-
-        if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
-            if (!attacker.isRestrained && !target.isRestrained) {
-                battlefield.inGrabRange = false;
-                windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
-            }
-        }
-        
-        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
-        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
-
-        damage = Math.max(damage, 1);
-        target.hitHp(damage);
-        return 1; //Successful attack, if we ever need to check that.
-    },
-
-    actionMagic: function (roll) {// Magically enhanced melee attack.
-        var attacker = this;
-        var target = battlefield.getTarget();
-        var damage = rollDice([6,6]) - 1 + attacker.spellpower();
-        damage *= 2;
-        damage += Math.min(attacker.strength(), attacker.spellpower());
-        var requiredMana = 10;
-        var difficulty = 8; //Base difficulty, rolls greater than this amount will hit.
-        
-        //If opponent fumbled on their previous action they should become stunned.
-        if (target.fumbled) {
-            target.isStunned = true;
-            target.fumbled = false;
-        }
-
-        if (attacker.isRestrained) difficulty += 2; //Math.max(2, 4 + Math.floor((target.strength() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants. Minimum of +2 difficulty, maximum of +8.
-        if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
-        if (target.isExposed) difficulty -= 2; // If opponent left themself wide open after a failed strong attack, they'll be easier to hit.
-
-        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += target.isEvading;
-            damage -= target.isEvading;
-            target.isEvading = 0;
-        }
-        if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
-            difficulty -= attacker.isAggressive;
-            damage += attacker.isAggressive;
-            attacker.isAggressive = 0;
-        }
-
-        var critCheck = true;
-        if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
-            critCheck = false;
-            damage *= attacker.mana / requiredMana;
-            difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana) * (20 - difficulty)); // Too tired? You're likely to have your spell fizzle.
-            windowController.addHint(attacker.name + " did not have enough mana, and took penalties to the attack.");
-        }
-
-        attacker.hitMana(requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
-
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), target.mana, target._manaCap);
-        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit(" FAILED!");
-            attacker.isExposed += 2; //If the fighter misses a big attack, it leaves them open and they have to recover balance which gives the opponent a chance to strike.
-            windowController.addHint(attacker.name + " was left wide open by the failed attack and " + target.name + " has the opportunity to grab them!");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-
-        if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
-            windowController.addHit(" CRITICAL HIT! ");
-            windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 10;
-            windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
-        } else { //Normal hit.
-            windowController.addHit("MAGIC HIT! ");
-        }
-
-        //Deal all the actual damage/effects here.
-
-        if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
-            if (!attacker.isRestrained && !target.isRestrained) {
-                battlefield.inGrabRange = false;
-                windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
-            }
-        }
-        
-        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
-        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
-
-        damage = Math.max(damage, 1);
-        target.hitHp(damage);
-        return 1; //Successful attack, if we ever need to check that.
-    },
-
-    actionHex: function (roll) {
-        var attacker = this;
-        var target = battlefield.getTarget();
-        var damage = rollDice([6,6]) - 1 + attacker.spellpower();
         var requiredMana = 5;
-        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
-        
-        //If opponent fumbled on their previous action they should become stunned.
-        if (target.fumbled) {
-            target.isStunned = true;
-            target.fumbled = false;
-        }
-
-        if (attacker.isRestrained) difficulty += 2;
-        if (target.isRestrained) difficulty -= 4; //Ranged attacks during grapple are hard, but Hex is now melee.
-        //if (attacker.isFocused) difficulty -= 4; //Lower the difficulty if the attacker is focused
-        
-        if (target.isEvading) {//Evasion bonus from move/teleport. Only applies to one attack, then is reset to 0.
-            difficulty += target.isEvading;//Half effect on ranged attacks.
-            damage -= target.isEvading;
-            target.isEvading = 0;
-        }
-        if (attacker.isAggressive) {//Apply attack bonus from move/teleport then reset it.
-            difficulty -= attacker.isAggressive;
-            damage += attacker.isAggressive;
-            attacker.isAggressive = 0;
-        }
-
-        var critCheck = true;
-        if (attacker.mana < requiredMana) {	//Not enough mana-- reduced effect
-            critCheck = false;
-            damage *= attacker.mana / requiredMana;
-            difficulty += Math.ceil(((requiredMana - attacker.mana) / requiredMana) * (20 - difficulty)); // Too tired? You're likely to have your spell fizzle.
-            windowController.addHint(attacker.name + " did not have enough mana, and took penalties to the attack.");
-        }
-
-        attacker.hitMana(requiredMana); //Now that required mana has been checked, reduce the attacker's mana by the appopriate amount.
-
-        var attackTable = attacker.buildActionTable(difficulty, target.dexterity(), attacker.dexterity(), target.mana, target._manaCap);
-        //If target can dodge the atatcker has to roll higher than the dodge value. Otherwise they need to roll higher than the miss value. We display the relevant value in the output.
-        windowController.addInfo("Dice Roll Required: " + (attackTable.miss + 1));
-        
-        if (roll <= attackTable.miss) {	//Miss-- no effect.
-            windowController.addHit(" FAILED! ");
-            return 0; //Failed attack, if we ever need to check that.
-        }
-        
-        if (roll >= attackTable.crit) { //Critical Hit-- increased damage/effect, typically 3x damage if there are no other bonuses.
-            windowController.addHit(" CRITICAL HIT! ");
-            windowController.addHint(attacker.name + " landed a particularly vicious blow!");
-            damage += 10;
-            windowController.addHint("Critical Hit! " + attacker.name + "'s magic worked abnormally well! " + target.name + " is dazed and disoriented.");
-        } else { //Normal hit.
-            windowController.addHit("MAGIC HIT! ");
-        }
-
-        //Deal all the actual damage/effects here.
-
-        if (battlefield.inGrabRange) {// Succesful attacks will beat back the grabber before they can grab you, but not if you're already grappling.
-            if (!attacker.isRestrained && !target.isRestrained) {
-                battlefield.inGrabRange = false;
-                windowController.addHit(attacker.name + " distracted " + target.name + " with the attack and was able to move out of grappling range!");
-            }
-        }
-        
-        //If you're being grappled and you hit the opponent that will make it a little easier to escape later on.
-        if (attacker.isRestrained) attacker.isEscaping += Math.floor(damage/5);
-
-        damage = Math.max(damage, 1);
-        target.hitHp(damage);
-        target.hitMana(damage);
-        return 1; //Successful attack, if we ever need to check that.
-    },
-
-    actionSpell: function (roll) {
-        var attacker = this;
-        var target = battlefield.getTarget();
-        var damage = rollDice([6,6]) - 1 + attacker.spellpower();
-        damage *= 2;
-        damage += Math.min(attacker.strength(), attacker.spellpower());
-        var requiredMana = 10;
         var difficulty = 10; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
@@ -2329,7 +2086,7 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        var staminaShift = 12 + (attacker.willpower() * 2);
+        var staminaShift = 12 + (attacker.endurance() * 2);
         //staminaShift = Math.min(staminaShift, attacker.mana);
 
         //attacker._staminaCap = Math.max(attacker._staminaCap, attacker.stamina + staminaShift);
@@ -2340,7 +2097,7 @@ fighter.prototype = {
         return 1;
     },
 
-    actionFocus: function (roll) {
+    actionAim: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
         var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
@@ -2351,13 +2108,14 @@ fighter.prototype = {
         if (target.isEvading) {//Evasion bonus from move/teleport. Lasts 1 turn. We didn't make an attack and now it resets to 0.
             target.isEvading = 0;
         }
+        
         if (attacker.isAggressive) {//Apply bonus to our action from move/teleport then reset it.
             difficulty -= attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
         if (roll <= difficulty) {	//Failed!
-            windowController.addHint(attacker.name + " was too disoriented or distracted to focus.");
+            windowController.addHint(attacker.name + " was too disoriented or distracted to aim.");
             return 0; //Failed action, if we ever need to check that.
         }
 
@@ -2376,12 +2134,13 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        windowController.addHit(attacker.name + " FOCUSES!");
-        attacker.isFocused += rollDice([6,6,6,6]) + 10 + attacker.willpower() * 4;
+        windowController.addHit(attacker.name + " aimed at " + target.name + "!");
+        attacker.isAggressive = 5; //Set the attack bonus to 5.
+        //attacker.isFocused += rollDice([6,6,6,6]) + 10 + attacker.special() * 4;
         return 1;
     },
 
-    actionChannel: function (roll) {
+    actionBloodmagic: function (roll) {
         var attacker = this;
         var target = battlefield.getTarget();
         var difficulty = 1; //Base difficulty, rolls greater than this amount will succeed.
@@ -2393,7 +2152,6 @@ fighter.prototype = {
             target.isEvading = 0;
         }
         if (attacker.isAggressive) {//Apply bonus to our action from move/teleport then reset it.
-            difficulty -= attacker.isAggressive;
             attacker.isAggressive = 0;
         }
 
@@ -2417,14 +2175,14 @@ fighter.prototype = {
         }
 
         windowController.addInfo("Dice Roll Required: " + Math.max(2, (difficulty + 1)));
-        var manaShift = 12 + (attacker.willpower() * 2);
+        //var manaShift = 12 + (attacker.special() * 2);
         //manaShift = Math.min(manaShift, attacker.stamina); //This also needs to be commented awaay if we want to remove stamina cost.
 
         //attacker._manaCap = Math.max(attacker._manaCap, attacker.mana + manaShift);
-        //attacker.hitStamina(manaShift);
-        attacker.addMana(manaShift);
-        windowController.addHit(attacker.name + " GENERATES MANA!"); //Removed Stamina cost.
-        windowController.addHint(attacker.name + " recovered " + manaShift + " mana!");
+        attacker.hitHp(10);
+        attacker.addMana(20);
+        windowController.addHit(attacker.name + " SACRIFICED HIT POINTS TO GENERATE MANA!"); //Removed Stamina cost.
+        windowController.addHint(attacker.name + " lost 10 HP and recovered 20 mana!");
         return 1;
     },      
 
@@ -2432,7 +2190,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var requiredStam = 5;
-        var difficulty = 6; //Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 5; //Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -2499,8 +2257,8 @@ fighter.prototype = {
             tempGrappleFlag = false;
             attacker.isEvading = Math.floor(totalBonus / 2);
         } else {
-            attacker.isEvading = Math.floor(totalBonus / 2);
-            attacker.isAggressive = Math.ceil(totalBonus / 2);
+            attacker.isEvading = totalBonus;
+            //attacker.isAggressive = Math.ceil(totalBonus / 2);
             windowController.addHit(attacker.name + " gained mobility bonuses against " + target.name + " for one turn!");
         }
 
@@ -2516,7 +2274,7 @@ fighter.prototype = {
         var attacker = this;
         var target = battlefield.getTarget();
         var requiredMana = 5;
-        var difficulty = 6//Base difficulty, rolls greater than this amount will hit.
+        var difficulty = 5//Base difficulty, rolls greater than this amount will hit.
         
         //If opponent fumbled on their previous action they should become stunned.
         if (target.fumbled) {
@@ -2524,7 +2282,7 @@ fighter.prototype = {
             target.fumbled = false;
         }
 
-        if (attacker.isRestrained) difficulty += (9 + Math.floor((target.spellpower() + target.strength() - attacker.spellpower() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
+        if (attacker.isRestrained) difficulty += (10 + Math.floor((target.endurance() + target.strength() - attacker.endurance() - attacker.strength()) / 2)); //When grappled, up the difficulty based on the relative strength of the combatants.
         if (attacker.isRestrained) difficulty -= attacker.isEscaping; //Then reduce difficulty based on how much effort we've put into escaping so far.
         if (target.isRestrained) difficulty -= 4; //Lower the difficulty considerably if the target is restrained.
         
@@ -2574,7 +2332,7 @@ fighter.prototype = {
         }
         
         //The total mobility bonus generated. This will be split bewteen attack and defense.
-        var totalBonus = rollDice([6,6]) - 1 + attacker.spellpower();
+        var totalBonus = rollDice([6,6]) + 3;
 
         if (target.isGrappling(attacker)) { //If you were being grappled, you get free.
             windowController.addHint(attacker.name + " escaped " + target.name + "'s hold! ");
@@ -2582,8 +2340,8 @@ fighter.prototype = {
             tempGrappleFlag = false;
             attacker.isEvading = Math.floor(totalBonus / 2);
         } else {
-            attacker.isEvading = Math.floor(totalBonus / 2);
-            attacker.isAggressive = Math.ceil(totalBonus / 2);
+            attacker.isEvading = totalBonus;
+            //attacker.isAggressive = Math.ceil(totalBonus / 2);
             windowController.addHit(attacker.name + " gained mobility bonuses against " + target.name + " for one turn!");
         }
 
@@ -2658,8 +2416,8 @@ var battlefield = new arena(); //Create an arena named battlefield. It's importa
 //	windowController.calcFormHP( $(this).find("input[name=Endurance]")[0] );
 //	$(this).find("input[name=Endurance]").change( function( event ) { windowController.calcFormHP( this ); });
 //
-//	windowController.calcFormMana( $(this).find("input[name=Willpower]")[0] );
-//	$(this).find("input[name=Willpower]").change( function( event ) { windowController.calcFormMana( this ); });
+//	windowController.calcFormMana( $(this).find("input[name=Special]")[0] );
+//	$(this).find("input[name=Special]").change( function( event ) { windowController.calcFormMana( this ); });
 //});
 
 // Mouseover tooltip events
@@ -2691,9 +2449,9 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     fighterOne["Name"] = firstFighterSettings.name;
     fighterOne["Strength"] = parseInt(firstFighterSettings.strength);
     fighterOne["Dexterity"] = parseInt(firstFighterSettings.dexterity);
+    fighterOne["Resilience"] = parseInt(firstFighterSettings.resilience);
     fighterOne["Endurance"] = parseInt(firstFighterSettings.endurance);
-    fighterOne["Spellpower"] = parseInt(firstFighterSettings.spellpower);
-    fighterOne["Willpower"] = parseInt(firstFighterSettings.willpower);
+    fighterOne["Special"] = parseInt(firstFighterSettings.special);
     fighterOne["HP"] = parseInt(firstFighterSettings.hp);
     fighterOne["Mana"] = parseInt(firstFighterSettings.mana);
     fighterOne["Stamina"] = parseInt(firstFighterSettings.stamina);
@@ -2702,9 +2460,9 @@ function initialSetup(firstFighterSettings, secondFighterSettings, arenaSettings
     fighterTwo["Name"] = secondFighterSettings.name;
     fighterTwo["Strength"] = parseInt(secondFighterSettings.strength);
     fighterTwo["Dexterity"] = parseInt(secondFighterSettings.dexterity);
+    fighterTwo["Resilience"] = parseInt(secondFighterSettings.resilience);
     fighterTwo["Endurance"] = parseInt(secondFighterSettings.endurance);
-    fighterTwo["Spellpower"] = parseInt(secondFighterSettings.spellpower);
-    fighterTwo["Willpower"] = parseInt(secondFighterSettings.willpower);
+    fighterTwo["Special"] = parseInt(secondFighterSettings.special);
     fighterTwo["HP"] = parseInt(secondFighterSettings.hp);
     fighterTwo["Mana"] = parseInt(secondFighterSettings.mana);
     fighterTwo["Stamina"] = parseInt(secondFighterSettings.stamina);
