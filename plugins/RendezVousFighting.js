@@ -1966,7 +1966,7 @@ fighter.prototype = {
                 windowController.addHit(attacker.name + " gained the upper hand and THREW " + target.name + "! " + attacker.name + " can make another move! " + attacker.name + " is no longer at a penalty from being grappled!");
             } else {
                 damage += 10;
-                windowController.addHit(attacker.name + " THREW " + target.name + "! " + attacker.name + " can make another move!");
+                windowController.addHit(attacker.name + " THREW " + target.name + " and dealt bonus damage!");
             }
             //windowController.addHint(target.name + ", you are no longer grappled. You should make your post, but you should only emote being hit, do not try to perform any other actions.");
         } else if (target.isGrappling(attacker)) {
